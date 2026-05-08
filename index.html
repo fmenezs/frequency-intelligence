@@ -45,6 +45,7 @@ body{background:var(--bg);color:var(--txt);font-family:sans-serif;min-height:100
 .cta:hover:not(:disabled){opacity:.87}
 .back{background:none;border:none;color:var(--txt3);font-size:12px;cursor:pointer;padding:8px 0;margin-bottom:12px;display:block}
 .back:hover{color:var(--txt)}
+/* Review */
 .sum-card{background:var(--s1);border:0.5px solid var(--b2);border-radius:12px;padding:16px;margin-bottom:16px}
 .sum-row{display:flex;justify-content:space-between;align-items:flex-start;padding:7px 0;border-bottom:0.5px solid var(--b1)}
 .sum-row:last-child{border:none}
@@ -52,11 +53,13 @@ body{background:var(--bg);color:var(--txt);font-family:sans-serif;min-height:100
 .sum-val{font-size:12px;color:var(--txt);font-weight:500;text-align:right}
 .fire-box{background:var(--lav2);border-left:2px solid var(--lav);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:16px}
 .fire-box p{font-size:12px;color:#c0b8e8;line-height:1.65}
+/* Loading */
 .loading{padding:40px 0;text-align:center}
 .spinner{width:36px;height:36px;border:2px solid var(--b2);border-top:2px solid var(--gold);border-radius:50%;animation:spin .9s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading p{font-size:13px;color:var(--txt2)}
 .loading small{font-size:11px;color:var(--txt3);margin-top:5px;display:block}
+/* Result */
 .rhead{text-align:center;padding:12px 0 18px}
 .rav{width:52px;height:52px;border-radius:50%;background:var(--gold2);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:17px;margin:0 auto 9px;font-family:monospace;font-weight:700;color:var(--gold)}
 .rname{font-size:17px;font-weight:500;color:var(--txt);margin-bottom:2px}
@@ -96,27 +99,455 @@ body{background:var(--bg);color:var(--txt);font-family:sans-serif;min-height:100
   <div class="logo">FMENEZS ◆ Frequency Intelligence</div>
   <div id="root"></div>
 </div>
+
 <script>
-const FC={"Organic Emotional":{bg:"#0f1f14",fg:"#8ec8a0"},"Dreamy Progressive":{bg:"#14102a",fg:"#9e8ec8"},"Progressive Warm":{bg:"#0f1520",fg:"#6e90c8"},"Afro Groove":{bg:"#1f100f",fg:"#c8906e"},"Indie Melodic":{bg:"#10202a",fg:"#6ec8c0"},"Deep Storytelling":{bg:"#101520",fg:"#6eb4c8"},"Spiritual Organic":{bg:"#0f1a1a",fg:"#7ec8b8"},"Hypnotic Raw":{bg:"#20101f",fg:"#c06ec8"},"Peak Raw":{bg:"#1f1010",fg:"#c86e6e"},"Groove Minimal":{bg:"#181818",fg:"#aaaaaa"},"Winehouse":{bg:"#2a1f10",fg:"#c8a06e"}};
-const STEPS=[{id:'name',type:'input',lbl:'Passo 1 de 6',q:'Qual é o seu nome artístico?',sub:'Como você quer ser chamado nessa sessão.',ph:'Ex: FMENEZS, DJ Aisha, Rawko...'},{id:'lineup',type:'tags',lbl:'Passo 2 de 6',q:'Quem toca no lineup?',sub:'Coloque os headliners. Você toca antes deles.'},{id:'slot',type:'opts',lbl:'Passo 3 de 6',q:'Qual é o seu slot?',sub:'Onde você entra na noite.',opts:[{v:'abertura',i:'◎',l:'Abertura',s:'Primeiro da noite'},{v:'warmup',i:'◑',l:'Warm-up',s:'Antes do headliner'},{v:'sunset',i:'◐',l:'Sunset',s:'Pôr do sol'},{v:'closing',i:'●',l:'Closing',s:'Encerramento'}]},{id:'period',type:'opts',lbl:'Passo 4 de 6',q:'Dia ou noite?',sub:'Muda tudo: energia, textura, velocidade.',opts:[{v:'noite',i:'◉',l:'Noite',s:'22h — 06h'},{v:'dia',i:'◎',l:'Dia',s:'Até as 20h'},{v:'virada',i:'◑',l:'Virada',s:'00h — 03h'}]},{id:'venue',type:'opts',lbl:'Passo 5 de 6',q:'Onde vai rolar?',sub:'O espaço define a estética.',opts:[{v:'club',i:'▣',l:'Club',s:'Ambiente fechado'},{v:'festival',i:'◻',l:'Festival',s:'Multi-palcos'},{v:'openair',i:'◯',l:'Open Air',s:'Ao ar livre'},{v:'praia',i:'◎',l:'Praia / Piscina',s:'Sunset vibes'}]},{id:'era',type:'era',lbl:'Passo 6 de 6',q:'Qual era musical te define?',sub:'Filtra as recomendações por período de lançamento.'}];
-let A={},step=0,era='5y',loading=false,result=null;
+const DB=[
+{a:"Jaques Le Noir",t:"Soul and Love",l:"New Creatures",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Paul Lock",t:"Say This (Original Mix)",l:"Family Grooves",bpm:124,fam:"Winehouse",pl:"WARMUP001"},
+{a:"John Pridgen",t:"Get Up",l:"Crossed Signals",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"T. Markakis, Blanco K",t:"Havana Jazz (Extended Mix)",l:"Deepalma Records",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Franck Roger",t:"Lola’s Scream",l:"Seasons Limited",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Aircrax",t:"707 Baby (DJ Merci Remix)",l:"Beast River Records",bpm:121,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Godblesscomputers",t:"Drowned in Blue",l:"Ninja Tune",bpm:0,fam:"Deep Storytelling",pl:"WARMUP001"},
+{a:"Fouk",t:"Neon Drift (Club Mix)",l:"Heist Recordings",bpm:124,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Rollercone",t:"Promises",l:"Back at Home Recordings",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"DJ Sandwich",t:"Chewi",l:"Hamkke Records",bpm:0,fam:"Groove Minimal",pl:"WARMUP001"},
+{a:"MARINI, Purple Ice",t:"Nightshade",l:"Purple Ice Records",bpm:0,fam:"Indie Melodic",pl:"WARMUP001"},
+{a:"MacZito, Ntsakosoul, Vhuvii",t:"Pictures",l:"Canvas of Sound",bpm:0,fam:"Afro Groove",pl:"WARMUP001"},
+{a:"Slow Riffs",t:"Vertical Horizon",l:"Simulacra Records",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP001"},
+{a:"Mika Olson",t:"Chord Looper",l:"Terry’s Cafe",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Tony Momrelle, The Layabouts",t:"This Could Be Us (Instrumental Mix)",l:"Layabout Music",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Cem Gemalmaz",t:"Somebody (Extended Mix)",l:"Deeperfect",bpm:123,fam:"Groove Minimal",pl:"WARMUP001"},
+{a:"Hugo Samba, Brahim Samba, Sounds Of Sirin",t:"Frenka",l:"Sounds Of Sirin",bpm:0,fam:"Organic Emotional",pl:"WARMUP001"},
+{a:"Lenny Fontana, Jasmine Lovett",t:"If You Want Me (Club Mix)",l:"King Street Sounds",bpm:124,fam:"Winehouse",pl:"WARMUP001"},
+{a:"DJ Dove, DJ Steaw",t:"Illusions (DJ Steaw Extended Interpretation)",l:"Local Talk",bpm:123,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Demarkus Lewis",t:"Shuffle Board (Demuir’s Playboy Edit)",l:"Deez Highlight",bpm:124,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Franck Roger",t:"You’re In Love",l:"Real Tone Records",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"E. Live",t:"Feeling Nervous",l:"Large Music",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Evren Ulusoy",t:"Dearly Devoted (Gorge’s Classic Remix)",l:"Plastic City",bpm:122,fam:"Progressive Warm",pl:"WARMUP001"},
+{a:"Gorge",t:"Keep On Movin'",l:"Keep On Movin' EP",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Thomas Wood",t:"Speak To Me",l:"Quiet Storm EP",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Summer Fusion",t:"Organic Horizon - Deep House Instrumental",l:"Ibiza Sax on the Beach",bpm:0,fam:"Organic Emotional",pl:"WARMUP001"},
+{a:"Nacho Marco, Jimpster",t:"Galaxy - Jimpster Remix",l:"Galaxy (incl. Jimpster remix)",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Plaisance",t:"Afterhours",l:"Coldie EP",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Gion",t:"90's Stars",l:"90's Stars",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Loftsoul",t:"Backroom",l:"Reunion E.P.",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Max Sinàl, KingCrowney, Liv East, Frits Wentink",t:"Intentions - Frits Wentink Remix",l:"Intentions Remixes",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Donnell Knox",t:"Noone",l:"House Trax",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Igor Gonya, Stogov",t:"Came Back Raw - Extended Mix",l:"Came Back Raw / Pump Keen",bpm:0,fam:"Winehouse",pl:"WARMUP001"},
+{a:"Sam Shure",t:"Louna",l:"Innervisions",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Alexander Sound",t:"Love and Money",l:"Manual Music",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"D.M.P",t:"Passion and Pain (Dust Yard Remix)",l:"Hoomidaas",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Hraach",t:"Reality Shifting",l:"Sushupti",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Digital Mess, Alex O’Rion",t:"Find Yourself (Alex O’Rion Remix)",l:"The Alleys",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Hans Gerd",t:"Aurora",l:"Cybertron Records",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"FMENEZS, Caio Assis",t:"Limbo",l:"LADR",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"FMENEZS",t:"Morning Birds",l:"LADR",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"FMENEZS, Loveclub, Domingo+",t:"Morning Birds (Remix)",l:"LADR",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"Circulation, Futura City",t:"Space Medley (FM Texture)",l:"Greyhound Recordings",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Marway, Futura City",t:"Rescue (Futura City Ending Texture)",l:"Greyhound Recordings",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Evren Ulusoy",t:"Dearly Devoted (Gorge’s Classic Remix)",l:"Plastic City",bpm:122,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Peter Mac",t:"Enough 2026 (Club Mix)",l:"Hoomidaas",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Circulation",t:"All Summer Long (Ranj Kaler Remix)",l:"Greyhound Recordings",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Dunadry",t:"Removed Mind (Equinox 1)",l:"Steyoyoke",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"Frankie M.",t:"Bark (Original Mix)",l:"Luz De Selva",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP002"},
+{a:"Chris Barag",t:"Tempt With Discovery",l:"Manual Music",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Aetha",t:"Someday (Aman Anand “Moonlight” Dub Remix)",l:"Stellar Fountain",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"Abaze",t:"Rojo Vivo",l:"Hoomidaas",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Bermuda, Happy Deny, Sonic Holiday",t:"Particles (Dimuth K. Remix)",l:"Movement Recordings",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Dave Leck, Izzet",t:"Opal - Izzet Remix",l:"Opal",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"Travis Jesse, Mauro Masi",t:"Wildflower - Mauro Masi Remix",l:"Salvage",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"AudioStorm",t:"Hologram Sunday",l:"Unknown Destination",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"Sajith Prakash",t:"Nebula",l:"Nebula",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Yoni Yarchi",t:"Don’t Think Loud",l:"The Subconscious EP",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP002"},
+{a:"Joachim Spieth, Warmth",t:"Spectral",l:"Fragments",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP002"},
+{a:"CHOMBA",t:"Fermee",l:"The Leftovers",bpm:0,fam:"Afro Groove",pl:"WARMUP002"},
+{a:"Emanuel Brizuela",t:"A Long Time Ago",l:"A Long Time Ago",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Leap Seconds",t:"Bushido",l:"Bushido",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP002"},
+{a:"P U L S A R, Willscape",t:"Mellotronesque - Willscape Remix",l:"Mellotronesque",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Thales Senses",t:"Elemento",l:"Best of 3rd Avenue | Winter 2020",bpm:0,fam:"Progressive Warm",pl:"WARMUP002"},
+{a:"Lake Avalon",t:"Moon - Mixed",l:"Melodic & Progressive House, Spring 20...",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP002"},
+{a:"XENIA REAPER",t:"Drift__",l:"Nept Polarisation",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Superpoze",t:"Obsession",l:"Sïcle",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Trilucid",t:"Stories In Light (Sunset Mix)",l:"Stories In Light",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Allies for Everyone",t:"Bunker (Jay Hill’s Dreamy Tech Remix)",l:"Allies for Everyone",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Martin Roth",t:"Beautiful Life",l:"Anjunadeep",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Vincenzo",t:"Get To Know You",l:"Anjunadeep",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Dusky",t:"Lost Highway",l:"Anjunadeep",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Martin Roth",t:"Have You Ever (Original Mix)",l:"Anjunadeep",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Dusky",t:"Stick By This",l:"17 Steps",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Andy Cato",t:"7AM Drop",l:"Anjunadeep",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"16BL",t:"Beat Organ (Original Mix)",l:"Anjunadeep",bpm:0,fam:"Deep Storytelling",pl:"WARMUP003"},
+{a:"DAVI",t:"The Bay 6, Pt. 2",l:"Anjunadeep",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Moon Rocket",t:"Time With Me",l:"Moon Rocket Music",bpm:0,fam:"Winehouse",pl:"WARMUP003"},
+{a:"Dandara",t:"Wouldi",l:"Music Lovers Club",bpm:0,fam:"Winehouse",pl:"WARMUP003"},
+{a:"Soudant",t:"Lura",l:"Lura",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Doppel",t:"Twotrunk (Tom Baker Remix)",l:"Manual Music",bpm:0,fam:"Progressive Warm",pl:"WARMUP003"},
+{a:"Oron K, YAKOS, KSANA",t:"Jolene",l:"Ritter Butzke Records",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"ÜDORA, Kamil Grabowski",t:"Malibu (Deeplomatik Remix)",l:"Shango Records",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"Sean Branton",t:"Virtue",l:"Warung Recordings",bpm:0,fam:"Indie Melodic",pl:"WARMUP003"},
+{a:"16BL",t:"Deep In My Soul (Original Mix)",l:"Anjunadeep",bpm:0,fam:"Deep Storytelling",pl:"WARMUP003"},
+{a:"Mario Neha",t:"Down With Us (Original Mix)",l:"Anjunadeep",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Sentre",t:"Sunshine (Sentre Club Mix)",l:"Sentre Music",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Joachim Spieth, Warmth",t:"Spectral",l:"Affin Records",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP003"},
+{a:"MYTRIPISMYTRIP",t:"Rage - Original Mix",l:"Rage People",bpm:0,fam:"Peak Raw",pl:"WARMUP003"},
+{a:"Melarmony",t:"Don't Let Me Go - Mixed",l:"Anjunadeep 16",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Martin Roth",t:"Beautiful Life - Original Mix",l:"Beautiful Life / Make Love To Me Baby",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Malkov, Gronny",t:"Ame Nimo Makezu",l:"Deepness",bpm:0,fam:"Progressive Warm",pl:"WARMUP003"},
+{a:"Way Out West, Guy J",t:"Tuesday Maybe - Guy J Remix",l:"Tuesday Maybe (Remixed)",bpm:0,fam:"Progressive Warm",pl:"WARMUP003"},
+{a:"DAVI",t:"The Bay 6 - pt. 1",l:"The Bay 6 EP",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP003"},
+{a:"Fauxplay, Ranj Kaler",t:"Just Breathe",l:"We Have Everything",bpm:0,fam:"Progressive Warm",pl:"WARMUP003"},
+{a:"Aris Kindt",t:"Saichh Sequences",l:"Now Claims My Timid Heart",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Joachim Spieth",t:"Chain (Original Mix)",l:"Affin Records",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Dino Sabatini, Maurizio Cascella",t:"Euphemus",l:"Chiron",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Dino Sabatini, Maurizio Cascella",t:"Echion",l:"Chiron",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Neon Fog",t:"Concrete and Sweat",l:"Self-released / Neon Fog",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"LT",t:"Darién Gap",l:"RDSUB",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Altinbas",t:"Submersion",l:"On Board Music",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Juk Juk",t:"Blow",l:"The World Inside A Sample",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"543ff",t:"mtsa",l:"TAR",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Amotik",t:"Shaam",l:"Amotik",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Amotik",t:"Din",l:"Amotik",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Subb-an",t:"Grooves & Tools (Sub Series Tool 007)",l:"Subb-an",bpm:0,fam:"Groove Minimal",pl:"WARMUP004"},
+{a:"Subb-an",t:"Grooves & Tools (Sub Series Tool 008)",l:"Subb-an",bpm:0,fam:"Groove Minimal",pl:"WARMUP004"},
+{a:"Subb-an",t:"Grooves & Tools (Sub Series Tool 006)",l:"Subb-an",bpm:0,fam:"Groove Minimal",pl:"WARMUP004"},
+{a:"DJ Bone",t:"Shook Ones",l:"Subject Detroit",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Noni",t:"Zebra",l:"Loud Thoughts",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"M23, Slam Mode",t:"Mars",l:"Slam Mode",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Rnesto",t:"Loch Ness",l:"Paradox Records",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Rick Fox",t:"Take Me Where I Want to Go",l:"Self-released / Rick Fox",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Kat Davids, Mascha",t:"Onera",l:"Onera",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Nepotek",t:"Dextro",l:"Self-released / Nepotek",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Feel Fly",t:"Thecla",l:"Festina Lente",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Repair",t:"Seven Sisters Electric Plant (Original Mix)",l:"Lines Drawn",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Minor Sine Project",t:"Come Rain Or Shine (Original Mix)",l:"Minor Sine Project",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"MYTRIPISMYTRIP",t:"Rage - Original Mix",l:"Rage People",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Ludwig Leitner",t:"Indianman",l:"Belladonna",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Lasse Tapio Junnila",t:"Vessels",l:"Childhood Amnesia",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Johannes Volk",t:"Three Missing Puzzle Pieces",l:"A New Biosphere",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP004"},
+{a:"Jamie Bissmire",t:"Neolithic Dreams",l:"Seasons & Cycles",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Modus",t:"Off the Grid",l:"Super-Kamio",bpm:0,fam:"Peak Raw",pl:"WARMUP004"},
+{a:"Future Simplicity",t:"Maize Maze",l:"Blending Frequencies",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Mike Parker",t:"Forward (Donato Dozzy Remix)",l:"Geophone Records",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Dino Sabatini, Maurizio Cascella",t:"Medea",l:"Chiron",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Dino Sabatini, Maurizio Cascella",t:"Pelias",l:"Chiron",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Droneghost",t:"Drip Cycle",l:"Steam Ritual",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Joachim Spieth",t:"Phantom",l:"Affin Records",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Azu Tiwaline, Polygonia",t:"Canopée Imaginaire (Polygonia Rework)",l:"Notte Brigante",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Radioactive Man, Chloé Raunet, Ali Love",t:"Sinkhole (Radioactiveman Dub 1)",l:"Jam Out The Mix",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Tom Jarmey",t:"split roads",l:"Self-released / Tom Jarmey",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Convoke",t:"New Frontier",l:"Nothing Stays The Same",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Lizz V, Neila Edel",t:"Voicemail (Neila Edel Remix)",l:"Voicemail",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Folding Waves",t:"Tides",l:"TEN",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Oliver Kalte",t:"Nachtglanz",l:"Klangfall",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Audyca",t:"Sonus Aurorae",l:"Sonus Aurorae",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Tiger Musik",t:"The Warrior",l:"Tiger Musik",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Textlet",t:"Layer by Layer",l:"Layer by Layer EP",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"John Wick",t:"Mirror",l:"Mirror",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Leibniz",t:"Corridor",l:"Corridor EP",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Lost Bandit",t:"Push Your Hands Up (Extended Mix)",l:"Push Your Hands Up",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Italo Bounce",t:"We’ve Got A Love",l:"Italo Bounce EP13",bpm:0,fam:"Winehouse",pl:"WARMUP005"},
+{a:"Space (GR)",t:"Our Souls",l:"Return",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Danniel selfmade",t:"Has Begun",l:"Has Begun",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Kosmos",t:"Horn of the Unicorn",l:"Ariel",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Kamen",t:"On The Run",l:"On The Run",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"VIVEZ",t:"Unseen Horizons",l:"Beyond the Surface",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Ponti",t:"Exotic Ensemble (Original Mix)",l:"Gordo’s Groove",bpm:0,fam:"Groove Minimal",pl:"WARMUP005"},
+{a:"BLZS",t:"Nightcrawler - dxrvo Remix",l:"Test Subject EP",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Krubim",t:"Mocoa Rules",l:"Séptimo Sol",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"Rawdecks",t:"Chrome Hearted",l:"The Cost of Living",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Catartsis, Ombrar",t:"Melancholic Therapy - Ombrar Remix",l:"Melancholic Therapy",bpm:0,fam:"Peak Raw",pl:"WARMUP005"},
+{a:"Nobuharu Morimoto, Koichi Sugimoto",t:"Dontenmoyou - Koichi Sugimoto Remix",l:"Dontenmoyou",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP005"},
+{a:"UCCEN WATLAS",t:"Wahia",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Evren Ulusoy",t:"Dearly Devoted (Gorge’s Classic Remix)",l:"",bpm:0,fam:"Progressive Warm",pl:"WARMUP006"},
+{a:"Marga Sol, Tibetania",t:"Memoria",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Savage & SHÊ, Digital Sangoma",t:"Home",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"XENIA REAPER",t:"Drift",l:"",bpm:0,fam:"Indie Melodic",pl:"WARMUP006"},
+{a:"Secretly Famous, Freedo Mosho, Futura City",t:"Rise Up (Futura City Breaks Texture)",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Nox Vahn, Marsh",t:"Come Together (Nox Vahn & Marsh Revisit)",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Sebastian Mullaert, Hush Forever",t:"Traces",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"June Freedom, Naika, Peace Control",t:"Messi (Sunset Mix)",l:"",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"Elavenu",t:"Mine",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Seventh Soul, Masoud Abadi, Sounds Of Sirin",t:"Anar",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"BOHEM, Sounds Of Sirin",t:"Playing on the Heaven (Tribute Intro)",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Sarco, Gobi Desert Collective, Sheenubb, Sounds Of Sirin",t:"Qalbi",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Ceas",t:"Vision",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"BuVu, David de José",t:"Nara",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Citizen Deep, Maline Aura, DR Thulz",t:"Ubala",l:"",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"Sparrow & Barbossa, Nomvula SA, Sparrow (CH), Caiiro",t:"Amore Profondo (Caiiro Remix)",l:"",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"Gökhan Aydogmus",t:"So Many Times",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"rÜ, Cafe De Anatolia",t:"A Strange and Special Air",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Nau Leone",t:"cenizas",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Mo-Omar",t:"Khalouni Neich",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Max Mignot, RAMEFF",t:"Chemistry (Rameff Remix)",l:"Kairos",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"AIWAA, Stories of Dharma",t:"Satori",l:"Satori",bpm:0,fam:"Spiritual Organic",pl:"WARMUP006"},
+{a:"Mauro Masi",t:"Da Na Nahie (Extended Mix)",l:"Purple EP",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Waroxe",t:"One Day It’ll All Make Sense",l:"One Day It’ll All Make Sense",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Toni Ter Wonder, Tibetania",t:"Rumena",l:"Rumena",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Summer Fusion",t:"Organic Horizon - Deep House Instrumental",l:"Ibiza Sax on the Beach",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Zigan Aldi, MetinKMusic",t:"Que Quando - Extended Version",l:"Abusadora",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"KidsILive",t:"Monsters R Us - Original Mix",l:"Break Your Heart",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"Dj switch abdou, abdou switch",t:"El arbi cheb khaled (abdou switch edit) - abdou switch Remix",l:"El arbi cheb khaled (abdou switch edit)",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"Elias Fassos, RisK (GR), Joahn Dashi, Sigma Pr",t:"Cherry Vanilla - Sigma Pr Remix",l:"Cherry Vanilla",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"DeeJay Soul Key, Vick’s De DeeJay, Beekay Monalayzzar, Dj TakeOver Rsa",t:"Abiro (Deep House Revisit)",l:"Abiro (Deep House Revisit)",bpm:0,fam:"Afro Groove",pl:"WARMUP006"},
+{a:"Emilio Törnqvist",t:"PARAGOU",l:"PARAGOU",bpm:0,fam:"Organic Emotional",pl:"WARMUP006"},
+{a:"Sebastian Mullaert, Hush Forever",t:"Traces",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Stelios Vassiloudis",t:"Everybody Is Here",l:"",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Stelios Vassiloudis",t:"Never Saw You Coming",l:"",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"A.M.R, Aether",t:"Without You",l:"",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"roamr",t:"Stay Low",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Hugo Samba, Sounds Of Sirin",t:"Your Oasis",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Hugo Samba, Brahim Samba, Sounds Of Sirin",t:"Frenka",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Hugo Samba, Brahim Samba, Sounds Of Sirin",t:"Saguaro Soul",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Djena",t:"In Motion",l:"",bpm:0,fam:"Afro Groove",pl:"WARMUP007"},
+{a:"Maple Sun",t:"Life Echoes (Extended Mix)",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"DJ Burgerhead",t:"Ghost Champagne",l:"",bpm:0,fam:"Winehouse",pl:"WARMUP007"},
+{a:"Nova Fell",t:"Escape With Me",l:"",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Stendahl",t:"We Ignite",l:"",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Nuage",t:"Stones Speak Silent (Original Mix)",l:"",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Toribio, Musclecars",t:"Be Honest",l:"",bpm:0,fam:"Winehouse",pl:"WARMUP007"},
+{a:"VILT",t:"Palmtrace",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Fabian Balino",t:"Have It All (Extended Mix)",l:"",bpm:0,fam:"Afro Groove",pl:"WARMUP007"},
+{a:"Sarco, Gobi Desert Collective, Sheenubb, Sounds Of Sirin",t:"Qalbi",l:"",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Modd, Songspire",t:"Ikigai (Mixed)",l:"Songspire Records in Amsterdam 2025...",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Pablo Bolivar, Alexandra Savvidi",t:"Story",l:"Other Stories",bpm:0,fam:"Deep Storytelling",pl:"WARMUP007"},
+{a:"Netochno, Sounds Of Sirin",t:"In The Past (Extended Mix)",l:"Sounds Of Sirin: Selection 2025",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Sonic Dust, Hazner",t:"Sad Island (Hazner Remix)",l:"Sad Island",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Slow Hearts",t:"Higher Than the Clouds",l:"Higher Than the Clouds",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Awaken",t:"The Abyss",l:"Fragments of Frequencies",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP007"},
+{a:"VEHA, Rondo Mo",t:"Golden Cellophane (Extended Mix)",l:"Euphoric Beats 026",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Døøm",t:"Legion of Secrets",l:"Legion of Secrets",bpm:0,fam:"Hypnotic Raw",pl:"WARMUP007"},
+{a:"Summer Fusion",t:"Organic Horizon - Deep House Instrumental",l:"Ibiza Sax on the Beach",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Evan Fraser, Vir McCoy, Rising Appalachia, Leah Song",t:"Yes It's You",l:"Guardians",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"CHOMBA",t:"Fermee",l:"The Leftovers",bpm:0,fam:"Afro Groove",pl:"WARMUP007"},
+{a:"fishplant",t:"Sunrise Dream",l:"Morning EP",bpm:0,fam:"Organic Emotional",pl:"WARMUP007"},
+{a:"Alex Hoevelmann",t:"37",l:"Haunted EP",bpm:0,fam:"Dreamy Progressive",pl:"WARMUP007"},
+{a:"Alley SA",t:"Cycles",l:"Cycles",bpm:0,fam:"Afro Groove",pl:"WARMUP007"}
+];
+
+const FC={
+  "Organic Emotional":{bg:"#0f1f14",fg:"#8ec8a0"},
+  "Dreamy Progressive":{bg:"#14102a",fg:"#9e8ec8"},
+  "Progressive Warm":{bg:"#0f1520",fg:"#6e90c8"},
+  "Afro Groove":{bg:"#1f100f",fg:"#c8906e"},
+  "Indie Melodic":{bg:"#10202a",fg:"#6ec8c0"},
+  "Deep Storytelling":{bg:"#101520",fg:"#6eb4c8"},
+  "Spiritual Organic":{bg:"#0f1a1a",fg:"#7ec8b8"},
+  "Hypnotic Raw":{bg:"#20101f",fg:"#c06ec8"},
+  "Peak Raw":{bg:"#1f1010",fg:"#c86e6e"},
+  "Groove Minimal":{bg:"#181818",fg:"#aaaaaa"},
+  "Winehouse":{bg:"#2a1f10",fg:"#c8a06e"},
+};
+
+const STEPS=[
+  {id:'name',type:'input',lbl:'Passo 1 de 6',q:'Qual é o seu nome artístico?',sub:'Como você quer ser chamado nessa sessão.',ph:'Ex: FMENEZS, DJ Aisha, Rawko...'},
+  {id:'lineup',type:'tags',lbl:'Passo 2 de 6',q:'Quem toca no lineup?',sub:'Coloque os headliners. Você toca antes deles.'},
+  {id:'slot',type:'opts',lbl:'Passo 3 de 6',q:'Qual é o seu slot?',sub:'Onde você entra na noite.',opts:[
+    {v:'abertura',i:'◎',l:'Abertura',s:'Primeiro da noite'},
+    {v:'warmup',i:'◑',l:'Warm-up',s:'Antes do headliner'},
+    {v:'sunset',i:'◐',l:'Sunset',s:'Pôr do sol'},
+    {v:'closing',i:'●',l:'Closing',s:'Encerramento'},
+  ]},
+  {id:'period',type:'opts',lbl:'Passo 4 de 6',q:'Dia ou noite?',sub:'Muda tudo: energia, textura, velocidade.',opts:[
+    {v:'noite',i:'◉',l:'Noite',s:'22h — 06h'},
+    {v:'dia',i:'◎',l:'Dia',s:'Até as 20h'},
+    {v:'virada',i:'◑',l:'Virada',s:'00h — 03h'},
+  ]},
+  {id:'venue',type:'opts',lbl:'Passo 5 de 6',q:'Onde vai rolar?',sub:'O espaço define a estética.',opts:[
+    {v:'club',i:'▣',l:'Club',s:'Ambiente fechado'},
+    {v:'festival',i:'◻',l:'Festival',s:'Multi-palcos'},
+    {v:'openair',i:'◯',l:'Open Air',s:'Ao ar livre'},
+    {v:'praia',i:'◎',l:'Praia / Piscina',s:'Sunset vibes'},
+  ]},
+  {id:'era',type:'era',lbl:'Passo 6 de 6',q:'Qual era musical te define?',sub:'Filtra as recomendações por período de lançamento.'},
+];
+
+let A={}, step=0, era='5y', loading=false, result=null;
+
 function ini(){return(A.name||'DJ').split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();}
-function render(){const r=document.getElementById('root');if(loading){r.innerHTML=renderLoading();return;}if(result){r.innerHTML=renderResult();return;}if(step>=STEPS.length){r.innerHTML=renderReview();return;}r.innerHTML=renderStep();}
-function renderStep(){const s=STEPS[step];let h=`<div class="prog">${STEPS.map((_,i)=>`<div class="pdot${i<step?' done':i===step?' cur':''}"></div>`).join('')}</div>`;if(step>0)h+=`<button class="back" onclick="goBack()">← voltar</button>`;h+=`<div class="slbl">${s.lbl}</div><div class="sq">${s.q}</div><div class="ssub">${s.sub}</div>`;if(s.type==='input'){h+=`<input class="inp" id="ninp" placeholder="${s.ph}" value="${A[s.id]||''}" oninput="A['${s.id}']=this.value;recheck()">`;}if(s.type==='tags'){const tags=A.lineup||[];h+=`<div class="tags">${tags.map(t=>`<div class="tag" onclick="rmTag('${t}')">${t} ×</div>`).join('')}</div>`;h+=`<input class="inp" id="tinp" placeholder="Digite e pressione Enter..." onkeydown="addTag(event)">`;h+=`<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">Sugestões:</div><div class="sugs">`;['Black Coffee','Guy J','Hernán Cattáneo','Solomun','Keinemusik','ANNA','Innellea','Nocapz','&ME','Nick Warren','Stephan Bodzin','Adam Port'].forEach(n=>{h+=`<div class="sug${(A.lineup||[]).includes(n)?' on':''}" onclick="addSug('${n}')">${n}</div>`;});h+=`</div>`;}if(s.type==='opts'){h+=`<div class="og">`;s.opts.forEach(o=>{h+=`<div class="op${A[s.id]===o.v?' on':''}" onclick="pickOpt('${s.id}','${o.v}')"><div class="oi">${o.i}</div><div class="ol">${o.l}</div><div class="os">${o.s}</div></div>`;});h+=`</div>`;}if(s.type==='era'){h+=`<div class="era-row">`;[['6m','Últimos 6 meses'],['5y','Últimos 5 anos'],['10y','Até 10 anos'],['vintage','Clássicos vintage']].forEach(([v,l])=>{h+=`<div class="ep${era===v?' on':''}" onclick="setEra('${v}')">${l}</div>`;});h+=`</div><div style="font-size:12px;color:var(--txt2);margin-bottom:16px;line-height:1.6">Vintage (anos 80–2000) cria identidade única. Lançamentos recentes mostram que você pesquisa.</div>`;}const ok=canGo();h+=`<button class="cta" id="ctabtn" ${ok?'':'disabled'} onclick="nextStep()">${step===STEPS.length-1?'Revisar →':'Continuar →'}</button>`;return h;}
-function renderReview(){const eraLbl={'6m':'últimos 6 meses','5y':'últimos 5 anos','10y':'até 10 anos','vintage':'clássicos vintage'};const slotMap={abertura:'Abertura',warmup:'Warm-up',sunset:'Sunset',closing:'Closing'};const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia / Piscina'};let h=`<div class="prog">${STEPS.map(()=>`<div class="pdot done"></div>`).join('')}</div>`;h+=`<button class="back" onclick="goBack()">← editar</button>`;h+=`<div class="slbl">Revisão</div><div class="sq">Tudo certo?</div><div class="ssub">O Frequency Intelligence vai analisar seu perfil e montar a curadoria.</div>`;h+=`<div class="sum-card"><div class="sum-row"><div class="sum-lbl">Nome</div><div class="sum-val">${A.name||'—'}</div></div><div class="sum-row"><div class="sum-lbl">Lineup</div><div class="sum-val">${(A.lineup||[]).join(', ')||'—'}</div></div><div class="sum-row"><div class="sum-lbl">Slot</div><div class="sum-val">${slotMap[A.slot]||'—'}</div></div><div class="sum-row"><div class="sum-lbl">Período</div><div class="sum-val">${A.period||'—'}</div></div><div class="sum-row"><div class="sum-lbl">Venue</div><div class="sum-val">${venueMap[A.venue]||'—'}</div></div><div class="sum-row"><div class="sum-lbl">Era</div><div class="sum-val">${eraLbl[era]}</div></div></div>`;h+=`<div class="fire-box"><p>O Frequency Intelligence vai analisar o lineup, o contexto e o momento — e entregar 12 tracks com BPM range, estratégia curatorial e progressão energética.</p></div>`;h+=`<button class="cta" onclick="generate()">Analisar e montar set ↗</button><button class="back" style="margin-top:10px;text-align:center;width:100%" onclick="restart()">Recomeçar</button>`;return h;}
-function renderLoading(){return`<div class="loading"><div class="spinner"></div><p>Frequency Intelligence analisando...</p><small>Leitura de pista, contexto e curadoria em processo</small></div>`;}
-function renderResult(){if(result.error){return`<div class="error-box"><p>${result.error}</p></div><button class="cta" onclick="generate()">Tentar novamente</button>`;}const r=result;const eraLbl={'6m':'6 meses','5y':'5 anos','10y':'10 anos','vintage':'vintage'};let h=`<div class="rhead"><div class="rav">${ini()}</div><div class="rname">${A.name||'DJ'}</div><div class="rmeta">${A.slot||''} · ${A.venue||''} · ${A.period||''}</div><div class="rlineup">${(A.lineup||[]).join(' · ')}</div></div>`;h+=`<div class="badges"><div class="badge bg">${r.bpm_range||'—'}</div><div class="badge bt">era: ${eraLbl[era]}</div><div class="badge bl">Frequency Intelligence</div></div>`;if(r.curatorial_note)h+=`<div class="note-box"><p>${r.curatorial_note}</p></div>`;if(r.alerts&&r.alerts.length)h+=`<div class="alert-box"><p>${r.alerts.join('<br>')}</p></div>`;h+=`<div class="section-lbl">${(r.tracks||[]).length} tracks · ordem de execução</div>`;(r.tracks||[]).forEach((t,i)=>{const fc=FC[t.family]||{bg:'#181818',fg:'#aaa'};h+=`<div class="tc"><div class="tn">${i+1}</div><div class="ti"><div class="tt">${t.title||'—'}</div><div class="ta">${t.artist||'—'}</div><div class="tl">${t.label||''}</div><div class="tw">${t.why||''}</div></div><div class="tr2"><div class="tf" style="background:${fc.bg};color:${fc.fg}">${(t.family||'').split(' ')[0]}</div><div class="ty">${t.year||''}</div></div></div>`;});if(r.progression){h+=`<div class="section-lbl">Progressão energética</div><div class="prog-box"><p>${r.progression}</p></div>`;}h+=`<div class="divider"></div><button class="more-btn" onclick="generate()">Nova análise</button><button class="more-btn" style="margin-top:6px" onclick="restart()">Novo set</button>`;return h;}
-async function generate(){loading=true;result=null;render();const eraMap={'6m':'lançamentos dos últimos 6 meses (2024–2026)','5y':'lançamentos dos últimos 5 anos (2021–2026)','10y':'até 10 anos atrás (2016–2026)','vintage':'clássicos underground de 1985–2010'};const slotMap={abertura:'Abertura (primeiro da noite)',warmup:'Warm-up principal (antes do headliner)',sunset:'Sunset (pôr do sol)',closing:'Closing (encerramento)'};const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia / Piscina'};const lineup=(A.lineup||[]).join(', ')||'não informado';const prompt=`Você é FMENEZS, DJ e curador musical especialista em warm-up de música eletrônica underground. Estamos em maio de 2026.\n\nPERFIL DO DJ:\n- Nome artístico: ${A.name}\n- Lineup / headliners: ${lineup}\n- Slot: ${slotMap[A.slot]}\n- Período: ${A.period}\n- Venue: ${venueMap[A.venue]}\n- Era musical: ${eraMap[era]}\n\nResponda APENAS em JSON válido, sem markdown, sem texto fora do JSON:\n{"bpm_range":"ex: 116–122 BPM","curatorial_note":"2-3 frases como curador humano","alerts":["alerta 1","alerta 2"],"tracks":[{"artist":"Nome","title":"Título","label":"Selo","year":2025,"family":"Família Sonora","bpm":118,"why":"1 frase"}],"progression":"2-3 frases narrativa energética"}\n\nFamílias: Winehouse, Organic Emotional, Afro Groove, Progressive Warm, Dreamy Progressive, Indie Melodic, Hypnotic Raw, Peak Raw, Groove Minimal, Deep Storytelling, Spiritual Organic.\n\nGere exatamente 12 tracks REAIS ordenadas para execução. Underground. Sem comerciais óbvios. Era: ${eraMap[era]}.`;try{const resp=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});const data=await resp.json();if(!resp.ok||data.error)throw new Error(data.error||'Erro');const clean=data.result.replace(/```json|```/g,'').trim();result=JSON.parse(clean);}catch(e){result={error:`Erro ao processar: ${e.message}`};}loading=false;render();}
-function canGo(){const s=STEPS[step];if(s.type==='opts')return!!A[s.id];if(s.type==='tags')return!!(A.lineup&&A.lineup.length);if(s.type==='input')return!!(A[s.id]&&A[s.id].trim());return true;}
+
+function render(){
+  const root=document.getElementById('root');
+  if(loading){root.innerHTML=renderLoading();return;}
+  if(result){root.innerHTML=renderResult();return;}
+  if(step>=STEPS.length){root.innerHTML=renderReview();return;}
+  root.innerHTML=renderStep();
+}
+
+function renderStep(){
+  const s=STEPS[step];
+  let h=`<div class="prog">${STEPS.map((_,i)=>`<div class="pdot${i<=step?' cur':''}${i<step?' done':''}"></div>`).join('')}</div>`;
+  if(step>0)h+=`<button class="back" onclick="goBack()">← voltar</button>`;
+  h+=`<div class="slbl">${s.lbl}</div><div class="sq">${s.q}</div><div class="ssub">${s.sub}</div>`;
+
+  if(s.type==='input'){
+    h+=`<input class="inp" id="ninp" placeholder="${s.ph}" value="${A[s.id]||''}" oninput="A['${s.id}']=this.value;recheck()">`;
+  }
+  if(s.type==='tags'){
+    const tags=A.lineup||[];
+    h+=`<div class="tags">${tags.map(t=>`<div class="tag" onclick="rmTag('${t}')">${t} ×</div>`).join('')}</div>`;
+    h+=`<input class="inp" id="tinp" placeholder="Digite e pressione Enter..." onkeydown="addTag(event)">`;
+    h+=`<div style="font-size:11px;color:var(--txt3);margin-bottom:8px">Sugestões:</div><div class="sugs">`;
+    ['Black Coffee','Guy J','Hernán Cattáneo','Solomun','Keinemusik','ANNA','Innellea','Nocapz','&ME','Nick Warren','Stephan Bodzin','Adam Port'].forEach(n=>{
+      h+=`<div class="sug${(A.lineup||[]).includes(n)?' on':''}" onclick="addSug('${n}')">${n}</div>`;
+    });
+    h+=`</div>`;
+  }
+  if(s.type==='opts'){
+    h+=`<div class="og">`;
+    s.opts.forEach(o=>{h+=`<div class="op${A[s.id]===o.v?' on':''}" onclick="pickOpt('${s.id}','${o.v}')"><div class="oi">${o.i}</div><div class="ol">${o.l}</div><div class="os">${o.s}</div></div>`;});
+    h+=`</div>`;
+  }
+  if(s.type==='era'){
+    h+=`<div class="era-row">`;
+    [['6m','Últimos 6 meses'],['5y','Últimos 5 anos'],['10y','Até 10 anos'],['vintage','Clássicos vintage']].forEach(([v,l])=>{
+      h+=`<div class="ep${era===v?' on':''}" onclick="setEra('${v}')">${l}</div>`;
+    });
+    h+=`</div><div style="font-size:12px;color:var(--txt2);margin-bottom:16px;line-height:1.6">Vintage (anos 80–2000) cria identidade única. Lançamentos recentes mostram que você pesquisa.</div>`;
+  }
+
+  const ok=canGo();
+  h+=`<button class="cta" id="ctabtn" ${ok?'':'disabled'} onclick="nextStep()">${step===STEPS.length-1?'Revisar →':'Continuar →'}</button>`;
+  return h;
+}
+
+function renderReview(){
+  const eraLbl={'6m':'últimos 6 meses','5y':'últimos 5 anos','10y':'até 10 anos','vintage':'clássicos vintage'};
+  const slotMap={abertura:'Abertura',warmup:'Warm-up',sunset:'Sunset',closing:'Closing'};
+  const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia / Piscina'};
+  let h=`<div class="prog">${STEPS.map(()=>`<div class="pdot done"></div>`).join('')}</div>`;
+  h+=`<button class="back" onclick="goBack()">← editar</button>`;
+  h+=`<div class="slbl">Revisão</div><div class="sq">Tudo certo?</div><div class="ssub">O Frequency Intelligence vai analisar seu perfil e montar a curadoria.</div>`;
+  h+=`<div class="sum-card">
+    <div class="sum-row"><div class="sum-lbl">Nome</div><div class="sum-val">${A.name||'—'}</div></div>
+    <div class="sum-row"><div class="sum-lbl">Lineup</div><div class="sum-val">${(A.lineup||[]).join(', ')||'—'}</div></div>
+    <div class="sum-row"><div class="sum-lbl">Slot</div><div class="sum-val">${slotMap[A.slot]||'—'}</div></div>
+    <div class="sum-row"><div class="sum-lbl">Período</div><div class="sum-val">${A.period||'—'}</div></div>
+    <div class="sum-row"><div class="sum-lbl">Venue</div><div class="sum-val">${venueMap[A.venue]||'—'}</div></div>
+    <div class="sum-row"><div class="sum-lbl">Era</div><div class="sum-val">${eraLbl[era]}</div></div>
+  </div>`;
+  h+=`<div class="fire-box"><p>O Frequency Intelligence vai analisar o lineup, o contexto e o momento — e entregar 12 tracks com BPM range, estratégia curatorial e progressão energética.</p></div>`;
+  h+=`<button class="cta" onclick="generate()">Analisar e montar set ↗</button>`;
+  h+=`<button class="back" style="margin-top:10px;text-align:center;width:100%" onclick="restart()">Recomeçar</button>`;
+  return h;
+}
+
+function renderLoading(){
+  return`<div class="loading"><div class="spinner"></div><p>Frequency Intelligence analisando...</p><small>Leitura de pista, contexto e curadoria em processo</small></div>`;
+}
+
+function renderResult(){
+  if(result.error){
+    return`<div class="error-box"><p>${result.error}</p></div><button class="cta" onclick="generate()">Tentar novamente</button>`;
+  }
+  const r=result;
+  const eraLbl={'6m':'6 meses','5y':'5 anos','10y':'10 anos','vintage':'vintage'};
+  let h=`<div class="rhead">
+    <div class="rav">${ini()}</div>
+    <div class="rname">${A.name||'DJ'}</div>
+    <div class="rmeta">${A.slot||''} · ${A.venue||''} · ${A.period||''}</div>
+    <div class="rlineup">${(A.lineup||[]).join(' · ')}</div>
+  </div>`;
+  h+=`<div class="badges"><div class="badge bg">${r.bpm_range||'—'}</div><div class="badge bt">era: ${eraLbl[era]}</div><div class="badge bl">Frequency Intelligence</div></div>`;
+  if(r.curatorial_note)h+=`<div class="note-box"><p>${r.curatorial_note}</p></div>`;
+  if(r.alerts&&r.alerts.length)h+=`<div class="alert-box"><p>${r.alerts.join('<br>')}</p></div>`;
+  h+=`<div class="section-lbl">${(r.tracks||[]).length} tracks · ordem de execução</div>`;
+  (r.tracks||[]).forEach((t,i)=>{
+    const fc=FC[t.family]||{bg:'#181818',fg:'#aaa'};
+    h+=`<div class="tc">
+      <div class="tn">${i+1}</div>
+      <div class="ti">
+        <div class="tt">${t.title||'—'}</div>
+        <div class="ta">${t.artist||'—'}</div>
+        <div class="tl">${t.label||''}</div>
+        <div class="tw">${t.why||''}</div>
+      </div>
+      <div class="tr2">
+        <div class="tf" style="background:${fc.bg};color:${fc.fg}">${(t.family||'').split(' ')[0]}</div>
+        <div class="ty">${t.year||''}</div>
+      </div>
+    </div>`;
+  });
+  if(r.progression){
+    h+=`<div class="section-lbl">Progressão energética</div><div class="prog-box"><p>${r.progression}</p></div>`;
+  }
+  h+=`<div class="divider"></div>`;
+  h+=`<button class="more-btn" onclick="generate()">Nova análise</button>`;
+  h+=`<button class="more-btn" style="margin-top:6px" onclick="restart()">Novo set</button>`;
+  return h;
+}
+
+async function generate(){
+  loading=true; result=null; render();
+  const eraMap={'6m':'lançamentos dos últimos 6 meses (2024–2026)','5y':'lançamentos dos últimos 5 anos (2021–2026)','10y':'até 10 anos atrás (2016–2026)','vintage':'clássicos underground de 1985–2010'};
+  const slotMap={abertura:'Abertura (primeiro da noite)',warmup:'Warm-up principal (antes do headliner)',sunset:'Sunset (pôr do sol)',closing:'Closing (encerramento)'};
+  const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia / Piscina'};
+  const lineup=(A.lineup||[]).join(', ')||'não informado';
+
+  const prompt=`Você é FMENEZS, DJ e curador musical especialista em warm-up de música eletrônica underground. Estamos em maio de 2026.
+
+PERFIL DO DJ:
+- Nome artístico: ${A.name}
+- Lineup / headliners: ${lineup}
+- Slot: ${slotMap[A.slot]}
+- Período: ${A.period}
+- Venue: ${venueMap[A.venue]}
+- Era musical: ${eraMap[era]}
+
+Responda APENAS em JSON válido, sem markdown, sem texto fora do JSON:
+{
+  "bpm_range": "ex: 116–122 BPM",
+  "curatorial_note": "2-3 frases como curador humano sobre a estratégia desse set",
+  "alerts": ["alerta curto 1", "alerta curto 2"],
+  "tracks": [
+    {"artist":"Nome","title":"Título","label":"Selo","year":2025,"family":"Família Sonora","bpm":118,"why":"1 frase porque encaixa nesse momento"}
+  ],
+  "progression": "2-3 frases sobre a narrativa energética do set do início ao fim"
+}
+
+Famílias disponíveis: Winehouse, Organic Emotional, Afro Groove, Progressive Warm, Dreamy Progressive, Indie Melodic, Hypnotic Raw, Peak Raw, Groove Minimal, Deep Storytelling, Spiritual Organic.
+
+Gere exatamente 12 tracks REAIS que existem, ordenadas para execução no set. Priorize underground. Evite comerciais óbvios. Use o filtro de era: ${eraMap[era]}.`;
+
+  try{
+    const resp=await fetch('/api/generate',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({prompt})
+    });
+    const data=await resp.json();
+    if(!resp.ok||data.error)throw new Error(data.error||'Erro na API');
+    const clean=data.result.replace(/```json|```/g,'').trim();
+    result=JSON.parse(clean);
+  }catch(e){
+    result={error:`Erro ao processar: ${e.message}`};
+  }
+  loading=false; render();
+}
+
+function canGo(){
+  const s=STEPS[step];
+  if(s.type==='opts')return!!A[s.id];
+  if(s.type==='tags')return!!(A.lineup&&A.lineup.length);
+  if(s.type==='input')return!!(A[s.id]&&A[s.id].trim());
+  return true;
+}
 function goBack(){if(step>0){step--;render();}}
 function nextStep(){if(canGo()){step++;render();}}
 function pickOpt(id,v){A[id]=v;setTimeout(()=>{step++;render();},200);}
 function setEra(v){era=v;render();}
 function recheck(){const b=document.getElementById('ctabtn');if(b)b.disabled=!canGo();}
-function addTag(e){if(e.key==='Enter'){const inp=document.getElementById('tinp');const v=inp.value.trim();if(v){A.lineup=A.lineup||[];if(!A.lineup.includes(v))A.lineup.push(v);inp.value='';render();}}}
+function addTag(e){
+  if(e.key==='Enter'){
+    const inp=document.getElementById('tinp');
+    const v=inp.value.trim();
+    if(v){A.lineup=A.lineup||[];if(!A.lineup.includes(v))A.lineup.push(v);inp.value='';render();}
+  }
+}
 function addSug(v){A.lineup=A.lineup||[];if(!A.lineup.includes(v))A.lineup.push(v);else A.lineup=A.lineup.filter(x=>x!==v);render();}
 function rmTag(v){A.lineup=(A.lineup||[]).filter(x=>x!==v);render();}
 function restart(){A={};step=0;era='5y';loading=false;result=null;render();}
+
 render();
 </script>
 </body>
