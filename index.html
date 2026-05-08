@@ -453,18 +453,21 @@ function renderResult(){
   if(r.alerts&&r.alerts.length)h+=`<div class="alert-box"><p>${r.alerts.join('<br>')}</p></div>`;
   h+=`<div class="section-lbl">${(r.tracks||[]).length} tracks · ordem de execução</div>`;
   (r.tracks||[]).forEach((t,i)=>{
-    const fc=FC[t.family]||{bg:'#181818',fg:'#aaa'};
+    const fam=t.fam||t.family||'';
+    const fc=FC[fam]||{bg:'#181818',fg:'#aaa'};
+    const title=t.t||t.title||'—';
+    const artist=t.a||t.artist||'—';
+    const label=(t.l||t.label||'').replace('—','');
     h+=`<div class="tc">
       <div class="tn">${i+1}</div>
       <div class="ti">
-        <div class="tt">${t.title||'—'}</div>
-        <div class="ta">${t.artist||'—'}</div>
-        <div class="tl">${t.label||''}</div>
-        <div class="tw">${t.why||''}</div>
+        <div class="tt">${title}</div>
+        <div class="ta">${artist}</div>
+        ${label?`<div class="tl">${label}</div>`:''}
       </div>
       <div class="tr2">
-        <div class="tf" style="background:${fc.bg};color:${fc.fg}">${(t.family||'').split(' ')[0]}</div>
-        <div class="ty">${t.year||''}</div>
+        <div class="tf" style="background:${fc.bg};color:${fc.fg}">${fam.split(' ')[0]}</div>
+        ${t.bpm?`<div style="font-size:9px;color:var(--txt3);margin-top:3px;font-family:monospace">${t.bpm}</div>`:''}
       </div>
     </div>`;
   });
@@ -477,51 +480,57 @@ function renderResult(){
   return h;
 }
 
-async function generate(){
-  loading=true; result=null; render();
-  const eraMap={'6m':'lançamentos dos últimos 6 meses (2024–2026)','5y':'lançamentos dos últimos 5 anos (2021–2026)','10y':'até 10 anos atrás (2016–2026)','vintage':'clássicos underground de 1985–2010'};
-  const slotMap={abertura:'Abertura (primeiro da noite)',warmup:'Warm-up principal (antes do headliner)',sunset:'Sunset (pôr do sol)',closing:'Closing (encerramento)'};
-  const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia / Piscina'};
-  const lineup=(A.lineup||[]).join(', ')||'não informado';
-
-  const prompt=`Você é FMENEZS, DJ e curador musical especialista em warm-up de música eletrônica underground. Estamos em maio de 2026.
-
-PERFIL DO DJ:
-- Nome artístico: ${A.name}
-- Lineup / headliners: ${lineup}
-- Slot: ${slotMap[A.slot]}
-- Período: ${A.period}
-- Venue: ${venueMap[A.venue]}
-- Era musical: ${eraMap[era]}
-
-Responda APENAS em JSON válido, sem markdown, sem texto fora do JSON:
-{
-  "bpm_range": "ex: 116–122 BPM",
-  "curatorial_note": "2-3 frases como curador humano sobre a estratégia desse set",
-  "alerts": ["alerta curto 1", "alerta curto 2"],
-  "tracks": [
-    {"artist":"Nome","title":"Título","label":"Selo","year":2025,"family":"Família Sonora","bpm":118,"why":"1 frase porque encaixa nesse momento"}
-  ],
-  "progression": "2-3 frases sobre a narrativa energética do set do início ao fim"
+const FAM_PRIORITY={
+  abertura:['Organic Emotional','Deep Storytelling','Dreamy Progressive','Winehouse','Groove Minimal','Spiritual Organic'],
+  warmup:['Progressive Warm','Dreamy Progressive','Organic Emotional','Hypnotic Raw','Afro Groove','Indie Melodic'],
+  sunset:['Organic Emotional','Spiritual Organic','Dreamy Progressive','Afro Groove','Progressive Warm','Winehouse'],
+  closing:['Hypnotic Raw','Peak Raw','Groove Minimal','Progressive Warm','Dreamy Progressive'],
+};
+function pickTracks(slot,lineup,period,venue){
+  const line=(lineup||[]).join(' ').toLowerCase();
+  let order=[...(FAM_PRIORITY[slot]||FAM_PRIORITY.warmup)];
+  if(line.includes('coffee')||line.includes('nocapz')||line.includes('caiiro'))order=['Afro Groove','Organic Emotional','Spiritual Organic','Progressive Warm','Dreamy Progressive','Indie Melodic','Winehouse'];
+  else if(line.includes('guy j')||line.includes('hernan')||line.includes('cattaneo')||line.includes('warren'))order=['Progressive Warm','Dreamy Progressive','Organic Emotional','Indie Melodic','Hypnotic Raw','Deep Storytelling'];
+  else if(line.includes('anna')||line.includes('beyer')||line.includes('enrico'))order=['Hypnotic Raw','Peak Raw','Groove Minimal','Progressive Warm','Indie Melodic'];
+  else if(line.includes('solomun')||line.includes('innellea'))order=['Indie Melodic','Dreamy Progressive','Hypnotic Raw','Organic Emotional','Progressive Warm'];
+  else if(line.includes('blondish')||line.includes('maz')||line.includes('keinemusik'))order=['Organic Emotional','Dreamy Progressive','Afro Groove','Progressive Warm','Spiritual Organic','Indie Melodic'];
+  if(venue==='praia'||venue==='openair'){['Organic Emotional','Spiritual Organic','Afro Groove'].forEach(f=>{order=order.filter(x=>x!==f);order.unshift(f);});}
+  const scored=DB.map(t=>({...t,score:order.indexOf(t.fam)<0?999:order.indexOf(t.fam)}));
+  scored.sort((a,b)=>a.score-b.score);
+  const result=[],famCount={};
+  for(const t of scored){if(result.length>=12)break;famCount[t.fam]=famCount[t.fam]||0;if(famCount[t.fam]<3){result.push(t);famCount[t.fam]++;}}
+  return result;
+}
+function getBPM(slot,lineup){
+  const line=(lineup||[]).join(' ').toLowerCase();
+  if(line.includes('anna')||line.includes('beyer'))return'122–128 BPM';
+  if(line.includes('solomun')||line.includes('innellea'))return'118–124 BPM';
+  if(slot==='abertura')return'110–116 BPM';
+  if(slot==='sunset')return'112–118 BPM';
+  if(slot==='closing')return'120–126 BPM';
+  return'116–122 BPM';
 }
 
-Famílias disponíveis: Winehouse, Organic Emotional, Afro Groove, Progressive Warm, Dreamy Progressive, Indie Melodic, Hypnotic Raw, Peak Raw, Groove Minimal, Deep Storytelling, Spiritual Organic.
+async function generate(){
+  loading=true; result=null; render();
+  const tracks=pickTracks(A.slot, A.lineup, A.period, A.venue);
+  const bpm=getBPM(A.slot, A.lineup);
+  const lineup=(A.lineup||[]).join(', ')||'nao informado';
+  const slotMap={abertura:'Abertura',warmup:'Warm-up',sunset:'Sunset',closing:'Closing'};
+  const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia'};
 
-Gere exatamente 12 tracks REAIS que existem, ordenadas para execução no set. Priorize underground. Evite comerciais óbvios. Use o filtro de era: ${eraMap[era]}.`;
+  const prompt='DJ '+A.name+', lineup: '+lineup+', slot: '+(slotMap[A.slot]||A.slot)+', venue: '+(venueMap[A.venue]||A.venue)+', periodo: '+A.period+'. Responda APENAS em JSON sem markdown: {"curatorial_note":"2 frases sobre estrategia do set","alerts":["alerta 1","alerta 2"],"progression":"2 frases sobre progressao energetica"}';
 
+  let ai={curatorial_note:'',alerts:[],progression:''};
   try{
-    const resp=await fetch('/api/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({prompt})
-    });
+    const resp=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
     const data=await resp.json();
-    if(!resp.ok||data.error)throw new Error(data.error||'Erro na API');
-    const clean=data.result.replace(/```json|```/g,'').trim();
-    result=JSON.parse(clean);
-  }catch(e){
-    result={error:`Erro ao processar: ${e.message}`};
-  }
+    if(resp.ok&&data.result){
+      const clean=data.result.replace(/```json|```/g,'').trim();
+      ai=JSON.parse(clean);
+    }
+  }catch(e){}
+  result={bpm_range:bpm, tracks, curatorial_note:ai.curatorial_note||'', alerts:ai.alerts||[], progression:ai.progression||''};
   loading=false; render();
 }
 
