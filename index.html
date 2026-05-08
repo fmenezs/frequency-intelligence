@@ -502,13 +502,10 @@ function pickTracks(slot,lineup,period,venue){
   return result;
 }
 function getBPM(slot,lineup){
-  const line=(lineup||[]).join(' ').toLowerCase();
-  if(line.includes('anna')||line.includes('beyer'))return'122–128 BPM';
-  if(line.includes('solomun')||line.includes('innellea'))return'118–124 BPM';
-  if(slot==='abertura')return'110–116 BPM';
+  if(slot==='abertura')return'112–116 BPM';
   if(slot==='sunset')return'112–118 BPM';
-  if(slot==='closing')return'120–126 BPM';
-  return'116–122 BPM';
+  if(slot==='closing')return'118–122 BPM';
+  return'114–120 BPM';
 }
 
 async function generate(){
@@ -519,7 +516,7 @@ async function generate(){
   const slotMap={abertura:'Abertura',warmup:'Warm-up',sunset:'Sunset',closing:'Closing'};
   const venueMap={club:'Club fechado',festival:'Festival',openair:'Open Air',praia:'Praia'};
 
-  const prompt='DJ '+A.name+', lineup: '+lineup+', slot: '+(slotMap[A.slot]||A.slot)+', venue: '+(venueMap[A.venue]||A.venue)+', periodo: '+A.period+'. Responda APENAS em JSON sem markdown: {"curatorial_note":"2 frases sobre estrategia do set","alerts":["alerta 1","alerta 2"],"progression":"2 frases sobre progressao energetica"}';
+  const prompt='Voce e FMENEZS, curador musical. Escreva em portugues simples e direto, sem jargao tecnico. DJ '+A.name+', vai tocar como '+( slotMap[A.slot]||A.slot)+' num '+( venueMap[A.venue]||A.venue)+' de '+A.period+' com '+lineup+' tocando depois. Responda APENAS em JSON sem markdown: {"curatorial_note":"2 frases simples sobre como deve soar esse set e o que evitar, como se falasse com um amigo DJ","alerts":["dica pratica curta 1","dica pratica curta 2"],"progression":"2 frases descrevendo como o set vai evoluir do inicio ao fim em linguagem simples"}';
 
   let ai={curatorial_note:'',alerts:[],progression:''};
   try{
