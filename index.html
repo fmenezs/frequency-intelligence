@@ -92,6 +92,20 @@ body{background:var(--bg);color:var(--txt);font-family:sans-serif;min-height:100
 .more-btn:hover{border-color:var(--gold);color:var(--gold)}
 .error-box{background:#1a0f0f;border-left:2px solid #c86e6e;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:14px}
 .error-box p{font-size:12px;color:#c89e9e;line-height:1.6}
+
+.sp-section{margin-top:16px}
+.sp-card{background:var(--s1);border:0.5px solid rgba(30,215,96,0.2);border-radius:10px;padding:11px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.sp-img{width:40px;height:40px;border-radius:4px;object-fit:cover;flex-shrink:0;background:var(--s2)}
+.sp-info{flex:1;min-width:0}
+.sp-title{font-size:13px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-artist{font-size:11px;color:var(--txt2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.sp-year{font-size:10px;color:var(--txt3);margin-top:1px}
+.sp-badge{font-size:8px;padding:2px 6px;border-radius:2px;background:rgba(30,215,96,0.15);color:#1ed760;font-family:monospace;white-space:nowrap}
+.sp-link{font-size:10px;color:#1ed760;text-decoration:none;margin-top:3px;display:block;opacity:.7}
+.sp-link:hover{opacity:1}
+.warn-box{background:#1a1500;border-left:2px solid #c8a06e;border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:10px}
+.warn-box p{font-size:11px;color:#a08040;line-height:1.6}
+
 </style>
 </head>
 <body>
@@ -474,6 +488,23 @@ function renderResult(){
   if(r.progression){
     h+=`<div class="section-lbl">Progressão energética</div><div class="prog-box"><p>${r.progression}</p></div>`;
   }
+  if(r.headliner_tracks&&r.headliner_tracks.length){
+    h+=`<div class="divider"></div>`;
+    h+=`<div class="section-lbl">⚠ Tracks do headliner — não toque essas</div>`;
+    h+=`<div class="warn-box"><p>Essas são as últimas tracks dos headliners no Spotify. Evite tocar qualquer uma delas no seu set.</p></div>`;
+    r.headliner_tracks.forEach(t=>{
+      h+=`<div class="sp-card">
+        ${t.image?`<img class="sp-img" src="${t.image}" alt="">`:` <div class="sp-img"></div>`}
+        <div class="sp-info">
+          <div class="sp-title">${t.title||'—'}</div>
+          <div class="sp-artist">${t.artist||'—'}</div>
+          <div class="sp-year">${t.album||''} ${t.year?'· '+t.year:''}</div>
+          ${t.spotify_url?`<a class="sp-link" href="${t.spotify_url}" target="_blank">Ouvir no Spotify ↗</a>`:''}
+        </div>
+        <div class="sp-badge">HEADLINER</div>
+      </div>`;
+    });
+  }
   h+=`<div class="divider"></div>`;
   h+=`<button class="more-btn" onclick="generate()">Nova análise</button>`;
   h+=`<button class="more-btn" style="margin-top:6px" onclick="restart()">Novo set</button>`;
@@ -527,7 +558,19 @@ async function generate(){
       ai=JSON.parse(clean);
     }
   }catch(e){}
-  result={bpm_range:bpm, tracks, curatorial_note:ai.curatorial_note||'', alerts:ai.alerts||[], progression:ai.progression||''};
+  // Fetch headliner tracks from Spotify
+  let headliner_tracks=[];
+  try{
+    const spResp=await fetch('/api/spotify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({artists:A.lineup||[], limit:8})
+    });
+    const spData=await spResp.json();
+    if(spData.tracks) headliner_tracks=spData.tracks.slice(0,6);
+  }catch(e){}
+
+  result={bpm_range:bpm, tracks, curatorial_note:ai.curatorial_note||'', alerts:ai.alerts||[], progression:ai.progression||'', headliner_tracks};
   loading=false; render();
 }
 
