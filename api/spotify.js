@@ -13,27 +13,19 @@
 // ─────────────────────────────────────────────────────────────────
 const GROUP_ARTISTS = {
 
-  g2: [ // AFRO / ORGANIC / PROGRESSIVE
-    // Organic / World
-    { name: 'Hugo Samba',         id: '4ARqFEwGPNcRFmgMEMFReq' },
-    { name: 'Sebastian Mullaert', id: '1hxOSEXBFMiE5XYuHm0kLH' },
-    { name: 'Nox Vahn',           id: '6XyGHsrNqBFkVGHFJmWIjq' },
-    { name: 'Marsh',              id: '2yNQGBQANFJpbD9KVTBJCE' },
-    { name: 'Mauro Masi',         id: '5OPbS6E1LBBo7NJEr7T3jB' },
-    { name: 'D.M.P',              id: '4TpKSVwNRJHRhTGwsF7Xjf' },
-    { name: 'Sam Shure',          id: '5VYe5XVnzFNpOt4KzGkDHx' },
-    { name: 'Hraach',             id: '3FBK7qGXTrKqJCdqlBFyZK' },
-    { name: 'Bedouin',            id: '1Ioqw10Hy5F1OIJb4cXbpY' },
-    { name: 'Satori',             id: '7fIvjotigTGWqjIz6EP1i5' },
-    { name: 'BLOND:ISH',          id: '7EQFN8y2l9UNJTkVj24DRc' },
-    { name: 'Damian Lazarus',     id: '7rPVEECPRcpxP4XS1fkHgP' },
-    { name: 'Ahmed Spins',        id: '4p9z80FZZXNJUmjlFCKxpb' },
-    { name: 'Lee Burridge',       id: '1RNm0r3ViSTQNIFCMUhM7a' },
+  g2: [ // AFRO / ORGANIC / PROGRESSIVE — IDs verificados via Spotify
+    { name: 'Nox Vahn',           id: '2bqGPuC8kDCTLWieGOyWxu' },
+    { name: 'Mauro Masi',         id: '4DB7roKjBDAuccMLQrzXX9' },
+    { name: 'Sam Shure',          id: '51YmUpitluHsvMTXJ2rsiN' },
+    { name: 'Hraach',             id: '6rdTxNwQhUJTodUx7voWXO' },
+    { name: 'Bedouin',            id: '5bKdC6382t97Qnpvs81Rqx' },
+    { name: 'Satori',             id: '5nri3hyKmKBGAfvjBi0mK0' },
+    { name: 'Ahmed Spins',        id: '4jercY4pUhY6jB8eQjpVJV' },
+    { name: 'Adam Port',          id: '2loEsOijJ6XiGzWYFXMIRk' },
     { name: 'Hernán Cattáneo',    id: '4k1O3e7MMAm2V6xqQcFGKj' },
-    { name: 'Guy J',              id: '0Dl8j8IPLZ0EGRBizZfDdl' },
-    { name: 'Keinemusik',         id: '5WPNBzIqUlFLbPP1kKXmjA' },
-    { name: 'Rampa',              id: '5pOHDIHsNpwYBcaFX5Zxmd' },
-    { name: 'Adam Port',          id: '2RqrWplBJNqRwFGqvFzwCq' },
+    { name: 'Black Coffee',       id: '6wMr4zKPrrR0UVz08WtUWc' },
+    { name: 'Lee Burridge',       id: '1RNm0r3ViSTQNIFCMUhM7a' },
+    { name: 'Damian Lazarus',     id: '7rPVEECPRcpxP4XS1fkHgP' },
   ],
 
   g1: [ // TECH / HOUSE / DEEP / SOULFUL
