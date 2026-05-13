@@ -180,6 +180,15 @@ export default async function handler(req, res) {
     if (id)        return res.status(200).json(await fetchArtistById(token, id));
     if (artist)    return res.status(200).json(await searchArtist(token, artist));
     if (search)    return res.status(200).json(await searchFree(token, search));
+    if (req.query.albums) {
+      // Debug: ver albums de um artista
+      const r = await fetch(
+        `https://api.spotify.com/v1/artists/${req.query.albums}/albums?include_groups=single,album&limit=10`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const d = await r.json();
+      return res.status(200).json({ status: r.status, items: (d.items||[]).map(a=>({name:a.name,date:a.release_date,id:a.id})) });
+    }
     if (headliner) return res.status(200).json(
       await fetchNewTracksForHeadliner(token, headliner, slot || 'slot2', parseInt(days) || 90)
     );
@@ -370,34 +379,45 @@ async function fetchRecentReleases(token, artists, bpmRange, sinceDate, excludeI
 
 async function getArtistRecentTracks(token, artistId, sinceDate) {
   try {
-    // Pega albums/singles recentes
+    // Pega albums/singles — sem filtro de mercado para maximizar resultados
     const r = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=single,album&market=BR&limit=10`,
+      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=single,album&limit=20`,
       { headers: { 'Authorization': `Bearer ${token}` } }
     );
-    if (!r.ok) return [];
+    if (!r.ok) {
+      console.error(`Albums fetch failed for ${artistId}: ${r.status}`);
+      return [];
+    }
     const d = await r.json();
+    const allAlbums = d.items || [];
 
-    // Filtra por data
-    const recentAlbums = (d.items || []).filter(album => {
+    if (!allAlbums.length) return [];
+
+    // Tenta filtrar por data — se vazio, pega os 5 mais recentes sem filtro
+    let targetAlbums = allAlbums.filter(album => {
+      if (!album.release_date) return false;
       const releaseDate = new Date(album.release_date);
       return releaseDate >= sinceDate;
     });
 
-    if (!recentAlbums.length) return [];
+    // Fallback: sem filtro de data, pega os mais recentes
+    if (!targetAlbums.length) {
+      targetAlbums = allAlbums.slice(0, 5);
+    }
 
-    // Pega tracks de cada album recente
+    // Pega tracks de cada album
     const trackResults = await Promise.allSettled(
-      recentAlbums.slice(0, 5).map(album => getAlbumTracks(token, album))
+      targetAlbums.slice(0, 5).map(album => getAlbumTracks(token, album))
     );
 
     const tracks = [];
-    for (const r of trackResults) {
-      if (r.status === 'fulfilled') tracks.push(...(r.value || []));
+    for (const res of trackResults) {
+      if (res.status === 'fulfilled') tracks.push(...(res.value || []));
     }
     return tracks;
 
   } catch(e) {
+    console.error(`getArtistRecentTracks error for ${artistId}:`, e.message);
     return [];
   }
 }
