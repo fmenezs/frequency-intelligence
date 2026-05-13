@@ -4,59 +4,54 @@
 // GET /api/spotify                              → access_token
 // GET /api/spotify?artist=NAME                  → foto + grupo
 // GET /api/spotify?id=SPOTIFY_ID                → foto + grupo pelo ID
+// GET /api/spotify?albums=SPOTIFY_ID            → debug: albums do artista
 // GET /api/spotify?headliner=NAME&slot=S&days=D → tracks novas compatíveis
 // GET /api/spotify?search=QUERY                 → busca livre de artistas
 
 // ─────────────────────────────────────────────────────────────────
-// ARTISTAS POR GRUPO — Spotify IDs verificados
-// Usados para buscar releases recentes via /artists/{id}/albums
+// 7 GRUPOS SONOROS — Spotify IDs verificados
 // ─────────────────────────────────────────────────────────────────
 const GROUP_ARTISTS = {
 
-  g2: [ // AFRO / ORGANIC / PROGRESSIVE — IDs verificados via Spotify
-    { name: 'Nox Vahn',           id: '2bqGPuC8kDCTLWieGOyWxu' },
-    { name: 'Mauro Masi',         id: '4DB7roKjBDAuccMLQrzXX9' },
-    { name: 'Sam Shure',          id: '51YmUpitluHsvMTXJ2rsiN' },
-    { name: 'Hraach',             id: '6rdTxNwQhUJTodUx7voWXO' },
-    { name: 'Bedouin',            id: '5bKdC6382t97Qnpvs81Rqx' },
-    { name: 'Satori',             id: '5nri3hyKmKBGAfvjBi0mK0' },
-    { name: 'Ahmed Spins',        id: '4jercY4pUhY6jB8eQjpVJV' },
-    { name: 'Adam Port',          id: '2loEsOijJ6XiGzWYFXMIRk' },
-    { name: 'Hernán Cattáneo',    id: '4k1O3e7MMAm2V6xqQcFGKj' },
-    { name: 'Black Coffee',       id: '6wMr4zKPrrR0UVz08WtUWc' },
-    { name: 'Lee Burridge',       id: '1RNm0r3ViSTQNIFCMUhM7a' },
-    { name: 'Damian Lazarus',     id: '7rPVEECPRcpxP4XS1fkHgP' },
+  g1: [ // TECH HOUSE / HOUSE / DEEP TECH / DEEP HOUSE
+    { name: 'Kerri Chandler',        id: '51tYDGpHPVBSmVjirw3lFy' },
+    { name: 'Honey Dijon',           id: '3yGSRjp9aYZeWuLKJSmGgV' },
+    { name: 'Mochakk',               id: '7dqFBBfQMGQdXaREVHj1i8' },
+    { name: 'Dennis Cruz',           id: '4KBFIJUrMjOBBFkJbWxalx' },
+    { name: 'Seth Troxler',          id: '6yOXrJMd4TxvDUFpFu8PmS' },
+    { name: 'The Martinez Brothers', id: '41Q0HrwWBtuUkJc9CfWFkF' },
+    { name: 'Jamie Jones',           id: '3Jv8mZcJ8f9p1Y2e4IvpzD' },
+    { name: 'Danny Tenaglia',        id: '66KFQSRCE44JAWjaTgHpYq' },
+    { name: 'Green Velvet',          id: '3lNFl1OVzRHJJcBEWMvLBX' },
+    { name: 'Fouk',                  id: '4JT6E8pevxBqWvjfPj3WlR' },
+    { name: 'Franck Roger',          id: '4GiTTZgz5IFbPuHlSYxwMi' },
   ],
 
-  g1: [ // TECH / HOUSE / DEEP / SOULFUL
-    { name: 'Kerri Chandler',          id: '51tYDGpHPVBSmVjirw3lFy' },
-    { name: 'Honey Dijon',             id: '3yGSRjp9aYZeWuLKJSmGgV' },
-    { name: 'Mochakk',                 id: '7dqFBBfQMGQdXaREVHj1i8' },
-    { name: 'Dennis Cruz',             id: '4KBFIJUrMjOBBFkJbWxalx' },
-    { name: 'Seth Troxler',            id: '6yOXrJMd4TxvDUFpFu8PmS' },
-    { name: 'The Martinez Brothers',   id: '41Q0HrwWBtuUkJc9CfWFkF' },
-    { name: 'Jamie Jones',             id: '3Jv8mZcJ8f9p1Y2e4IvpzD' },
-    { name: 'Danny Tenaglia',          id: '66KFQSRCE44JAWjaTgHpYq' },
-    { name: 'Green Velvet',            id: '3lNFl1OVzRHJJcBEWMvLBX' },
-    { name: 'Fouk',                    id: '4JT6E8pevxBqWvjfPj3WlR' },
-    { name: 'Franck Roger',            id: '4GiTTZgz5IFbPuHlSYxwMi' },
+  g2: [ // PROGRESSIVE HOUSE
+    { name: 'Hernán Cattáneo', id: '4k1O3e7MMAm2V6xqQcFGKj' },
+    { name: 'Nox Vahn',        id: '2bqGPuC8kDCTLWieGOyWxu' },
+    { name: 'Guy J',           id: '0Dl8j8IPLZ0EGRBizZfDdl' },
+    { name: 'Sasha',           id: '2SHyvQHTbMoFVT5s5LkS38' },
+    { name: 'John Digweed',    id: '22KZUGygOLPwWIf5ZqNjUy' },
+    { name: 'Sam Shure',       id: '51YmUpitluHsvMTXJ2rsiN' },
+    { name: 'Hraach',          id: '6rdTxNwQhUJTodUx7voWXO' },
   ],
 
   g3: [ // MELODIC TECHNO / INDIE DANCE
-    { name: 'Tale Of Us',     id: '0F4iAEMFdSGR5qFOGk2Bvg' },
-    { name: 'ARTBAT',         id: '3zy26r3t4BOlwBGbFxmYlG' },
-    { name: 'Anyma',          id: '0bjTNsHtWFGVoZ8yvv1y7k' },
-    { name: 'Adriatique',     id: '7aS8K2M1qBMlPEeTmImEYF' },
-    { name: 'HOSH',           id: '2EDImBgFnLFQRe9vkfV79h' },
-    { name: 'Maceo Plex',     id: '7JWvBVnGEX6pHw4grQ3cJI' },
-    { name: 'Mita Gami',      id: '5CyYLptaEKYxEYfLRpCwYI' },
-    { name: 'Trentemøller',   id: '7Kf4KU6xDXAw4pxvJJ5Bx6' },
-    { name: 'Dusky',          id: '3YcBF2ZtHV0zqMcAsJfB8u' },
-    { name: 'Martin Roth',    id: '4OJPXaDWfWiF1TjKPGrqDQ' },
-    { name: '16BL',           id: '1FuCJwKl3MEBoQULWJPMRf' },
+    { name: 'Tale Of Us',   id: '0F4iAEMFdSGR5qFOGk2Bvg' },
+    { name: 'ARTBAT',       id: '3zy26r3t4BOlwBGbFxmYlG' },
+    { name: 'Anyma',        id: '0bjTNsHtWFGVoZ8yvv1y7k' },
+    { name: 'Adriatique',   id: '7aS8K2M1qBMlPEeTmImEYF' },
+    { name: 'HOSH',         id: '2EDImBgFnLFQRe9vkfV79h' },
+    { name: 'Maceo Plex',   id: '7JWvBVnGEX6pHw4grQ3cJI' },
+    { name: 'Mita Gami',    id: '5CyYLptaEKYxEYfLRpCwYI' },
+    { name: 'Trentemøller', id: '7Kf4KU6xDXAw4pxvJJ5Bx6' },
+    { name: 'Dusky',        id: '3YcBF2ZtHV0zqMcAsJfB8u' },
+    { name: 'Martin Roth',  id: '4OJPXaDWfWiF1TjKPGrqDQ' },
+    { name: '16BL',         id: '1FuCJwKl3MEBoQULWJPMRf' },
   ],
 
-  g4: [ // TECHNO / MINIMAL / HYPNOTIC
+  g4: [ // TECHNO RAW / PEAK TIME
     { name: 'Joachim Spieth',     id: '1PKtSAYVgTMH2rEGMPLTOO' },
     { name: 'Amotik',             id: '5cHGiN9yImRf4IxB0EVaTK' },
     { name: 'Charlotte de Witte', id: '5O30s0HaU7PMmlFAeWtLrM' },
@@ -67,97 +62,111 @@ const GROUP_ARTISTS = {
     { name: 'Adam Beyer',         id: '7wX4BaEhFMRJ5sXdCMKF8g' },
     { name: 'Dino Sabatini',      id: '3sRKnCYJRVBVfBomNXyqrA' },
   ],
+
+  g5: [ // HARD TECHNO
+    { name: 'Reinier Zonneveld', id: '21A7bhIL1m6CNZn8y57PIZ' },
+  ],
+
+  g6: [ // AFRO HOUSE / MELODIC HOUSE
+    { name: 'Adam Port',      id: '2loEsOijJ6XiGzWYFXMIRk' },
+    { name: 'Black Coffee',   id: '6wMr4zKPrrR0UVz08WtUWc' },
+    { name: 'Bedouin',        id: '5bKdC6382t97Qnpvs81Rqx' },
+    { name: 'Damian Lazarus', id: '7rPVEECPRcpxP4XS1fkHgP' },
+    { name: 'Ahmed Spins',    id: '4jercY4pUhY6jB8eQjpVJV' },
+    { name: 'BLOND:ISH',      id: '7EQFN8y2l9UNJTkVj24DRc' },
+  ],
+
+  g7: [ // ORGANIC HOUSE
+    { name: 'Mauro Masi',     id: '4DB7roKjBDAuccMLQrzXX9' },
+    { name: 'Sam Shure',      id: '51YmUpitluHsvMTXJ2rsiN' },
+    { name: 'Hraach',         id: '6rdTxNwQhUJTodUx7voWXO' },
+    { name: 'Bedouin',        id: '5bKdC6382t97Qnpvs81Rqx' },
+    { name: 'Satori',         id: '5nri3hyKmKBGAfvjBi0mK0' },
+    { name: 'Ahmed Spins',    id: '4jercY4pUhY6jB8eQjpVJV' },
+    { name: 'Lee Burridge',   id: '1RNm0r3ViSTQNIFCMUhM7a' },
+    { name: 'Damian Lazarus', id: '7rPVEECPRcpxP4XS1fkHgP' },
+  ],
 };
 
-// Headliners → grupo + artistas de referência do mesmo universo
+// Nomes dos grupos para exibição
+const GROUP_NAMES = {
+  g1: 'Tech House / House / Deep Tech',
+  g2: 'Progressive House',
+  g3: 'Melodic Techno / Indie Dance',
+  g4: 'Techno Raw / Peak Time',
+  g5: 'Hard Techno',
+  g6: 'Afro House / Melodic House',
+  g7: 'Organic House',
+};
+
+// Headliners → grupo
 const HEADLINER_MAP = {
-  'Black Coffee':          { g:'g2', ref:['Bedouin','Ahmed Spins','BLOND:ISH','Satori','Damian Lazarus','Keinemusik'] },
-  'Bedouin':               { g:'g2', ref:['Black Coffee','Satori','Lee Burridge','Damian Lazarus','Keinemusik'] },
-  'Lee Burridge':          { g:'g2', ref:['Satori','Bedouin','BLOND:ISH','Damian Lazarus'] },
-  'BLOND:ISH':             { g:'g2', ref:['Bedouin','Lee Burridge','Ahmed Spins','Satori'] },
-  'Damian Lazarus':        { g:'g2', ref:['Bedouin','Satori','Lee Burridge','BLOND:ISH'] },
-  'Satori':                { g:'g2', ref:['Lee Burridge','Bedouin','Damian Lazarus','Ahmed Spins'] },
-  'Ahmed Spins':           { g:'g2', ref:['Black Coffee','Bedouin','BLOND:ISH','Satori'] },
-  'Hernán Cattáneo':       { g:'g2', ref:['Guy J','Sasha','John Digweed','D.M.P','Sam Shure'] },
-  'Guy J':                 { g:'g2', ref:['Hernán Cattáneo','Sasha','John Digweed','Hraach'] },
-  'Sasha':                 { g:'g2', ref:['Guy J','Hernán Cattáneo','John Digweed'] },
-  'John Digweed':          { g:'g2', ref:['Sasha','Guy J','Hernán Cattáneo'] },
-  'Keinemusik':            { g:'g2', ref:['Black Coffee','Bedouin','Rampa','Adam Port'] },
-  'Rampa':                 { g:'g2', ref:['Keinemusik','Adam Port','Black Coffee','Bedouin'] },
-  'Adam Port':             { g:'g2', ref:['Keinemusik','Rampa','Black Coffee'] },
-  'Kerri Chandler':        { g:'g1', ref:['Honey Dijon','Seth Troxler','Danny Tenaglia'] },
-  'Honey Dijon':           { g:'g1', ref:['Kerri Chandler','Seth Troxler','Mochakk'] },
-  'Mochakk':               { g:'g1', ref:['Dennis Cruz','Jamie Jones','The Martinez Brothers'] },
-  'Dennis Cruz':           { g:'g1', ref:['Mochakk','Jamie Jones','Seth Troxler'] },
-  'Seth Troxler':          { g:'g1', ref:['Kerri Chandler','Honey Dijon','Dennis Cruz'] },
-  'Green Velvet':          { g:'g1', ref:['Mochakk','Dennis Cruz','Jamie Jones'] },
-  'The Martinez Brothers': { g:'g1', ref:['Mochakk','Jamie Jones','Green Velvet'] },
-  'Vintage Culture':       { g:'g1', ref:['Mochakk','Dennis Cruz','Peggy Gou'] },
-  'Peggy Gou':             { g:'g1', ref:['Honey Dijon','Seth Troxler','Vintage Culture'] },
-  'Jamie Jones':           { g:'g1', ref:['The Martinez Brothers','Dennis Cruz','Mochakk'] },
-  'Tale Of Us':            { g:'g3', ref:['ARTBAT','Anyma','Adriatique','HOSH'] },
-  'ARTBAT':                { g:'g3', ref:['Tale Of Us','Anyma','Adriatique'] },
-  'Anyma':                 { g:'g3', ref:['Tale Of Us','ARTBAT','Adriatique'] },
-  'Adriatique':            { g:'g3', ref:['Tale Of Us','HOSH','Maceo Plex','Mita Gami'] },
-  'HOSH':                  { g:'g3', ref:['Adriatique','Maceo Plex','Mita Gami'] },
-  'Maceo Plex':            { g:'g3', ref:['HOSH','Adriatique','Mita Gami','Trentemøller'] },
-  'Eric Prydz':            { g:'g3', ref:['Tale Of Us','ARTBAT','Adriatique'] },
-  'ANNA':                  { g:'g4', ref:['Charlotte de Witte','Amelie Lens','Richie Hawtin'] },
-  'Charlotte de Witte':    { g:'g4', ref:['ANNA','Amelie Lens','Adam Beyer'] },
-  'Amelie Lens':           { g:'g4', ref:['Charlotte de Witte','ANNA','Adam Beyer'] },
-  'Carl Cox':              { g:'g4', ref:['Richie Hawtin','Adam Beyer','ANNA'] },
-  'Richie Hawtin':         { g:'g4', ref:['Carl Cox','Paco Osuna','Joachim Spieth'] },
-  'Adam Beyer':            { g:'g4', ref:['Charlotte de Witte','Amelie Lens','ANNA'] },
-  'Paco Osuna':            { g:'g4', ref:['Richie Hawtin','Joachim Spieth','Carl Cox'] },
-};
-
-// Spotify IDs dos headliners para exclusão
-const HEADLINER_SPOTIFY_IDS = {
-  'Black Coffee':'6wMr4zKPrrR0UVz08WtUWc',
-  'Bedouin':'1Ioqw10Hy5F1OIJb4cXbpY',
-  'Lee Burridge':'1RNm0r3ViSTQNIFCMUhM7a',
-  'BLOND:ISH':'7EQFN8y2l9UNJTkVj24DRc',
-  'Damian Lazarus':'7rPVEECPRcpxP4XS1fkHgP',
-  'Satori':'7fIvjotigTGWqjIz6EP1i5',
-  'Ahmed Spins':'4p9z80FZZXNJUmjlFCKxpb',
-  'Hernán Cattáneo':'4k1O3e7MMAm2V6xqQcFGKj',
-  'Guy J':'0Dl8j8IPLZ0EGRBizZfDdl',
-  'Sasha':'2SHyvQHTbMoFVT5s5LkS38',
-  'John Digweed':'22KZUGygOLPwWIf5ZqNjUy',
-  'Keinemusik':'5WPNBzIqUlFLbPP1kKXmjA',
-  'Kerri Chandler':'51tYDGpHPVBSmVjirw3lFy',
-  'Honey Dijon':'3yGSRjp9aYZeWuLKJSmGgV',
-  'Mochakk':'7dqFBBfQMGQdXaREVHj1i8',
-  'Dennis Cruz':'4KBFIJUrMjOBBFkJbWxalx',
-  'Seth Troxler':'6yOXrJMd4TxvDUFpFu8PmS',
-  'Green Velvet':'3lNFl1OVzRHJJcBEWMvLBX',
-  'The Martinez Brothers':'41Q0HrwWBtuUkJc9CfWFkF',
-  'Vintage Culture':'5BcAKTbp20cv7tC5VqPFoC',
-  'Peggy Gou':'05oH07COxkXKIMt6mIPRee',
-  'Jamie Jones':'3Jv8mZcJ8f9p1Y2e4IvpzD',
-  'Tale Of Us':'0F4iAEMFdSGR5qFOGk2Bvg',
-  'ARTBAT':'3zy26r3t4BOlwBGbFxmYlG',
-  'Anyma':'0bjTNsHtWFGVoZ8yvv1y7k',
-  'Adriatique':'7aS8K2M1qBMlPEeTmImEYF',
-  'HOSH':'2EDImBgFnLFQRe9vkfV79h',
-  'Maceo Plex':'7JWvBVnGEX6pHw4grQ3cJI',
-  'Eric Prydz':'4u7Z9cqxWiCNnBaS2tBhiS',
-  'ANNA':'3gqTLkCGKp5mFk7FuJKSSq',
-  'Charlotte de Witte':'5O30s0HaU7PMmlFAeWtLrM',
-  'Amelie Lens':'5UYjFjdCGnIjFPAMPXdFsj',
-  'Carl Cox':'3fbDiqSGJAnd0bRBpN5xWC',
-  'Richie Hawtin':'1PKbMSBEuS2vGWf8ZMXQNS',
-  'Adam Beyer':'7wX4BaEhFMRJ5sXdCMKF8g',
-  'Paco Osuna':'3MmOalERgHDf12kSLdSYRo',
+  // G1
+  'Kerri Chandler':        'g1',
+  'Honey Dijon':           'g1',
+  'Mochakk':               'g1',
+  'Dennis Cruz':           'g1',
+  'Seth Troxler':          'g1',
+  'The Martinez Brothers': 'g1',
+  'Jamie Jones':           'g1',
+  'Danny Tenaglia':        'g1',
+  'Green Velvet':          'g1',
+  'Fouk':                  'g1',
+  'Franck Roger':          'g1',
+  'Vintage Culture':       'g1',
+  'Peggy Gou':             'g1',
+  // G2
+  'Hernán Cattáneo':       'g2',
+  'Nox Vahn':              'g2',
+  'Guy J':                 'g2',
+  'Sasha':                 'g2',
+  'John Digweed':          'g2',
+  'Sam Shure':             'g2',
+  // G3
+  'Tale Of Us':            'g3',
+  'ARTBAT':                'g3',
+  'Anyma':                 'g3',
+  'Adriatique':            'g3',
+  'HOSH':                  'g3',
+  'Maceo Plex':            'g3',
+  'Mita Gami':             'g3',
+  'Trentemøller':          'g3',
+  'Eric Prydz':            'g3',
+  'Axwell':                'g3',
+  // G4
+  'ANNA':                  'g4',
+  'Charlotte de Witte':    'g4',
+  'Amelie Lens':           'g4',
+  'Richie Hawtin':         'g4',
+  'Carl Cox':              'g4',
+  'Adam Beyer':            'g4',
+  'Paco Osuna':            'g4',
+  'Marco Carola':          'g4',
+  // G5
+  'Reinier Zonneveld':     'g5',
+  // G6
+  'Black Coffee':          'g6',
+  'Adam Port':             'g6',
+  'Bedouin':               'g6',
+  'Damian Lazarus':        'g6',
+  'Ahmed Spins':           'g6',
+  'BLOND:ISH':             'g6',
+  'Keinemusik':            'g6',
+  'Rampa':                 'g6',
+  '&ME':                   'g6',
+  // G7
+  'Satori':                'g7',
+  'Lee Burridge':          'g7',
+  'Mauro Masi':            'g7',
 };
 
 // BPM por slot
 const SLOT_BPM = {
-  slot1: { min:108, max:116 },
-  slot2: { min:114, max:120 },
-  slot3: { min:118, max:123 },
-  slot4: { min:122, max:127 },
-  slot5: { min:116, max:122 },
+  slot1: { min: 108, max: 116 },
+  slot2: { min: 114, max: 120 },
+  slot3: { min: 118, max: 123 },
+  slot4: { min: 122, max: 127 },
+  slot5: { min: 116, max: 122 },
 };
 
 // ─────────────────────────────────────────────────────────────────
@@ -169,26 +178,38 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const { artist, id, search, headliner, slot, days } = req.query;
+  const { artist, id, search, headliner, slot, days, albums } = req.query;
 
   try {
     const token = await getToken();
 
-    if (!artist && !id && !search && !headliner)
+    // Só token
+    if (!artist && !id && !search && !headliner && !albums)
       return res.status(200).json({ access_token: token });
+
+    // Debug: albums de um artista
+    if (albums) {
+      const r = await fetch(
+        `https://api.spotify.com/v1/artists/${albums}/albums?include_groups=single,album&limit=10`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const d = await r.json();
+      return res.status(200).json({
+        status: r.status,
+        artist: albums,
+        total: d.total || 0,
+        items: (d.items || []).map(a => ({
+          name: a.name,
+          date: a.release_date,
+          id: a.id,
+          type: a.album_type,
+        })),
+      });
+    }
 
     if (id)        return res.status(200).json(await fetchArtistById(token, id));
     if (artist)    return res.status(200).json(await searchArtist(token, artist));
     if (search)    return res.status(200).json(await searchFree(token, search));
-    if (req.query.albums) {
-      // Debug: ver albums de um artista
-      const r = await fetch(
-        `https://api.spotify.com/v1/artists/${req.query.albums}/albums?include_groups=single,album&limit=10`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const d = await r.json();
-      return res.status(200).json({ status: r.status, items: (d.items||[]).map(a=>({name:a.name,date:a.release_date,id:a.id})) });
-    }
     if (headliner) return res.status(200).json(
       await fetchNewTracksForHeadliner(token, headliner, slot || 'slot2', parseInt(days) || 90)
     );
@@ -272,45 +293,33 @@ function formatArtist(a) {
 
 // ─────────────────────────────────────────────────────────────────
 // ★ TRACKS NOVAS POR HEADLINER
-// Busca releases recentes dos artistas do mesmo grupo
-// Filtra BPM pelo slot + exclui o headliner
 // ─────────────────────────────────────────────────────────────────
 async function fetchNewTracksForHeadliner(token, headlinerName, slot, days) {
-  // Normaliza nome
+  // Detecta grupo
   const hlKey = Object.keys(HEADLINER_MAP).find(
     k => k.toLowerCase() === headlinerName.toLowerCase()
   );
-  const hlData  = hlKey ? HEADLINER_MAP[hlKey] : null;
-  const group   = hlData?.g || detectGroup(headlinerName) || 'g2';
-  const refNames = hlData?.ref || [];
+  const group = hlKey ? HEADLINER_MAP[hlKey] : detectGroup(headlinerName);
 
   // Artistas do grupo para buscar releases
-  const groupArtists = GROUP_ARTISTS[group] || GROUP_ARTISTS.g2;
+  const groupArtists = GROUP_ARTISTS[group] || GROUP_ARTISTS.g6;
 
-  // Prioriza artistas de referência do headliner
-  const refArtists = groupArtists.filter(a =>
-    refNames.some(r => r.toLowerCase() === a.name.toLowerCase())
-  );
-  const otherArtists = groupArtists.filter(a =>
-    !refNames.some(r => r.toLowerCase() === a.name.toLowerCase())
-  );
-  const artistsToSearch = [...refArtists, ...otherArtists].slice(0, 12);
+  // Exclui o próprio headliner da busca
+  const artistsToSearch = groupArtists.filter(
+    a => a.name.toLowerCase() !== headlinerName.toLowerCase()
+  ).slice(0, 10);
 
-  // BPM e período
   const bpmRange  = SLOT_BPM[slot] || SLOT_BPM.slot2;
   const sinceDate = new Date();
   sinceDate.setDate(sinceDate.getDate() - days);
 
-  // ID do headliner para exclusão
-  const hlSpotifyId = HEADLINER_SPOTIFY_IDS[hlKey] || null;
-
-  // Busca releases recentes em paralelo
-  const tracks = await fetchRecentReleases(token, artistsToSearch, bpmRange, sinceDate, hlSpotifyId, headlinerName);
+  const tracks = await fetchRecentReleases(token, artistsToSearch, bpmRange, sinceDate, headlinerName);
 
   return {
     headliner: headlinerName,
     group,
-    refArtists: refNames.slice(0, 5),
+    groupName: GROUP_NAMES[group] || group,
+    artistsSearched: artistsToSearch.map(a => a.name),
     slot,
     bpmRange,
     days,
@@ -320,18 +329,17 @@ async function fetchNewTracksForHeadliner(token, headlinerName, slot, days) {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// BUSCA RELEASES RECENTES dos artistas do grupo
+// BUSCA RELEASES RECENTES
 // ─────────────────────────────────────────────────────────────────
-async function fetchRecentReleases(token, artists, bpmRange, sinceDate, excludeId, excludeName) {
+async function fetchRecentReleases(token, artists, bpmRange, sinceDate, excludeName) {
   const allTracks = [];
-  const seen      = new Set();
+  const seen = new Set();
 
-  // Busca álbuns/singles recentes de cada artista
-  const albumResults = await Promise.allSettled(
+  const results = await Promise.allSettled(
     artists.map(a => getArtistRecentTracks(token, a.id, sinceDate))
   );
 
-  for (const result of albumResults) {
+  for (const result of results) {
     if (result.status !== 'fulfilled') continue;
     for (const track of (result.value || [])) {
       const key = `${track.name}|${track.artists?.[0]?.name}`;
@@ -339,26 +347,24 @@ async function fetchRecentReleases(token, artists, bpmRange, sinceDate, excludeI
       seen.add(key);
 
       // Exclui o headliner
-      const artistIds   = (track.artists || []).map(a => a.id);
-      const artistNames = (track.artists || []).map(a => a.name.toLowerCase());
-      if (excludeId && artistIds.includes(excludeId)) continue;
-      if (excludeName && artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
-
+      if (excludeName) {
+        const names = (track.artists || []).map(a => a.name.toLowerCase());
+        if (names.some(n => n.includes(excludeName.toLowerCase()))) continue;
+      }
       allTracks.push(track);
     }
   }
 
   if (!allTracks.length) return [];
 
-  // Busca audio features para filtrar BPM
+  // Audio features para BPM
   const withFeatures = await getAudioFeatures(token, allTracks.slice(0, 60));
 
-  // Filtra por BPM (±3 de tolerância)
+  // Filtra BPM
   const filtered = withFeatures.filter(t =>
     t.tempo && t.tempo >= bpmRange.min - 3 && t.tempo <= bpmRange.max + 3
   );
 
-  // Ordena por mais recente
   filtered.sort((a, b) => new Date(b.releaseDate || 0) - new Date(a.releaseDate || 0));
 
   return filtered.slice(0, 20).map(t => ({
@@ -379,35 +385,21 @@ async function fetchRecentReleases(token, artists, bpmRange, sinceDate, excludeI
 
 async function getArtistRecentTracks(token, artistId, sinceDate) {
   try {
-    // Pega albums/singles — sem filtro de mercado para maximizar resultados
     const r = await fetch(
       `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=single,album&limit=20`,
       { headers: { 'Authorization': `Bearer ${token}` } }
     );
-    if (!r.ok) {
-      console.error(`Albums fetch failed for ${artistId}: ${r.status}`);
-      return [];
-    }
+    if (!r.ok) return [];
     const d = await r.json();
     const allAlbums = d.items || [];
-
     if (!allAlbums.length) return [];
 
-    // Tenta filtrar por data — se vazio, pega os 5 mais recentes sem filtro
-    let targetAlbums = allAlbums.filter(album => {
-      if (!album.release_date) return false;
-      const releaseDate = new Date(album.release_date);
-      return releaseDate >= sinceDate;
-    });
+    // Filtra por data — se vazio, usa os 3 mais recentes
+    let targets = allAlbums.filter(a => a.release_date && new Date(a.release_date) >= sinceDate);
+    if (!targets.length) targets = allAlbums.slice(0, 3);
 
-    // Fallback: sem filtro de data, pega os mais recentes
-    if (!targetAlbums.length) {
-      targetAlbums = allAlbums.slice(0, 5);
-    }
-
-    // Pega tracks de cada album
     const trackResults = await Promise.allSettled(
-      targetAlbums.slice(0, 5).map(album => getAlbumTracks(token, album))
+      targets.slice(0, 5).map(album => getAlbumTracks(token, album))
     );
 
     const tracks = [];
@@ -415,9 +407,7 @@ async function getArtistRecentTracks(token, artistId, sinceDate) {
       if (res.status === 'fulfilled') tracks.push(...(res.value || []));
     }
     return tracks;
-
   } catch(e) {
-    console.error(`getArtistRecentTracks error for ${artistId}:`, e.message);
     return [];
   }
 }
@@ -444,7 +434,7 @@ async function getAudioFeatures(token, tracks) {
   if (!tracks.length) return [];
   try {
     const ids = tracks.map(t => t.id).filter(Boolean).join(',');
-    const r   = await fetch(
+    const r = await fetch(
       `https://api.spotify.com/v1/audio-features?ids=${ids}`,
       { headers: { 'Authorization': `Bearer ${token}` } }
     );
@@ -466,17 +456,13 @@ async function getAudioFeatures(token, tracks) {
 // ─────────────────────────────────────────────────────────────────
 function detectGroup(name) {
   if (!name) return 'g1';
-  const n  = name.toLowerCase();
-  const G2 = ['black coffee','bedouin','lee burridge','blond:ish','damian lazarus',
-               'satori','ahmed spins','hernán cattáneo','guy j','sasha','john digweed',
-               'fmenezs','keinemusik','rampa','adam port','&me'];
-  const G3 = ['tale of us','artbat','anyma','adriatique','hosh','maceo plex',
-               'mita gami','trentemøller','xinobi','eric prydz','axwell'];
-  const G4 = ['anna','richie hawtin','charlotte de witte','amelie lens','carl cox',
-               'paco osuna','adam beyer','stef mendesidis'];
-  if (G2.some(d => n.includes(d))) return 'g2';
-  if (G3.some(d => n.includes(d))) return 'g3';
-  if (G4.some(d => n.includes(d))) return 'g4';
+  const n = name.toLowerCase();
+  if (['hernán cattáneo','nox vahn','guy j','sasha','john digweed','sam shure','hraach'].some(d => n.includes(d))) return 'g2';
+  if (['tale of us','artbat','anyma','adriatique','hosh','maceo plex','mita gami','trentemøller','eric prydz','axwell'].some(d => n.includes(d))) return 'g3';
+  if (['anna','richie hawtin','charlotte de witte','amelie lens','carl cox','paco osuna','adam beyer','joachim spieth','amotik'].some(d => n.includes(d))) return 'g4';
+  if (['reinier zonneveld','hard techno'].some(d => n.includes(d))) return 'g5';
+  if (['black coffee','adam port','bedouin','damian lazarus','ahmed spins','blond:ish','keinemusik','rampa','&me'].some(d => n.includes(d))) return 'g6';
+  if (['satori','lee burridge','mauro masi'].some(d => n.includes(d))) return 'g7';
   return 'g1';
 }
 
@@ -490,5 +476,5 @@ function formatDuration(ms) {
   if (!ms) return '';
   const min = Math.floor(ms / 60000);
   const sec = Math.floor((ms % 60000) / 1000);
-  return `${min}:${sec.toString().padStart(2,'0')}`;
+  return `${min}:${sec.toString().padStart(2, '0')}`;
 }
