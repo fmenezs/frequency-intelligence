@@ -130,13 +130,47 @@ const HEADLINER_MAP = {
 
 // ── QUERIES DE BUSCA POR GRUPO ────────────────────────────────────
 const GROUP_QUERIES = {
-  g1: ['warm up tech house underground','deep house opening set','house music warm up dj set','deep tech house playlist 2024','soulful deep house underground'],
-  g2: ['progressive house warm up set','progressive house underground 2024','melodic progressive house deep','hernan cattaneo warm up style'],
-  g3: ['melodic techno warm up','afterlife melodic techno','indie dance melodic underground 2024','tale of us style warm up'],
-  g4: ['techno raw warm up set','peak time techno playlist','dark techno underground','industrial techno 2024'],
-  g5: ['hard techno warm up','hard techno underground set 2024'],
-  g6: ['afro house warm up','afro house melodic underground','keinemusik style playlist','black coffee warm up style 2024'],
-  g7: ['organic house warm up','all day i dream organic house','organic house ethno deep 2024','satori organic house style'],
+  g1: [
+    'tech house underground 2024',
+    'deep house minimal groove',
+    'deep tech house dj',
+    'soulful deep house electronic',
+    'house music underground groove',
+  ],
+  g2: [
+    'progressive house melodic 2024',
+    'progressive deep house emotional',
+    'melodic progressive electronic',
+    'progressive house underground dj',
+  ],
+  g3: [
+    'melodic techno afterlife 2024',
+    'indie dance electronic melodic',
+    'melodic techno underground emotional',
+    'afterlife records electronic',
+  ],
+  g4: [
+    'raw techno underground 2024',
+    'dark techno industrial electronic',
+    'peak time techno dj',
+    'techno underground minimal raw',
+  ],
+  g5: [
+    'hard techno underground 2024',
+    'hard techno electronic filth on acid',
+  ],
+  g6: [
+    'afro house electronic 2024',
+    'afro house deep melodic underground',
+    'afro house keinemusik electronic',
+    'afro deep house black coffee style',
+  ],
+  g7: [
+    'organic house electronic 2024',
+    'organic house all day i dream',
+    'organic deep house ethno',
+    'organic house satori electronic',
+  ],
 };
 
 // ── ARTISTAS POR GRUPO (IDs verificados) ─────────────────────────
@@ -205,7 +239,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '3.1');
+  res.setHeader('X-FI-Version', '3.2');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -249,7 +283,7 @@ export default async function handler(req, res) {
     // ── Fallback: só retorna versão (nunca mais retorna access_token sozinho) ──
     return res.status(200).json({
       service: 'Frequency Intelligence Spotify API',
-      version: '3.1',
+      version: '3.2',
       status: 'online',
       message: 'Use ?headliner=NOME para gerar tracks ou ?test=g6 para diagnóstico',
     });
@@ -347,59 +381,48 @@ async function generateTracks(token, { headliner, slot, days, yearFrom, yearTo }
   };
 }
 
-// ── BUSCA POR PLAYLISTS ──────────────────────────────────────────
+// ── BUSCA DIRETA DE TRACKS (mais confiável que playlists) ───────
 async function getPlaylistTracks(token, group, excludeName, yearFrom, yearTo) {
   const queries = GROUP_QUERIES[group] || GROUP_QUERIES.g6;
-  const picked = shuffle(queries).slice(0, 2);
+  const picked = shuffle(queries).slice(0, 3);
   const allTracks = [];
   const seen = new Set();
 
   for (const query of picked) {
     try {
-      console.log(`[FI] Searching playlists: "${query}"`);
+      console.log(`[FI] Track search: "${query}"`);
+      // Busca direta de tracks — endpoint mais confiável
       const r = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=5&market=BR`,
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=20&market=BR`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!r.ok) { console.log(`[FI] Playlist search ${r.status}`); continue; }
-      const d = await r.json();
-      const playlists = (d.playlists?.items || []).filter(Boolean).slice(0, 3);
-      console.log(`[FI] Playlists found: ${playlists.length}`);
-
-      for (const pl of playlists) {
-        try {
-          // Sem fields= para garantir resposta completa
-          const pr = await fetch(
-            `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=50&market=BR`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (!pr.ok) {
-            console.log(`[FI] Playlist tracks ${pr.status} for ${pl.id}`);
-            continue;
-          }
-          const pd = await pr.json();
-          console.log(`[FI] Playlist "${pl.name}" items: ${pd.items?.length || 0}`);
-
-          for (const item of pd.items || []) {
-            const t = item?.track;
-            if (!t?.id || t.is_local) continue;
-            const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
-            if (seen.has(key)) continue;
-            seen.add(key);
-            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
-            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
-            if (yearFrom && yearTo) {
-              const y = parseInt((t.album?.release_date || '').split('-')[0]);
-              if (y && (y < yearFrom || y > yearTo)) continue;
-            }
-            allTracks.push(rawTrack(t, t.album, 'playlist'));
-          }
-        } catch (e) { console.log('[FI] Playlist tracks err:', e.message); }
+      if (!r.ok) {
+        console.log(`[FI] Track search failed: ${r.status}`);
+        continue;
       }
-    } catch (e) { console.log('[FI] Playlist search err:', e.message); }
+      const d = await r.json();
+      const tracks = (d.tracks?.items || []).filter(Boolean);
+      console.log(`[FI] Track search "${query}": ${tracks.length} results`);
+
+      for (const t of tracks) {
+        if (!t?.id || t.is_local) continue;
+        const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
+        if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
+        if (yearFrom && yearTo) {
+          const y = parseInt((t.album?.release_date || '').split('-')[0]);
+          if (y && (y < yearFrom || y > yearTo)) continue;
+        }
+        allTracks.push(rawTrack(t, t.album, 'search'));
+      }
+    } catch (e) {
+      console.log('[FI] Track search err:', e.message);
+    }
   }
 
-  console.log(`[FI] getPlaylistTracks total: ${allTracks.length}`);
+  console.log(`[FI] getPlaylistTracks (search) total: ${allTracks.length}`);
   return allTracks;
 }
 
@@ -459,46 +482,14 @@ async function getArtistTracks(token, group, excludeName, days, yearFrom, yearTo
   return allTracks;
 }
 
-// ── FILTRO POR BPM COM AUDIO FEATURES ───────────────────────────
+// ── FILTRO (audio-features deprecado desde nov/2024 — retorna tracks direto) ──
 async function filterByBpm(token, tracks, bpmRange) {
+  // Nota: /audio-features foi deprecado pelo Spotify para novos apps (nov/2024).
+  // Retornamos as tracks sem filtro de BPM — o BPM virá null do Spotify.
+  // O banco curado do FMENEZS já tem BPM correto para os grupos.
   if (!tracks.length) return [];
-  const withFeatures = [];
-
-  // Processa em batches de 50
-  for (let i = 0; i < tracks.length; i += 50) {
-    const batch = tracks.slice(i, i + 50);
-    const ids = batch.map(t => t.id).filter(Boolean).join(',');
-    if (!ids) { withFeatures.push(...batch); continue; }
-
-    try {
-      const r = await fetch(
-        `https://api.spotify.com/v1/audio-features?ids=${ids}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!r.ok) { withFeatures.push(...batch); continue; }
-      const d = await r.json();
-      const featMap = {};
-      (d.audio_features || []).forEach(f => { if (f) featMap[f.id] = f; });
-      batch.forEach(t => {
-        const feat = featMap[t.id];
-        withFeatures.push({
-          ...t,
-          bpm: feat?.tempo ? Math.round(feat.tempo) : null,
-          key: feat ? formatKey(feat.key, feat.mode) : null,
-        });
-      });
-    } catch (e) {
-      withFeatures.push(...batch);
-    }
-  }
-
-  const inBpm = withFeatures.filter(t => t.bpm && t.bpm >= bpmRange.min - 3 && t.bpm <= bpmRange.max + 3);
-  const noBpm = withFeatures.filter(t => !t.bpm);
-  console.log(`[FI] filterByBpm: total=${withFeatures.length} inBpm=${inBpm.length} noBpm=${noBpm.length}`);
-
-  // Se tiver suficientes com BPM correto, usa só esses. Senão completa com sem BPM.
-  if (inBpm.length >= 6) return inBpm;
-  return [...inBpm, ...noBpm.slice(0, Math.max(0, 8 - inBpm.length))];
+  console.log(`[FI] filterByBpm: passando ${tracks.length} tracks sem filtro BPM (audio-features deprecated)`);
+  return tracks;
 }
 
 // ── BUSCA DE ARTISTAS (wizard) ───────────────────────────────────
@@ -563,7 +554,7 @@ async function runTest(token, group) {
   }
 
   return {
-    version: '3.1',
+    version: '3.2',
     group: grp,
     query,
     playlistsFound: playlists.length,
