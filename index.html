@@ -3,1820 +3,966 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FMENEZS ◆ Frequency Intelligence</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+  <title>CUELAB</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* ── RESET & BASE ─────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080812;--surface:#0f0f1e;--surface2:#14142a;--surface3:#1a1a35;
+  --border:#252540;--border2:#303055;
+  --accent:#6d28d9;--accent2:#8b5cf6;--accent3:#a78bfa;
+  --green:#10b981;--green2:#34d399;
+  --cyan:#0891b2;--cyan2:#22d3ee;
+  --amber:#d97706;--amber2:#fbbf24;
+  --red:#dc2626;--text:#e2e8f0;--text2:#94a3b8;--text3:#4b5563;--text4:#1f2937;
+  --font:'Inter',sans-serif;--mono:'Space Mono',monospace;
+}
+html{background:var(--bg);min-height:100vh}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+.app{max-width:680px;margin:0 auto;padding:32px 24px 80px}
 
-    :root {
-      --bg: #0d0d1a;
-      --surface: #11111f;
-      --surface2: #16162a;
-      --surface3: #1e1e38;
-      --border: #2a2a4a;
-      --border2: #3a3a5a;
-      --accent: #7c3aed;
-      --accent2: #a855f7;
-      --accent3: #c084fc;
-      --green: #22c55e;
-      --green2: #4ade80;
-      --cyan: #06b6d4;
-      --amber: #f59e0b;
-      --red: #ef4444;
-      --text: #f1f5f9;
-      --text2: #94a3b8;
-      --text3: #475569;
-      --text4: #334155;
-      --pink: #f472b6;
-      --violet: #818cf8;
-      --orange: #fb923c;
-    }
+.header{text-align:center;padding:28px 24px 24px;border:1px solid var(--border2);background:#0a0a18;margin-bottom:32px;position:relative;overflow:hidden}
+.header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent2),transparent)}
+.header-logo{font-family:var(--mono);font-size:22px;letter-spacing:6px;color:var(--accent3);margin-bottom:6px;font-weight:700}
+.header-sub{font-size:11px;color:var(--text3);letter-spacing:2px;font-family:var(--mono)}
+.cursor{display:inline-block;width:2px;height:11px;background:var(--accent2);animation:blink .9s step-end infinite;vertical-align:middle;margin-left:2px}
+@keyframes blink{50%{opacity:0}}
 
-    html { background: var(--bg); min-height: 100vh; }
+.progress{margin-bottom:28px}
+.progress-bar{height:2px;background:var(--surface3);margin-bottom:12px}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s cubic-bezier(.4,0,.2,1)}
+.progress-steps{display:flex;justify-content:space-between}
+.ps{font-size:9px;color:var(--text3);letter-spacing:.5px;font-family:var(--mono);transition:color .3s}
+.ps.done{color:var(--accent)}.ps.active{color:var(--accent2)}
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Press Start 2P', monospace;
-      min-height: 100vh;
-      padding: 0;
-    }
+.screen{display:none;animation:fadeUp .22s ease}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-    /* ── SCANLINES ─────────────────────────────────────── */
-    body::after {
-      content: '';
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,.06) 2px,
-        rgba(0,0,0,.06) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }
+.step-num{font-family:var(--mono);font-size:9px;color:var(--text3);margin-bottom:8px;letter-spacing:.5px}
+.step-cat{font-size:11px;color:var(--accent2);margin-bottom:14px;display:flex;align-items:center;gap:6px;font-family:var(--mono);letter-spacing:1px}
+.step-cat::before{content:'›';font-size:14px;color:var(--accent)}
+.q-title{font-size:22px;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:10px}
+.q-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.7}
 
-    /* ── CONTAINER ─────────────────────────────────────── */
-    .app {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 24px 20px 60px;
-    }
+.txt-input{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:15px 18px;font-family:var(--font);font-size:15px;font-weight:500;outline:none;transition:border-color .2s;border-radius:2px}
+.txt-input:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(139,92,246,.1)}
+.txt-input::placeholder{color:var(--text3)}
 
-    /* ── LOGO ──────────────────────────────────────────── */
-    .logo {
-      text-align: center;
-      padding: 24px 20px;
-      border: 2px solid var(--accent);
-      background: linear-gradient(180deg, #0d0d2e 0%, var(--bg) 100%);
-      margin-bottom: 28px;
-      position: relative;
-      overflow: hidden;
-    }
-    .logo::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 40%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(124,58,237,.2), transparent);
-      animation: sweep 3s linear infinite;
-    }
-    @keyframes sweep { to { left: 220%; } }
+.search-outer{position:relative;margin-bottom:10px}
+.search-ico{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;pointer-events:none;transition:opacity .15s}
+.search-ico.hidden{opacity:0}
+.search-inner{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:14px 16px 14px 46px;font-family:var(--font);font-size:14px;font-weight:500;outline:none;transition:border-color .2s;border-radius:2px}
+.search-inner:focus{border-color:var(--accent2);box-shadow:0 0 0 2px rgba(139,92,246,.1)}
+.search-inner::placeholder{color:var(--text3)}
 
-    .logo-title {
-      font-size: 15px;
-      letter-spacing: 3px;
-      color: var(--accent2);
-      text-shadow: 0 0 16px var(--accent2), 0 0 40px rgba(168,85,247,.3);
-      margin-bottom: 12px;
-      line-height: 1.8;
-    }
-    .logo-sub {
-      font-size: 8px;
-      letter-spacing: 2px;
-      color: var(--text3);
-    }
-    .blink { animation: blink .9s step-end infinite; }
-    @keyframes blink { 50% { opacity: 0; } }
+.drop{background:var(--surface2);border:1px solid var(--accent);border-top:none;display:none;max-height:320px;overflow-y:auto;box-shadow:0 12px 32px rgba(0,0,0,.7);border-radius:0 0 4px 4px}
+.dj-row{padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;transition:background .1s}
+.dj-row:hover{background:var(--surface3)}.dj-row:last-child{border-bottom:none}
+.av-wrap{width:44px;height:44px;border-radius:50%;flex-shrink:0;position:relative}
+.av-img{width:44px;height:44px;border-radius:50%;object-fit:cover;position:absolute;top:0;left:0;display:none;border:2px solid var(--border2)}
+.av-img.loaded{display:block}
+.av-fb{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:1px solid;position:absolute;top:0;left:0;font-family:var(--mono)}
+.av-fb.hidden{opacity:0}
+.dj-info{flex:1;min-width:0}
+.dj-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px}
+.dj-genre{font-size:11px;color:var(--text2)}
+.dj-bpm-tag{font-size:9px;padding:3px 10px;border:1px solid;border-radius:2px;white-space:nowrap;flex-shrink:0;font-family:var(--mono)}
+.no-result{padding:14px 16px;font-size:12px;color:var(--text2)}
+.no-result strong{color:var(--text)}
 
-    /* ── PROGRESS ──────────────────────────────────────── */
-    .progress {
-      margin-bottom: 32px;
-    }
-    .progress-bar {
-      height: 4px;
-      background: var(--surface3);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width .5s cubic-bezier(.4,0,.2,1);
-      box-shadow: 0 0 10px rgba(168,85,247,.5);
-    }
-    .progress-steps {
-      display: flex;
-      justify-content: space-between;
-    }
-    .progress-step {
-      font-size: 7px;
-      color: var(--text4);
-      transition: color .3s;
-      text-align: center;
-      letter-spacing: .5px;
-    }
-    .progress-step.done { color: var(--accent); }
-    .progress-step.active {
-      color: var(--accent2);
-      text-shadow: 0 0 8px rgba(168,85,247,.5);
-    }
+.chips{min-height:48px;background:var(--surface);border:1px solid var(--border);padding:10px 12px;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center;border-radius:2px}
+.chip{display:flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;border:1px solid var(--accent);color:var(--accent3);background:rgba(109,40,217,.1);cursor:pointer;font-size:12px;transition:all .1s;border-radius:20px;font-weight:500}
+.chip:hover{border-color:var(--red);color:#fca5a5;background:rgba(220,38,38,.1)}
+.chip-av{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.chip-fb{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;flex-shrink:0;border:1px solid;font-family:var(--mono)}
+.chips-empty{font-size:12px;color:var(--text3)}
 
-    /* ── SCREENS ───────────────────────────────────────── */
-    .screen { display: none; animation: fadeIn .25s ease; }
-    .screen.active { display: block; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: none; }
-    }
+.man-toggle{font-size:11px;color:var(--text2);background:none;border:none;cursor:pointer;padding:6px 0;transition:color .15s}
+.man-toggle:hover{color:var(--accent2)}
+.man-row{display:flex;gap:8px;margin-top:10px}
+.man-in{flex:1;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:10px 12px;font-family:var(--font);font-size:13px;outline:none;border-radius:2px}
+.man-in:focus{border-color:var(--accent2)}
+.man-sel{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:9px 12px;font-family:var(--font);font-size:11px;outline:none;cursor:pointer;border-radius:2px}
+.man-add{background:var(--accent);color:#fff;border:none;padding:9px 14px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;border-radius:2px;transition:background .15s}
+.man-add:hover{background:var(--accent2)}
 
-    /* ── STEP META ─────────────────────────────────────── */
-    .step-num {
-      font-size: 8px;
-      color: var(--text3);
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-    .step-cat {
-      font-size: 11px;
-      color: var(--accent);
-      margin-bottom: 18px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .step-cat::before {
-      content: '▶';
-      font-size: 9px;
-      animation: blink 1.2s step-end infinite;
-    }
+.options{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.opt{background:var(--surface);border:1px solid var(--border);padding:18px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .12s;border-radius:2px;position:relative}
+.opt::before{content:'';position:absolute;left:0;top:0;width:2px;height:100%;background:var(--accent2);opacity:0;transition:opacity .12s;border-radius:2px 0 0 2px}
+.opt:hover{border-color:var(--border2);background:var(--surface2)}
+.opt:hover::before{opacity:1}
+.opt.sel{border-color:var(--green);background:rgba(16,185,129,.05)}
+.opt.sel::before{background:var(--green);opacity:1}
+.opt.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.opt-left{}
+.opt-name{font-size:14px;font-weight:500;color:var(--text);margin-bottom:5px}
+.opt.sel .opt-name{color:var(--green2)}
+.opt-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.opt.sel .opt-desc{color:var(--green)}
+.opt-right{text-align:right;flex-shrink:0;margin-left:16px}
+.opt-tag{font-size:10px;padding:5px 12px;border:1px solid;border-radius:2px;white-space:nowrap;font-family:var(--mono);line-height:1.6}
+.opt-bpm{font-size:9px;color:var(--text3);margin-top:4px;font-family:var(--mono)}
+.mvp-badge{font-size:8px;padding:2px 7px;background:var(--surface3);color:var(--text3);border-radius:10px;margin-top:4px;display:inline-block;font-family:var(--mono)}
+.festival-note{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.3);padding:12px 14px;border-radius:4px;font-size:12px;color:#fbbf24;line-height:1.6;margin-top:-8px;margin-bottom:16px;display:none}
+.festival-note.visible{display:block}
 
-    /* ── QUESTION ──────────────────────────────────────── */
-    .q-title {
-      font-size: 22px;
-      color: var(--text);
-      line-height: 1.7;
-      margin-bottom: 14px;
-      letter-spacing: .3px;
-    }
-    .q-sub {
-      font-size: 11px;
-      color: var(--text2);
-      margin-bottom: 28px;
-      line-height: 2.3;
-    }
+.nav{display:flex;gap:10px;margin-top:24px}
+.btn-next{flex:1;background:var(--accent);border:none;color:#fff;padding:15px 18px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.2px;transition:all .12s;border-radius:2px}
+.btn-next:hover:not(:disabled){background:var(--accent2)}
+.btn-next:disabled{opacity:.3;cursor:not-allowed}
+.btn-back{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:15px 16px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .12s;border-radius:2px}
+.btn-back:hover{border-color:var(--text2);color:var(--text)}
+.btn-gen{width:100%;background:transparent;border:1px solid var(--green);color:var(--green);padding:16px;font-family:var(--mono);font-size:13px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .18s;margin-top:8px;border-radius:2px}
+.btn-gen:hover{background:rgba(16,185,129,.07)}
 
-    /* ── TEXT INPUT ────────────────────────────────────── */
-    .text-input {
-      width: 100%;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      color: var(--text);
-      padding: 18px 22px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 14px;
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
-      letter-spacing: 1px;
-    }
-    .text-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 16px rgba(124,58,237,.25);
-    }
-    .text-input::placeholder {
-      color: var(--text4);
-      font-size: 12px;
-    }
+.rev{background:var(--surface);border:1px solid var(--border);padding:18px 20px;margin-bottom:18px;border-radius:2px}
+.rev-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rev-lbl{font-size:9px;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--mono)}
+.rev-val{font-size:13px;color:var(--text);font-weight:500;line-height:1.6}
+.rev-bpm{font-size:26px;font-weight:700;color:var(--green2);font-family:var(--mono)}
 
-    /* ── SEARCH ────────────────────────────────────────── */
-    .search-wrap { position: relative; margin-bottom: 10px; }
-    .search-icon {
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text3);
-      font-size: 20px;
-      pointer-events: none;
-      transition: opacity .15s;
-    }
-    .search-icon.hidden { opacity: 0; }
-    .search-input {
-      width: 100%;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      color: var(--text);
-      padding: 18px 22px 18px 56px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 12px;
-      outline: none;
-      transition: border-color .2s, box-shadow .2s;
-      letter-spacing: 1px;
-    }
-    .search-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 16px rgba(124,58,237,.2);
-    }
-    .search-input::placeholder {
-      color: var(--text4);
-      font-size: 10px;
-    }
+.results{margin-top:12px}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border2),transparent);margin:24px 0}
+.res-title{font-size:15px;font-weight:700;color:var(--accent3);margin-bottom:6px}
+.res-ctx{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.8}
+.phase-hdr{font-size:10px;font-weight:600;margin:16px 0 8px;display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid;font-family:var(--mono);letter-spacing:.5px}
+.ph-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.track-card{background:var(--surface);border-left:2px solid;padding:12px 16px;margin-bottom:5px;display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;transition:background .1s;border-radius:0 2px 2px 0}
+.track-card:hover{background:var(--surface2)}
+.tr-num{font-size:10px;color:var(--text3);text-align:center;font-family:var(--mono)}
+.tr-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;line-height:1.4}
+.tr-artist{font-size:11px;color:var(--text2)}
+.tr-fam{font-size:8px;padding:2px 7px;border:1px solid;border-radius:2px;display:block;margin-bottom:4px;text-align:right;white-space:nowrap;font-family:var(--mono)}
+.tr-bpm{font-size:9px;color:var(--text3);text-align:right;font-family:var(--mono)}
 
-    /* ── SPOTIFY STATUS ────────────────────────────────── */
-    .sp-status {
-      font-size: 6px;
-      color: var(--text4);
-      text-align: right;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 5px;
-    }
-    .sp-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--text4);
-      display: inline-block;
-    }
-    .sp-status.ok .sp-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
-    .sp-status.ok { color: var(--green2); }
-    .sp-status.err .sp-dot { background: var(--orange); }
-    .sp-status.err { color: var(--orange); }
+.sp-section{margin-top:18px;padding:16px;background:rgba(29,185,84,.04);border:1px solid rgba(29,185,84,.15);border-radius:4px}
+.sp-title{font-size:10px;font-weight:600;color:#1db954;margin-bottom:12px;font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.sp-loading{font-size:11px;color:var(--text2);display:flex;align-items:center;gap:8px}
+.sp-loading::before{content:'';width:8px;height:8px;border:2px solid #1db954;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sp-track{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.sp-track:last-child{border-bottom:none}
+.sp-img{width:36px;height:36px;border-radius:2px;object-fit:cover;flex-shrink:0;background:var(--surface3)}
+.sp-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px}
+.sp-artist{font-size:10px;color:var(--text2)}
+.sp-meta{margin-left:auto;text-align:right;flex-shrink:0}
+.sp-bpm{font-size:10px;color:var(--green2);font-family:var(--mono)}
+.sp-date{font-size:9px;color:var(--text3);margin-top:2px}
+.sp-play{width:28px;height:28px;border-radius:50%;background:rgba(29,185,84,.12);border:1px solid rgba(29,185,84,.25);color:#1db954;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all .15s}
+.sp-play:hover{background:rgba(29,185,84,.22)}
 
-    /* ── DROPDOWN ──────────────────────────────────────── */
-    .dropdown {
-      background: var(--surface2);
-      border: 2px solid var(--accent);
-      border-top: none;
-      display: none;
-      max-height: 360px;
-      overflow-y: auto;
-      box-shadow: 0 12px 32px rgba(0,0,0,.7);
-      margin-bottom: 12px;
-    }
-    .dropdown::-webkit-scrollbar { width: 4px; }
-    .dropdown::-webkit-scrollbar-track { background: var(--surface); }
-    .dropdown::-webkit-scrollbar-thumb { background: var(--accent); }
+.note{margin-top:14px;padding:14px 16px;border:1px solid var(--accent);background:rgba(109,40,217,.04);font-size:12px;color:var(--accent3);line-height:1.9;border-radius:2px}
+.note-lbl{font-size:9px;color:var(--amber2);display:block;margin-bottom:7px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--mono)}
+.note-loading{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--accent2)}
+.note-loading::before{content:'';width:8px;height:8px;border:2px solid var(--accent2);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
 
-    .dj-row {
-      padding: 14px 18px;
-      cursor: pointer;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      transition: background .1s;
-    }
-    .dj-row:last-child { border-bottom: none; }
-    .dj-row:hover { background: var(--surface3); }
-
-    /* ── AVATAR ────────────────────────────────────────── */
-    .avatar-wrap {
-      position: relative;
-      width: 52px;
-      height: 52px;
-      flex-shrink: 0;
-    }
-    .avatar-img {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--border2);
-      display: none;
-      position: absolute;
-      top: 0; left: 0;
-    }
-    .avatar-img.loaded { display: block; }
-    .avatar-fb {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 11px;
-      font-weight: bold;
-      border: 2px solid;
-      position: absolute;
-      top: 0; left: 0;
-      transition: opacity .2s;
-    }
-    .avatar-fb.hidden { opacity: 0; }
-
-    .dj-info { flex: 1; min-width: 0; }
-    .dj-name {
-      font-size: 13px;
-      color: var(--text);
-      margin-bottom: 6px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .dj-genre {
-      font-size: 7px;
-      color: var(--text2);
-      line-height: 2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .dj-bpm {
-      font-size: 8px;
-      padding: 5px 12px;
-      border: 1px solid;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    /* ── CHIPS ─────────────────────────────────────────── */
-    .chips-wrap {
-      min-height: 52px;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 10px 12px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 16px;
-      align-items: center;
-    }
-    .chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px 6px 6px;
-      border: 2px solid var(--accent);
-      color: var(--accent2);
-      background: rgba(124,58,237,.12);
-      cursor: pointer;
-      font-size: 9px;
-      transition: all .12s;
-      font-family: 'Press Start 2P', monospace;
-    }
-    .chip:hover { border-color: var(--red); color: var(--red); background: rgba(239,68,68,.08); }
-    .chip-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-      background: var(--surface3);
-    }
-    .chip-fb {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 7px;
-      flex-shrink: 0;
-      border: 1px solid;
-    }
-    .chips-empty {
-      font-size: 9px;
-      color: var(--text4);
-      font-family: 'Press Start 2P', monospace;
-    }
-
-    /* ── MANUAL ADD ────────────────────────────────────── */
-    .manual-toggle {
-      font-size: 8px;
-      color: var(--text3);
-      background: none;
-      border: 1px solid var(--border);
-      padding: 10px 16px;
-      cursor: pointer;
-      margin-bottom: 10px;
-      transition: all .15s;
-      font-family: 'Press Start 2P', monospace;
-    }
-    .manual-toggle:hover { color: var(--accent2); border-color: var(--accent); }
-
-    .manual-row { display: flex; gap: 8px; margin-top: 10px; }
-    .manual-input {
-      flex: 1;
-      background: var(--surface);
-      border: 2px solid var(--border);
-      color: var(--text);
-      padding: 13px 14px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      outline: none;
-    }
-    .manual-input:focus { border-color: var(--accent); }
-    .manual-select {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      color: var(--text2);
-      padding: 12px 14px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      outline: none;
-      cursor: pointer;
-    }
-    .manual-add {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 12px 18px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .manual-add:hover { background: var(--accent2); }
-
-    /* ── OPTIONS ───────────────────────────────────────── */
-    .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
-
-    .option {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 20px 22px;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all .14s;
-      position: relative;
-      overflow: hidden;
-    }
-    .option::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 0;
-      width: 3px; height: 100%;
-      background: var(--accent);
-      opacity: 0;
-      transition: opacity .14s;
-    }
-    .option:hover { border-color: var(--accent); background: var(--surface2); }
-    .option:hover::before { opacity: 1; }
-    .option.selected { border-color: var(--green); background: rgba(34,197,94,.06); }
-    .option.selected::before { background: var(--green); opacity: 1; }
-
-    .option-name {
-      font-size: 14px;
-      color: var(--text);
-      margin-bottom: 8px;
-      letter-spacing: .3px;
-    }
-    .option.selected .option-name { color: var(--green); }
-    .option-desc { font-size: 8px; color: var(--text2); line-height: 2.2; }
-    .option.selected .option-desc { color: var(--green2); }
-
-    .option-tag {
-      font-size: 9px;
-      padding: 6px 14px;
-      border: 1px solid;
-      white-space: nowrap;
-      flex-shrink: 0;
-      margin-left: 16px;
-      text-align: right;
-      min-width: 145px;
-    }
-    .option-tag-sub { font-size: 7px; margin-top: 5px; opacity: .7; }
-
-    /* ── NAV BUTTONS ───────────────────────────────────── */
-    .nav { display: flex; gap: 10px; margin-top: 28px; }
-
-    .btn-next {
-      flex: 1;
-      background: var(--accent);
-      border: 2px solid var(--accent2);
-      color: #fff;
-      padding: 18px 20px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 12px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      transition: all .14s;
-    }
-    .btn-next::before { content: '▶  '; }
-    .btn-next:hover:not(:disabled) {
-      background: var(--accent2);
-      box-shadow: 0 0 24px rgba(168,85,247,.4);
-    }
-    .btn-next:disabled { opacity: .3; cursor: not-allowed; }
-
-    .btn-back {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      color: var(--text3);
-      padding: 18px 18px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 12px;
-      cursor: pointer;
-      transition: all .14s;
-    }
-    .btn-back::before { content: '◀  '; }
-    .btn-back:hover { border-color: var(--text3); color: var(--text); }
-
-    .btn-generate {
-      width: 100%;
-      background: transparent;
-      border: 2px solid var(--green);
-      color: var(--green);
-      padding: 20px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 13px;
-      cursor: pointer;
-      letter-spacing: 1px;
-      transition: all .2s;
-      box-shadow: 0 0 16px rgba(34,197,94,.15);
-      margin-top: 8px;
-    }
-    .btn-generate::before { content: '◆  '; }
-    .btn-generate:hover {
-      background: rgba(34,197,94,.08);
-      box-shadow: 0 0 30px rgba(34,197,94,.35);
-    }
-
-    /* ── REVIEW ────────────────────────────────────────── */
-    .review-box {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      padding: 22px;
-      margin-bottom: 24px;
-    }
-    .review-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-    .review-label {
-      font-size: 7px;
-      color: var(--text3);
-      margin-bottom: 7px;
-      letter-spacing: 1px;
-    }
-    .review-value {
-      font-size: 11px;
-      color: var(--text);
-      line-height: 1.9;
-    }
-    .review-bpm {
-      font-size: 22px;
-      color: var(--green);
-      text-shadow: 0 0 12px rgba(34,197,94,.3);
-    }
-
-    /* ── RESULTS ───────────────────────────────────────── */
-    .results { margin-top: 10px; }
-
-    .px-divider {
-      height: 2px;
-      background: repeating-linear-gradient(
-        90deg,
-        var(--accent) 0, var(--accent) 6px,
-        transparent 6px, transparent 12px
-      );
-      margin: 28px 0;
-      opacity: .4;
-    }
-
-    .results-title {
-      font-size: 15px;
-      color: var(--green);
-      margin-bottom: 10px;
-      text-shadow: 0 0 12px rgba(34,197,94,.4);
-    }
-    .results-ctx {
-      font-size: 8px;
-      color: var(--text2);
-      margin-bottom: 24px;
-      line-height: 2.6;
-    }
-
-    /* ── PHASE HEADER ──────────────────────────────────── */
-    .phase-header {
-      font-size: 9px;
-      letter-spacing: 1px;
-      margin: 20px 0 10px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid;
-    }
-    .phase-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ── TRACK CARD ────────────────────────────────────── */
-    .track-card {
-      background: var(--surface);
-      border-left: 3px solid var(--accent);
-      padding: 14px 18px;
-      margin-bottom: 7px;
-      display: grid;
-      grid-template-columns: 36px 1fr auto;
-      gap: 14px;
-      align-items: center;
-      transition: background .12s;
-    }
-    .track-card:hover { background: var(--surface2); }
-
-    .track-num {
-      font-size: 10px;
-      color: var(--text4);
-      text-align: center;
-    }
-    .track-name {
-      font-size: 11px;
-      color: var(--text);
-      margin-bottom: 6px;
-      line-height: 1.5;
-    }
-    .track-artist {
-      font-size: 8px;
-      color: var(--text2);
-      line-height: 2;
-    }
-    .track-family {
-      font-size: 7px;
-      padding: 3px 9px;
-      border: 1px solid;
-      display: block;
-      margin-bottom: 5px;
-      text-align: right;
-      white-space: nowrap;
-    }
-    .track-bpm {
-      font-size: 7px;
-      color: var(--text3);
-      text-align: right;
-    }
-
-    /* ── NOTE BOX ──────────────────────────────────────── */
-    .note-box {
-      margin-top: 20px;
-      padding: 18px 20px;
-      border: 2px solid var(--cyan);
-      background: rgba(6,182,212,.05);
-      font-size: 8px;
-      color: #67e8f9;
-      line-height: 2.8;
-    }
-    .note-loading {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 8px;
-      color: var(--cyan);
-    }
-    .note-loading::before {
-      content: '';
-      width: 10px; height: 10px;
-      border: 2px solid var(--cyan);
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin .8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .note-label {
-      font-size: 7px;
-      color: var(--amber);
-      display: block;
-      margin-bottom: 10px;
-      letter-spacing: 1px;
-    }
-
-    /* ── RESET BTN ─────────────────────────────────────── */
-    .btn-reset {
-      width: 100%;
-      margin-top: 14px;
-      background: none;
-      border: 1px solid var(--border);
-      color: var(--text3);
-      padding: 14px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 9px;
-      cursor: pointer;
-      transition: all .15s;
-    }
-    .btn-reset:hover { border-color: var(--accent); color: var(--accent2); }
-
-    .btn-restart {
-      width: 100%;
-      margin-top: 8px;
-      background: none;
-      border: 1px solid rgba(255,255,255,.05);
-      color: var(--text4);
-      padding: 12px;
-      font-family: 'Press Start 2P', monospace;
-      font-size: 8px;
-      cursor: pointer;
-      transition: color .15s;
-    }
-    .btn-restart:hover { color: var(--text2); }
-
-    /* ── SCROLLBAR ─────────────────────────────────────── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--surface); }
-    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
-
+.btn-reset{width:100%;margin-top:10px;background:none;border:1px solid var(--border);color:var(--text2);padding:12px;font-family:var(--font);font-size:12px;cursor:pointer;transition:all .15s;border-radius:2px}
+.btn-reset:hover{border-color:var(--accent);color:var(--accent3)}
+.btn-restart{width:100%;margin-top:6px;background:none;border:none;color:var(--text3);padding:10px;font-family:var(--font);font-size:11px;cursor:pointer;transition:color .15s}
+.btn-restart:hover{color:var(--text2)}
+.sp-status{font-size:9px;text-align:right;margin-bottom:8px;display:flex;align-items:center;justify-content:flex-end;gap:5px;font-family:var(--mono)}
+.sp-dot{width:5px;height:5px;border-radius:50%;background:var(--text3)}
+.sp-status.ok{color:var(--green2)}.sp-status.ok .sp-dot{background:var(--green)}
+.sp-status.err{color:var(--orange)}.sp-status.err .sp-dot{background:var(--orange)}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
   </style>
 </head>
-
 <body>
 <div class="app">
 
-  <!-- LOGO -->
-  <div class="logo">
-    <div class="logo-title">FMENEZS ◆ FREQUENCY INTELLIGENCE</div>
-    <div class="logo-sub">SET PLANNER v3.0 <span class="blink">_</span></div>
+  <div class="header">
+    <div class="header-logo">CUELAB</div>
+    <div class="header-sub">SET PLANNER<span class="cursor"></span></div>
   </div>
 
-  <!-- PROGRESS -->
   <div class="progress">
-    <div class="progress-bar">
-      <div class="progress-fill" id="progressFill" style="width:0%"></div>
-    </div>
+    <div class="progress-bar"><div class="progress-fill" id="pfill" style="width:0%"></div></div>
     <div class="progress-steps">
-      <span class="progress-step active" id="ps0">ARTISTA</span>
-      <span class="progress-step" id="ps1">LINE-UP</span>
-      <span class="progress-step" id="ps2">SLOT</span>
-      <span class="progress-step" id="ps3">VENUE</span>
-      <span class="progress-step" id="ps4">GERAR</span>
+      <span class="ps active" id="ps0">ARTISTA</span>
+      <span class="ps" id="ps1">LINE-UP</span>
+      <span class="ps" id="ps2">SLOT</span>
+      <span class="ps" id="ps3">VENUE</span>
+      <span class="ps" id="ps4">GERAR</span>
     </div>
   </div>
 
-  <!-- ───────────────────────────────────────────────── -->
-  <!-- STEP 0: NOME ARTÍSTICO                            -->
-  <!-- ───────────────────────────────────────────────── -->
-  <div class="screen active" id="screen0">
-    <div class="step-num">PASSO 1 DE 5</div>
+  <!-- S0: Nome -->
+  <div class="screen active" id="s0">
+    <div class="step-num">PASSO 1 / 5</div>
     <div class="step-cat">IDENTIFICAÇÃO</div>
     <div class="q-title">Qual o seu nome artístico?</div>
     <div class="q-sub">Como você se apresenta nas cabines.</div>
-    <input
-      class="text-input"
-      id="artistInput"
-      placeholder="SEU NOME AQUI..."
-      oninput="checkStep0()"
-      autocomplete="off"
-    >
-    <div class="nav">
-      <button class="btn-next" id="nextBtn0" onclick="goTo(1)" disabled>PRÓXIMO</button>
-    </div>
+    <input class="txt-input" id="artistIn" placeholder="Seu nome aqui..." oninput="ck0()" autocomplete="off">
+    <div class="nav"><button class="btn-next" id="n0" onclick="go(1)" disabled>Próximo →</button></div>
   </div>
 
-  <!-- ───────────────────────────────────────────────── -->
-  <!-- STEP 1: LINE-UP                                   -->
-  <!-- ───────────────────────────────────────────────── -->
-  <div class="screen" id="screen1">
-    <div class="step-num">PASSO 2 DE 5</div>
+  <!-- S1: Line-up -->
+  <div class="screen" id="s1">
+    <div class="step-num">PASSO 2 / 5</div>
     <div class="step-cat">LINE-UP DA FESTA</div>
     <div class="q-title">Quem está no line-up?</div>
-    <div class="q-sub">Headliners ou referências de estilo. Digite e selecione. Artistas fora do banco são buscados no Spotify automaticamente.</div>
-
-    <div class="sp-status" id="spotifyStatus">
-      <span class="sp-dot"></span>SPOTIFY: CONECTANDO...
+    <div class="q-sub">Headliners ou referências de estilo. A busca é no banco curado — não encontrou? Adicione manualmente e o sistema vai identificar o grupo sonoro.</div>
+    <div class="sp-status" id="spSt"><span class="sp-dot"></span>SPOTIFY: CONECTANDO...</div>
+    <div class="search-outer">
+      <i class="ti ti-search search-ico" id="sico" aria-hidden="true"></i>
+      <input class="search-inner" id="djIn" placeholder="Ex: Black Coffee, Adriatique, Satori..." oninput="onSearch(this.value)" autocomplete="off">
     </div>
-
-    <div class="search-wrap">
-      <i class="ti ti-search search-icon" id="searchIcon" aria-hidden="true"></i>
-      <input
-        class="search-input"
-        id="djSearchInput"
-        placeholder="EX: BLACK COFFEE, ADRIATIQUE, TALE OF US..."
-        oninput="handleSearch(this.value)"
-        autocomplete="off"
-      >
-    </div>
-    <div class="dropdown" id="djDropdown"></div>
-
-    <div class="chips-wrap" id="lineupChips">
-      <span class="chips-empty" id="chipsEmpty">NENHUM ARTISTA SELECIONADO AINDA</span>
-    </div>
-
-    <button class="manual-toggle" onclick="toggleManual()">+ ADICIONAR MANUALMENTE</button>
-    <div id="manualPanel" style="display:none">
-      <div class="manual-row">
-        <input class="manual-input" id="manualName" placeholder="NOME DO DJ...">
-        <select class="manual-select" id="manualGroup">
-          <option value="">ESTILO...</option>
-          <option value="g1">TECH / HOUSE / DEEP</option>
-          <option value="g2">AFRO / ORGANIC / PROGRESSIVE</option>
-          <option value="g3">MELODIC TECHNO / INDIE</option>
-          <option value="g4">TECHNO / MINIMAL / HARD</option>
+    <div class="drop" id="drop"></div>
+    <div class="chips" id="chips"><span class="chips-empty">Nenhum artista selecionado ainda</span></div>
+    <button class="man-toggle" onclick="togMan()">+ Não encontrou? Adicionar manualmente</button>
+    <div id="manWrap" style="display:none">
+      <div class="man-row">
+        <input class="man-in" id="mNm" placeholder="Nome do DJ...">
+        <select class="man-sel" id="mGr">
+          <option value="">Grupo sonoro...</option>
+          <option value="g1">Tech House / House / Deep</option>
+          <option value="g2">Progressive House</option>
+          <option value="g3">Melodic Techno / Indie Dance</option>
+          <option value="g4">Techno Raw / Peak Time</option>
+          <option value="g5">Hard Techno</option>
+          <option value="g6">Afro House / Melodic House</option>
+          <option value="g7">Organic House</option>
         </select>
-        <button class="manual-add" onclick="addManual()">ADD</button>
+        <button class="man-add" onclick="addMan()">Add</button>
       </div>
     </div>
-
     <div class="nav">
-      <button class="btn-back" onclick="goTo(0)">VOLTAR</button>
-      <button class="btn-next" id="nextBtn1" onclick="goTo(2)" disabled>PRÓXIMO</button>
+      <button class="btn-back" onclick="go(0)">← Voltar</button>
+      <button class="btn-next" id="n1" onclick="go(2)" disabled>Próximo →</button>
     </div>
   </div>
 
-  <!-- ───────────────────────────────────────────────── -->
-  <!-- STEP 2: SLOT                                      -->
-  <!-- ───────────────────────────────────────────────── -->
-  <div class="screen" id="screen2">
-    <div class="step-num">PASSO 3 DE 5</div>
+  <!-- S2: Slot -->
+  <div class="screen" id="s2">
+    <div class="step-num">PASSO 3 / 5</div>
     <div class="step-cat">SLOT NO LINE-UP</div>
     <div class="q-title">Qual é o seu slot?</div>
-    <div class="q-sub">Baseado na construção real de um line-up. Define o teto de BPM e a fase energética do set.</div>
-
-    <div class="options" id="slotOptions">
-      <div class="option" onclick="selectSlot(this,'slot1',116)">
-        <div>
-          <div class="option-name">1° SLOT — ABERTURA</div>
-          <div class="option-desc">Primeiro DJ · Clima social · Pista se reconhece</div>
+    <div class="q-sub">Os horários são ilustrativos — o que importa é a posição no line-up. O BPM é calculado automaticamente de acordo com o grupo sonoro do headliner.</div>
+    <div class="options" id="slotO">
+      <div class="opt" onclick="selSlot(this,'slot1')">
+        <div class="opt-left">
+          <div class="opt-name">1° Slot — Abertura</div>
+          <div class="opt-desc">Primeiro DJ · Clima social · Pista se reconhece · Horário ilustrativo: abertura da festa</div>
         </div>
-        <div class="option-tag" style="color:var(--accent2);border-color:var(--accent2)">
-          22:00 – 23:30
-          <div class="option-tag-sub">108 – 116 BPM</div>
+        <div class="opt-right">
+          <div class="opt-tag" style="color:var(--accent3);border-color:var(--accent)" id="slot1tag">BPM por grupo</div>
         </div>
       </div>
-      <div class="option" onclick="selectSlot(this,'slot2',120)">
-        <div>
-          <div class="option-name">2° SLOT — WARM-UP</div>
-          <div class="option-desc">Groove se estabelece · Pista aquecendo</div>
+      <div class="opt" onclick="selSlot(this,'slot2')">
+        <div class="opt-left">
+          <div class="opt-name">2° Slot — Warm-Up</div>
+          <div class="opt-desc">Groove se estabelece · Pista aquecendo · Energia crescente</div>
         </div>
-        <div class="option-tag" style="color:var(--accent2);border-color:var(--accent2)">
-          23:30 – 01:00
-          <div class="option-tag-sub">114 – 120 BPM</div>
-        </div>
-      </div>
-      <div class="option" onclick="selectSlot(this,'slot3',123)">
-        <div>
-          <div class="option-name">3° SLOT — CRESCENTE</div>
-          <div class="option-desc">Pré-aquecimento intenso · Energia em subida</div>
-        </div>
-        <div class="option-tag" style="color:var(--accent2);border-color:var(--accent2)">
-          01:00 – 02:30
-          <div class="option-tag-sub">118 – 123 BPM</div>
+        <div class="opt-right">
+          <div class="opt-tag" style="color:var(--accent3);border-color:var(--accent)" id="slot2tag">BPM por grupo</div>
         </div>
       </div>
-      <div class="option" onclick="selectSlot(this,'slot4',127)">
-        <div>
-          <div class="option-name">4° SLOT — ÁPICE</div>
-          <div class="option-desc">Pico da noite · Pista no máximo · Headliner</div>
+      <div class="opt disabled">
+        <div class="opt-left">
+          <div class="opt-name">3° Slot — Crescente</div>
+          <div class="opt-desc">Pré-aquecimento intenso · Energia em subida</div>
         </div>
-        <div class="option-tag" style="color:var(--accent2);border-color:var(--accent2)">
-          02:30 – 04:00
-          <div class="option-tag-sub">122 – 127 BPM</div>
+        <div class="opt-right">
+          <span class="mvp-badge">em breve</span>
         </div>
       </div>
-      <div class="option" onclick="selectSlot(this,'slot5',122)">
-        <div>
-          <div class="option-name">5° SLOT — CLOSING</div>
-          <div class="option-desc">Fim de noite · Pista fiel · Descida gradual</div>
+      <div class="opt disabled">
+        <div class="opt-left">
+          <div class="opt-name">4° Slot — Ápice</div>
+          <div class="opt-desc">Pico da noite · Headliner</div>
         </div>
-        <div class="option-tag" style="color:var(--accent2);border-color:var(--accent2)">
-          04:00 – 06:00
-          <div class="option-tag-sub">116 – 122 BPM</div>
+        <div class="opt-right">
+          <span class="mvp-badge">em breve</span>
+        </div>
+      </div>
+      <div class="opt disabled">
+        <div class="opt-left">
+          <div class="opt-name">5° Slot — Closing</div>
+          <div class="opt-desc">Fim de noite · Descida gradual</div>
+        </div>
+        <div class="opt-right">
+          <span class="mvp-badge">em breve</span>
         </div>
       </div>
     </div>
-
     <div class="nav">
-      <button class="btn-back" onclick="goTo(1)">VOLTAR</button>
-      <button class="btn-next" id="nextBtn2" onclick="goTo(3)" disabled>PRÓXIMO</button>
+      <button class="btn-back" onclick="go(1)">← Voltar</button>
+      <button class="btn-next" id="n2" onclick="go(3)" disabled>Próximo →</button>
     </div>
   </div>
 
-  <!-- ───────────────────────────────────────────────── -->
-  <!-- STEP 3: VENUE                                     -->
-  <!-- ───────────────────────────────────────────────── -->
-  <div class="screen" id="screen3">
-    <div class="step-num">PASSO 4 DE 5</div>
+  <!-- S3: Venue -->
+  <div class="screen" id="s3">
+    <div class="step-num">PASSO 4 / 5</div>
     <div class="step-cat">TIPO DE EVENTO</div>
     <div class="q-title">Onde você vai tocar?</div>
-    <div class="q-sub">O ambiente afina a escolha das famílias sonoras e o mood do set.</div>
-
-    <div class="options" id="venueOptions">
-      <div class="option" onclick="selectVenue(this,'club')">
-        <div>
-          <div class="option-name">CLUB / INDOOR</div>
-          <div class="option-desc">Espaço fechado · Som controlado · Pista de dança</div>
-        </div>
+    <div class="q-sub">Afina a escolha das famílias sonoras e o mood do set.</div>
+    <div class="options" id="venueO">
+      <div class="opt" onclick="selV(this,'club')">
+        <div><div class="opt-name">Club / Indoor</div><div class="opt-desc">Espaço fechado · Som controlado · Pista de dança</div></div>
       </div>
-      <div class="option" onclick="selectVenue(this,'festival')">
-        <div>
-          <div class="option-name">FESTIVAL / OUTDOOR</div>
-          <div class="option-desc">Palco grande · Público diverso · Energia aberta</div>
-        </div>
+      <div class="opt" onclick="selV(this,'festival')">
+        <div><div class="opt-name">Festival / Open Air</div><div class="opt-desc">Palco grande · Público diverso · Energia aberta · Cada artista tem mais liberdade para apresentar sua identidade</div></div>
       </div>
-      <div class="option" onclick="selectVenue(this,'beach')">
-        <div>
-          <div class="option-name">BEACH / PISCINA / DECK</div>
-          <div class="option-desc">Luz natural · Mood solar · Orgânico e afro</div>
-        </div>
+      <div class="opt" onclick="selV(this,'pool')">
+        <div><div class="opt-name">Pool Party / Beach Party</div><div class="opt-desc">Som aberto · Ambiente de dia · Mood solar</div></div>
       </div>
-      <div class="option" onclick="selectVenue(this,'rooftop')">
-        <div>
-          <div class="option-name">ROOFTOP / GARDEN</div>
-          <div class="option-desc">Ambiente íntimo · Vista aberta · Melódico e emocional</div>
-        </div>
-      </div>
-      <div class="option" onclick="selectVenue(this,'after')">
-        <div>
-          <div class="option-name">AFTER-HOURS / LOFT</div>
-          <div class="option-desc">Pista filtrada · Madrugada avançada · Denso e hipnótico</div>
-        </div>
+      <div class="opt" onclick="selV(this,'after')">
+        <div><div class="opt-name">After-Hours</div><div class="opt-desc">Pista filtrada · Madrugada avançada · Público comprometido · O warm-up existe, mas o contexto já pede mais pressão desde o início</div></div>
       </div>
     </div>
-
+    <div class="festival-note" id="festNote">
+      <strong>Festival / Open Air:</strong> o warm-up ainda é importante para construir a energia corretamente, mas em festival cada artista tem mais liberdade para apresentar sua identidade. Não se limite tanto — mostre quem você é.
+    </div>
     <div class="nav">
-      <button class="btn-back" onclick="goTo(2)">VOLTAR</button>
-      <button class="btn-next" id="nextBtn3" onclick="goTo(4)" disabled>PRÓXIMO</button>
+      <button class="btn-back" onclick="go(2)">← Voltar</button>
+      <button class="btn-next" id="n3" onclick="go(4)" disabled>Próximo →</button>
     </div>
   </div>
 
-  <!-- ───────────────────────────────────────────────── -->
-  <!-- STEP 4: CONFIRMAR + GERAR                         -->
-  <!-- ───────────────────────────────────────────────── -->
-  <div class="screen" id="screen4">
-    <div class="step-num">PASSO 5 DE 5</div>
+  <!-- S4: Gerar -->
+  <div class="screen" id="s4">
+    <div class="step-num">PASSO 5 / 5</div>
     <div class="step-cat">CONFIRMAR E GERAR</div>
-    <div class="q-title">Tudo certo. Gere o seu set.</div>
-    <div class="q-sub">12 tracks do banco FMENEZS curadas para o seu contexto específico, mais nota curatorial gerada por IA.</div>
-
-    <div class="review-box" id="reviewBox"></div>
-    <button class="btn-generate" onclick="generateSet()">GERAR 12 TRACKS</button>
-    <div class="nav" style="margin-top:12px">
-      <button class="btn-back" onclick="goTo(3)">VOLTAR</button>
-    </div>
-
-    <div class="results" id="resultsBox"></div>
+    <div class="q-title">Tudo certo.</div>
+    <div class="q-sub">12 tracks curadas para o seu contexto específico.</div>
+    <div class="rev" id="revBox"></div>
+    <button class="btn-gen" id="genBtn" onclick="generate()">◆ GERAR 12 TRACKS</button>
+    <div class="nav" style="margin-top:12px"><button class="btn-back" onclick="go(3)">← Voltar</button></div>
+    <div class="results" id="resBox"></div>
   </div>
 
-</div><!-- /app -->
-
+</div>
 <script>
-// ═══════════════════════════════════════════════════════════════
-// DATA — BANCO DE ARTISTAS
-// ═══════════════════════════════════════════════════════════════
-
-const GROUP_COLORS = {
-  g1: { c: '#f472b6', bg: 'rgba(244,114,182,.13)', name: 'TECH / HOUSE / DEEP' },
-  g2: { c: '#4ade80', bg: 'rgba(74,222,128,.1)',  name: 'AFRO / ORGANIC / PROGRESSIVE' },
-  g3: { c: '#a78bfa', bg: 'rgba(167,139,250,.13)', name: 'MELODIC TECHNO / INDIE DANCE' },
-  g4: { c: '#fb923c', bg: 'rgba(251,146,60,.1)',  name: 'TECHNO / MINIMAL / HARD' },
+// ── BPM POR GRUPO E SLOT ─────────────────────────────────────────
+const GROUP_BPM = {
+  g1: { slot1:{min:116,max:122}, slot2:{min:120,max:124} },
+  g2: { slot1:{min:110,max:120}, slot2:{min:118,max:122} },
+  g3: { slot1:{min:115,max:122}, slot2:{min:120,max:124} },
+  g4: { slot1:{min:122,max:130}, slot2:{min:126,max:132} },
+  g5: { slot1:{min:135,max:140}, slot2:{min:140,max:150} },
+  g6: { slot1:{min:108,max:118}, slot2:{min:118,max:122} },
+  g7: { slot1:{min:108,max:118}, slot2:{min:118,max:122} },
 };
 
-// Mapa de Spotify IDs para busca direta por ID (mais preciso)
-const SPOTIFY_IDS = {
-  'Black Coffee': '6wMr4zKPrrR0UVz08WtUWc',
-  'Kerri Chandler': '51tYDGpHPVBSmVjirw3lFy',
-  'Danny Tenaglia': '66KFQSRCE44JAWjaTgHpYq',
-  'Honey Dijon': '3yGSRjp9aYZeWuLKJSmGgV',
-  'Mochakk': '7dqFBBfQMGQdXaREVHj1i8',
-  'Dennis Cruz': '4KBFIJUrMjOBBFkJbWxalx',
-  'Seth Troxler': '6yOXrJMd4TxvDUFpFu8PmS',
-  'Green Velvet': '3lNFl1OVzRHJJcBEWMvLBX',
-  'The Martinez Brothers': '41Q0HrwWBtuUkJc9CfWFkF',
-  'Vintage Culture': '5BcAKTbp20cv7tC5VqPFoC',
-  'Peggy Gou': '05oH07COxkXKIMt6mIPRee',
-  'Alok': '1vCWHaC5f2uS3yhpwWbIA6',
-  'Jamie Jones': '3Jv8mZcJ8f9p1Y2e4IvpzD',
-  'Marco Carola': '0kSEuOvPSfEKjEhJbEVk3N',
-  'Bedouin': '1Ioqw10Hy5F1OIJb4cXbpY',
-  'Lee Burridge': '1RNm0r3ViSTQNIFCMUhM7a',
-  'BLOND:ISH': '7EQFN8y2l9UNJTkVj24DRc',
-  'Damian Lazarus': '7rPVEECPRcpxP4XS1fkHgP',
-  'Satori': '7fIvjotigTGWqjIz6EP1i5',
-  'Ahmed Spins': '4p9z80FZZXNJUmjlFCKxpb',
-  'Hernán Cattáneo': '4k1O3e7MMAm2V6xqQcFGKj',
-  'Guy J': '0Dl8j8IPLZ0EGRBizZfDdl',
-  'Sasha': '2SHyvQHTbMoFVT5s5LkS38',
-  'John Digweed': '22KZUGygOLPwWIf5ZqNjUy',
-  'Tale Of Us': '0F4iAEMFdSGR5qFOGk2Bvg',
-  'ARTBAT': '3zy26r3t4BOlwBGbFxmYlG',
-  'Anyma': '0bjTNsHtWFGVoZ8yvv1y7k',
-  'Adriatique': '7aS8K2M1qBMlPEeTmImEYF',
-  'HOSH': '2EDImBgFnLFQRe9vkfV79h',
-  'Maceo Plex': '7JWvBVnGEX6pHw4grQ3cJI',
-  'Mita Gami': '5CyYLptaEKYxEYfLRpCwYI',
-  'Trentemøller': '7Kf4KU6xDXAw4pxvJJ5Bx6',
-  'Xinobi': '4vqxGO1P0YHNI1AYGCCxZJ',
-  'Eric Prydz': '4u7Z9cqxWiCNnBaS2tBhiS',
-  'Axwell': '1DVKV2MBWiR0uIUCIZvzDy',
-  'ANNA': '3gqTLkCGKp5mFk7FuJKSSq',
-  'Richie Hawtin': '1PKbMSBEuS2vGWf8ZMXQNS',
-  'Charlotte de Witte': '5O30s0HaU7PMmlFAeWtLrM',
-  'Amelie Lens': '5UYjFjdCGnIjFPAMPXdFsj',
-  'Carl Cox': '3fbDiqSGJAnd0bRBpN5xWC',
-  'Paco Osuna': '3MmOalERgHDf12kSLdSYRo',
-  'Adam Beyer': '7wX4BaEhFMRJ5sXdCMKF8g',
-  'Stef Mendesidis': '1H0Vd3XyKj3GZiHNOoNqGn',
-  'FMENEZS': '',
+const GROUP_NAMES = {
+  g1:'Tech House / House / Deep',
+  g2:'Progressive House',
+  g3:'Melodic Techno / Indie Dance',
+  g4:'Techno Raw / Peak Time',
+  g5:'Hard Techno',
+  g6:'Afro House / Melodic House',
+  g7:'Organic House',
 };
 
-// Banco local de artistas com metadados curados
+// ── BANCO DE ARTISTAS CURADOS ────────────────────────────────────
 const LOCAL_DJS = [
-  // G1 — TECH / HOUSE / DEEP
-  { n:'Kerri Chandler', g:'g1', genres:'Deep House / Soulful House', bpm:'118–122', fams:['Winehouse','Deep Storytelling','Organic Emotional'], ceil:122 },
-  { n:'Danny Tenaglia', g:'g1', genres:'Tribal House / Progressive House', bpm:'122–126', fams:['Groove Minimal','Afro Groove','Winehouse'], ceil:124 },
-  { n:'Honey Dijon', g:'g1', genres:'House / Disco House', bpm:'120–124', fams:['Winehouse','Afro Groove','Groove Minimal'], ceil:123 },
-  { n:'Mochakk', g:'g1', genres:'House / Tech House / Funky House', bpm:'121–125', fams:['Winehouse','Groove Minimal','Afro Groove'], ceil:124 },
-  { n:'Dennis Cruz', g:'g1', genres:'Tech House / House Underground', bpm:'122–125', fams:['Groove Minimal','Winehouse'], ceil:123 },
-  { n:'Seth Troxler', g:'g1', genres:'House / Tech House / Minimal', bpm:'119–124', fams:['Groove Minimal','Deep Storytelling','Winehouse'], ceil:122 },
-  { n:'Green Velvet', g:'g1', genres:'Tech House / Chicago House', bpm:'122–126', fams:['Groove Minimal','Peak Raw'], ceil:124 },
-  { n:'The Martinez Brothers', g:'g1', genres:'House / Tech House', bpm:'122–126', fams:['Afro Groove','Groove Minimal','Winehouse'], ceil:124 },
-  { n:'Vintage Culture', g:'g1', genres:'Melodic House / Indie Dance', bpm:'120–124', fams:['Indie Melodic','Progressive Warm','Dreamy Progressive'], ceil:122 },
-  { n:'Peggy Gou', g:'g1', genres:'House / Techno / Disco', bpm:'122–126', fams:['Winehouse','Indie Melodic'], ceil:123 },
-  { n:'Alok', g:'g1', genres:'Brazilian Bass / Mainstage', bpm:'126–132', fams:['Winehouse','Groove Minimal'], ceil:125 },
-  { n:'Jamie Jones', g:'g1', genres:'Tech House / Deep House / Hot Creations', bpm:'120–124', fams:['Groove Minimal','Winehouse'], ceil:122 },
-  { n:'Marco Carola', g:'g1', genres:'Techno / Tech House / Music On', bpm:'128–134', fams:['Hypnotic Raw','Groove Minimal'], ceil:126 },
-  // G2 — AFRO / ORGANIC / PROGRESSIVE
-  { n:'Black Coffee', g:'g2', genres:'Afro House / Deep House', bpm:'122–126', fams:['Afro Groove','Organic Emotional','Progressive Warm'], ceil:122 },
-  { n:'Bedouin', g:'g2', genres:'Organic House / World Electronic', bpm:'118–124', fams:['Organic Emotional','Afro Groove','Spiritual Organic'], ceil:121 },
-  { n:'Lee Burridge', g:'g2', genres:'Organic House / All Day I Dream', bpm:'110–120', fams:['Organic Emotional','Spiritual Organic','Dreamy Progressive'], ceil:118 },
-  { n:'BLOND:ISH', g:'g2', genres:'Organic House / Melodic / Afro', bpm:'118–123', fams:['Organic Emotional','Afro Groove','Dreamy Progressive'], ceil:120 },
-  { n:'Damian Lazarus', g:'g2', genres:'Organic House / Tribal / Psychedelic', bpm:'120–124', fams:['Organic Emotional','Spiritual Organic','Afro Groove'], ceil:121 },
-  { n:'Satori', g:'g2', genres:'Organic House / Ethno-House / Live', bpm:'112–120', fams:['Spiritual Organic','Organic Emotional'], ceil:118 },
-  { n:'Ahmed Spins', g:'g2', genres:'Afro House / Deep House / Organic', bpm:'118–124', fams:['Afro Groove','Organic Emotional'], ceil:120 },
-  { n:'Hernán Cattáneo', g:'g2', genres:'Progressive House / Melodic', bpm:'120–124', fams:['Progressive Warm','Dreamy Progressive','Deep Storytelling'], ceil:122 },
-  { n:'Guy J', g:'g2', genres:'Progressive House / Minimal House', bpm:'120–123', fams:['Progressive Warm','Dreamy Progressive'], ceil:121 },
-  { n:'Sasha', g:'g2', genres:'Progressive House / Ambient', bpm:'120–124', fams:['Progressive Warm','Dreamy Progressive'], ceil:122 },
-  { n:'John Digweed', g:'g2', genres:'Progressive House / Tech House', bpm:'122–126', fams:['Progressive Warm','Dreamy Progressive'], ceil:123 },
-  { n:'FMENEZS', g:'g2', genres:'Progressive House / Deep Tech / Organic', bpm:'110–121', fams:['Progressive Warm','Dreamy Progressive','Organic Emotional'], ceil:120 },
-  // G3 — MELODIC TECHNO / INDIE DANCE
-  { n:'Tale Of Us', g:'g3', genres:'Melodic Techno / Afterlife', bpm:'122–126', fams:['Dreamy Progressive','Indie Melodic','Hypnotic Raw'], ceil:123 },
-  { n:'ARTBAT', g:'g3', genres:'Melodic Techno / Progressive', bpm:'122–126', fams:['Dreamy Progressive','Hypnotic Raw','Indie Melodic'], ceil:124 },
-  { n:'Anyma', g:'g3', genres:'Melodic Techno / Cinematic / Afterlife', bpm:'122–128', fams:['Dreamy Progressive','Indie Melodic'], ceil:124 },
-  { n:'Adriatique', g:'g3', genres:'Melodic Techno / Deep House', bpm:'120–126', fams:['Dreamy Progressive','Progressive Warm','Hypnotic Raw'], ceil:122 },
-  { n:'HOSH', g:'g3', genres:'Melodic House & Techno / Diynamic', bpm:'120–124', fams:['Organic Emotional','Dreamy Progressive','Indie Melodic'], ceil:121 },
-  { n:'Maceo Plex', g:'g3', genres:'Melodic Techno / Indie Dance / Ellum', bpm:'120–126', fams:['Indie Melodic','Dreamy Progressive'], ceil:122 },
-  { n:'Mita Gami', g:'g3', genres:'Indie Dance / Organic / Afro Melodic', bpm:'119–124', fams:['Indie Melodic','Organic Emotional','Hypnotic Raw'], ceil:122 },
-  { n:'Trentemøller', g:'g3', genres:'Indie Electronic / Ambient / Post-punk', bpm:'118–124', fams:['Indie Melodic','Dreamy Progressive'], ceil:120 },
-  { n:'Xinobi', g:'g3', genres:'Indie Dance / House / Disco', bpm:'118–122', fams:['Indie Melodic','Winehouse'], ceil:120 },
-  { n:'Eric Prydz', g:'g3', genres:'Progressive House / Techno / Cirez D', bpm:'126–132', fams:['Dreamy Progressive','Progressive Warm'], ceil:122 },
-  { n:'Axwell', g:'g3', genres:'Progressive House / Swedish House Mafia', bpm:'124–128', fams:['Dreamy Progressive','Progressive Warm'], ceil:122 },
-  // G4 — TECHNO / MINIMAL / HARD
-  { n:'ANNA', g:'g4', genres:'Techno / Melodic Techno / Ambient', bpm:'126–132', fams:['Hypnotic Raw','Peak Raw'], ceil:126 },
-  { n:'Richie Hawtin', g:'g4', genres:'Minimal Techno / M-nus / Plastikman', bpm:'128–135', fams:['Hypnotic Raw','Groove Minimal'], ceil:126 },
-  { n:'Charlotte de Witte', g:'g4', genres:'Peak Time Techno / KNTXT', bpm:'135–145', fams:['Hypnotic Raw','Peak Raw'], ceil:126 },
-  { n:'Amelie Lens', g:'g4', genres:'Techno Industrial / EXHALE', bpm:'135–145', fams:['Peak Raw','Hypnotic Raw'], ceil:126 },
-  { n:'Carl Cox', g:'g4', genres:'Techno / Acid House / Tech House', bpm:'130–138', fams:['Peak Raw','Hypnotic Raw','Groove Minimal'], ceil:126 },
-  { n:'Paco Osuna', g:'g4', genres:'Minimal Techno / Tech House / Mindshake', bpm:'128–133', fams:['Hypnotic Raw','Groove Minimal'], ceil:125 },
-  { n:'Adam Beyer', g:'g4', genres:'Techno / Drumcode', bpm:'130–138', fams:['Peak Raw','Hypnotic Raw'], ceil:126 },
-  { n:'Stef Mendesidis', g:'g4', genres:'Hypnotic Techno / Industrial', bpm:'130–140', fams:['Hypnotic Raw','Peak Raw'], ceil:128 },
+  {n:'Kerri Chandler',g:'g1',genres:'Deep House / Soulful House',fams:['Winehouse','Deep Storytelling','Organic Emotional']},
+  {n:'Honey Dijon',g:'g1',genres:'House / Disco House',fams:['Winehouse','Afro Groove','Groove Minimal']},
+  {n:'Mochakk',g:'g1',genres:'House / Tech House / Funky',fams:['Winehouse','Groove Minimal','Afro Groove']},
+  {n:'Dennis Cruz',g:'g1',genres:'Tech House / House Underground',fams:['Groove Minimal','Winehouse']},
+  {n:'Seth Troxler',g:'g1',genres:'House / Tech House / Minimal',fams:['Groove Minimal','Deep Storytelling','Winehouse']},
+  {n:'The Martinez Brothers',g:'g1',genres:'House / Tech House',fams:['Afro Groove','Groove Minimal','Winehouse']},
+  {n:'Jamie Jones',g:'g1',genres:'Tech House / Deep House',fams:['Groove Minimal','Winehouse']},
+  {n:'Danny Tenaglia',g:'g1',genres:'Tribal House / Progressive',fams:['Groove Minimal','Afro Groove']},
+  {n:'Green Velvet',g:'g1',genres:'Tech House / Chicago House',fams:['Groove Minimal','Peak Raw']},
+  {n:'Fouk',g:'g1',genres:'Deep House / Balearic',fams:['Winehouse']},
+  {n:'Franck Roger',g:'g1',genres:'Deep House / Soulful',fams:['Winehouse']},
+  {n:'Vintage Culture',g:'g1',genres:'Melodic House / Indie Dance',fams:['Indie Melodic','Progressive Warm']},
+  {n:'Peggy Gou',g:'g1',genres:'House / Techno / Disco',fams:['Winehouse','Indie Melodic']},
+  {n:'Hernán Cattáneo',g:'g2',genres:'Progressive House / Melodic',fams:['Progressive Warm','Dreamy Progressive']},
+  {n:'Nox Vahn',g:'g2',genres:'Progressive House / Melodic',fams:['Progressive Warm','Dreamy Progressive']},
+  {n:'Guy J',g:'g2',genres:'Progressive House / Minimal',fams:['Progressive Warm','Dreamy Progressive']},
+  {n:'Sasha',g:'g2',genres:'Progressive House / Ambient',fams:['Progressive Warm','Dreamy Progressive']},
+  {n:'John Digweed',g:'g2',genres:'Progressive House / Tech House',fams:['Progressive Warm','Dreamy Progressive']},
+  {n:'Sam Shure',g:'g2',genres:'Progressive House / Deep',fams:['Progressive Warm']},
+  {n:'Hraach',g:'g2',genres:'Progressive House / Oriental',fams:['Progressive Warm','Dreamy Progressive']},
+  {n:'FMENEZS',g:'g2',genres:'Progressive House / Deep Tech / Organic',fams:['Progressive Warm','Dreamy Progressive','Organic Emotional']},
+  {n:'Tale Of Us',g:'g3',genres:'Melodic Techno / Afterlife',fams:['Dreamy Progressive','Indie Melodic','Hypnotic Raw']},
+  {n:'ARTBAT',g:'g3',genres:'Melodic Techno / Progressive',fams:['Dreamy Progressive','Hypnotic Raw']},
+  {n:'Anyma',g:'g3',genres:'Melodic Techno / Cinematic',fams:['Dreamy Progressive','Indie Melodic']},
+  {n:'Adriatique',g:'g3',genres:'Melodic Techno / Deep House',fams:['Dreamy Progressive','Progressive Warm']},
+  {n:'HOSH',g:'g3',genres:'Melodic House & Techno / Diynamic',fams:['Organic Emotional','Dreamy Progressive']},
+  {n:'Maceo Plex',g:'g3',genres:'Melodic Techno / Indie Dance',fams:['Indie Melodic','Dreamy Progressive']},
+  {n:'Mita Gami',g:'g3',genres:'Indie Dance / Organic / Afro Melodic',fams:['Indie Melodic','Organic Emotional']},
+  {n:'Trentemøller',g:'g3',genres:'Indie Electronic / Ambient',fams:['Indie Melodic','Dreamy Progressive']},
+  {n:'Xinobi',g:'g3',genres:'Indie Dance / House',fams:['Indie Melodic']},
+  {n:'Eric Prydz',g:'g3',genres:'Progressive House / Techno',fams:['Dreamy Progressive']},
+  {n:'ANNA',g:'g4',genres:'Techno / Melodic Techno',fams:['Hypnotic Raw','Peak Raw']},
+  {n:'Charlotte de Witte',g:'g4',genres:'Peak Time Techno / KNTXT',fams:['Hypnotic Raw','Peak Raw']},
+  {n:'Amelie Lens',g:'g4',genres:'Techno Industrial / EXHALE',fams:['Peak Raw','Hypnotic Raw']},
+  {n:'Richie Hawtin',g:'g4',genres:'Minimal Techno / M-nus',fams:['Hypnotic Raw','Groove Minimal']},
+  {n:'Carl Cox',g:'g4',genres:'Techno / Acid House',fams:['Peak Raw','Hypnotic Raw']},
+  {n:'Adam Beyer',g:'g4',genres:'Techno / Drumcode',fams:['Peak Raw','Hypnotic Raw']},
+  {n:'Paco Osuna',g:'g4',genres:'Minimal Techno / Mindshake',fams:['Hypnotic Raw','Groove Minimal']},
+  {n:'Marco Carola',g:'g4',genres:'Techno / Tech House',fams:['Hypnotic Raw','Groove Minimal']},
+  {n:'Reinier Zonneveld',g:'g5',genres:'Hard Techno / Industrial',fams:['Peak Raw']},
+  {n:'Black Coffee',g:'g6',genres:'Afro House / Deep House',fams:['Afro Groove','Organic Emotional','Progressive Warm']},
+  {n:'Adam Port',g:'g6',genres:'Afro House / Melodic House / Keinemusik',fams:['Afro Groove','Organic Emotional']},
+  {n:'Bedouin',g:'g6',genres:'Organic House / World Electronic',fams:['Organic Emotional','Afro Groove','Spiritual Organic']},
+  {n:'Damian Lazarus',g:'g6',genres:'Organic House / Tribal / Psychedelic',fams:['Organic Emotional','Spiritual Organic']},
+  {n:'Ahmed Spins',g:'g6',genres:'Afro House / Deep House / Organic',fams:['Afro Groove','Organic Emotional']},
+  {n:'BLOND:ISH',g:'g6',genres:'Organic House / Melodic / Afro',fams:['Organic Emotional','Afro Groove']},
+  {n:'Keinemusik',g:'g6',genres:'Afro House / Melodic House / Berlin',fams:['Afro Groove','Organic Emotional']},
+  {n:'Rampa',g:'g6',genres:'Afro House / Melodic House',fams:['Afro Groove','Organic Emotional']},
+  {n:'Satori',g:'g7',genres:'Organic House / Ethno-House',fams:['Spiritual Organic','Organic Emotional']},
+  {n:'Lee Burridge',g:'g7',genres:'Organic House / All Day I Dream',fams:['Organic Emotional','Spiritual Organic']},
+  {n:'Mauro Masi',g:'g7',genres:'Organic House / Progressive',fams:['Organic Emotional','Progressive Warm']},
 ];
 
-// Famílias sonoras — cores
-const FAMILY_STYLES = {
-  'Winehouse':         { c: '#f472b6', bg: 'rgba(244,114,182,.12)' },
-  'Organic Emotional': { c: '#4ade80', bg: 'rgba(74,222,128,.1)' },
-  'Afro Groove':       { c: '#fbbf24', bg: 'rgba(251,191,36,.1)' },
-  'Progressive Warm':  { c: '#86efac', bg: 'rgba(134,239,172,.1)' },
-  'Dreamy Progressive':{ c: '#60a5fa', bg: 'rgba(96,165,250,.1)' },
-  'Indie Melodic':     { c: '#a78bfa', bg: 'rgba(167,139,250,.12)' },
-  'Hypnotic Raw':      { c: '#c084fc', bg: 'rgba(192,132,252,.1)' },
-  'Peak Raw':          { c: '#f97316', bg: 'rgba(249,115,22,.1)' },
-  'Groove Minimal':    { c: '#94a3b8', bg: 'rgba(148,163,184,.1)' },
-  'Deep Storytelling': { c: '#818cf8', bg: 'rgba(129,140,248,.1)' },
-  'Spiritual Organic': { c: '#34d399', bg: 'rgba(52,211,153,.1)' },
+const GC={
+  g1:{c:'#f472b6',bg:'rgba(244,114,182,.1)'},
+  g2:{c:'#818cf8',bg:'rgba(129,140,248,.1)'},
+  g3:{c:'#a78bfa',bg:'rgba(167,139,250,.1)'},
+  g4:{c:'#fb923c',bg:'rgba(251,146,60,.1)'},
+  g5:{c:'#ef4444',bg:'rgba(239,68,68,.1)'},
+  g6:{c:'#4ade80',bg:'rgba(74,222,128,.08)'},
+  g7:{c:'#34d399',bg:'rgba(52,211,153,.08)'},
 };
 
-// Venue → famílias extras
-const VENUE_FAMILIES = {
-  club:    [],
-  festival:['Organic Emotional','Spiritual Organic','Progressive Warm'],
-  beach:   ['Organic Emotional','Afro Groove','Spiritual Organic'],
-  rooftop: ['Dreamy Progressive','Indie Melodic','Organic Emotional'],
-  after:   ['Hypnotic Raw','Peak Raw','Groove Minimal'],
+const FS={
+  'Winehouse':{c:'#f472b6',b:'rgba(244,114,182,.1)'},
+  'Organic Emotional':{c:'#4ade80',b:'rgba(74,222,128,.08)'},
+  'Afro Groove':{c:'#fbbf24',b:'rgba(251,191,36,.08)'},
+  'Progressive Warm':{c:'#86efac',b:'rgba(134,239,172,.08)'},
+  'Dreamy Progressive':{c:'#60a5fa',b:'rgba(96,165,250,.08)'},
+  'Indie Melodic':{c:'#a78bfa',b:'rgba(167,139,250,.1)'},
+  'Hypnotic Raw':{c:'#c084fc',b:'rgba(192,132,252,.08)'},
+  'Peak Raw':{c:'#f97316',b:'rgba(249,115,22,.08)'},
+  'Groove Minimal':{c:'#94a3b8',b:'rgba(148,163,184,.08)'},
+  'Deep Storytelling':{c:'#818cf8',b:'rgba(129,140,248,.08)'},
+  'Spiritual Organic':{c:'#34d399',b:'rgba(52,211,153,.08)'},
 };
 
-// 4 fases narrativas
-const PHASES = [
-  { label: 'FASE 1 — ABERTURA',        color: '#4ade80' },
-  { label: 'FASE 2 — GROOVE',          color: '#a78bfa' },
-  { label: 'FASE 3 — MEMÓRIA AFETIVA', color: '#60a5fa' },
-  { label: 'FASE 4 — PRÉ-ENTREGA',     color: '#f97316' },
+const PHASES=[
+  {c:'#10b981',l:'Fase 1 — Abertura'},
+  {c:'#a78bfa',l:'Fase 2 — Groove'},
+  {c:'#60a5fa',l:'Fase 3 — Memória Afetiva'},
+  {c:'#f97316',l:'Fase 4 — Pré-Entrega'},
 ];
 
-// BANCO DE TRACKS (221 curadas)
-const TRACKS = [
-  { a:'Jaques Le Noir', t:'Soul and Love', l:'New Creatures', bpm:119, fam:'Winehouse' },
-  { a:'Paul Lock', t:'Say This', l:'Family Grooves', bpm:124, fam:'Winehouse' },
-  { a:'Fouk', t:'Neon Drift', l:'Heist Recordings', bpm:124, fam:'Winehouse' },
-  { a:'Aircrax', t:'707 Baby (DJ Merci Remix)', l:'Beast River Records', bpm:121, fam:'Winehouse' },
-  { a:'Franck Roger', t:"Lola's Scream", l:'Seasons Limited', bpm:119, fam:'Winehouse' },
-  { a:'Lenny Fontana', t:'If You Want Me', l:'King Street Sounds', bpm:124, fam:'Winehouse' },
-  { a:'DJ Dove, DJ Steaw', t:'Illusions', l:'Local Talk', bpm:123, fam:'Winehouse' },
-  { a:'Demarkus Lewis', t:'Shuffle Board', l:'Deez Highlight', bpm:124, fam:'Winehouse' },
-  { a:'Franck Roger', t:"You're In Love", l:'Real Tone Records', bpm:118, fam:'Winehouse' },
-  { a:'Mika Olson', t:'Chord Looper', l:"Terry's Cafe", bpm:120, fam:'Winehouse' },
-  { a:'Tony Momrelle', t:'This Could Be Us', l:'Layabout Music', bpm:118, fam:'Winehouse' },
-  { a:'Nacho Marco, Jimpster', t:'Galaxy (Jimpster Remix)', l:'Galaxy', bpm:119, fam:'Winehouse' },
-  { a:'Rollercone', t:'Promises', l:'Back at Home', bpm:120, fam:'Winehouse' },
-  { a:'Plaisance', t:'Afterhours', l:'Coldie EP', bpm:116, fam:'Winehouse' },
-  { a:'Cem Gemalmaz', t:'Somebody', l:'Deeperfect', bpm:123, fam:'Groove Minimal' },
-  { a:'DJ Sandwich', t:'Chewi', l:'Hamkke Records', bpm:120, fam:'Groove Minimal' },
-  { a:'Subb-an', t:'Grooves & Tools 007', l:'Subb-an', bpm:121, fam:'Groove Minimal' },
-  { a:'Subb-an', t:'Grooves & Tools 008', l:'Subb-an', bpm:121, fam:'Groove Minimal' },
-  { a:'Subb-an', t:'Grooves & Tools 006', l:'Subb-an', bpm:120, fam:'Groove Minimal' },
-  { a:'Evren Ulusoy', t:'Dearly Devoted', l:'Plastic City', bpm:122, fam:'Progressive Warm' },
-  { a:'Sam Shure', t:'Louna', l:'Innervisions', bpm:118, fam:'Progressive Warm' },
-  { a:'Alexander Sound', t:'Love and Money', l:'Manual Music', bpm:120, fam:'Progressive Warm' },
-  { a:'D.M.P', t:'Passion and Pain (Dust Yard Remix)', l:'Hoomidaas', bpm:117, fam:'Progressive Warm' },
-  { a:'FMENEZS, Caio Assis', t:'Limbo', l:'LADR', bpm:118, fam:'Progressive Warm' },
-  { a:'Hraach', t:'Reality Shifting', l:'Sushupti', bpm:118, fam:'Progressive Warm' },
-  { a:'Peter Mac', t:'Enough 2026', l:'Hoomidaas', bpm:119, fam:'Progressive Warm' },
-  { a:'Abaze', t:'Rojo Vivo', l:'Hoomidaas', bpm:120, fam:'Progressive Warm' },
-  { a:'Chris Barag', t:'Tempt With Discovery', l:'Manual Music', bpm:118, fam:'Progressive Warm' },
-  { a:'Way Out West, Guy J', t:'Tuesday Maybe (Guy J Remix)', l:'Tuesday Maybe', bpm:118, fam:'Progressive Warm' },
-  { a:'Emanuel Brizuela', t:'A Long Time Ago', l:'A Long Time Ago', bpm:117, fam:'Progressive Warm' },
-  { a:'Thales Senses', t:'Elemento', l:'3rd Avenue Winter 2020', bpm:118, fam:'Progressive Warm' },
-  { a:'FMENEZS', t:'Morning Birds', l:'LADR', bpm:116, fam:'Dreamy Progressive' },
-  { a:'Hans Gerd', t:'Aurora', l:'Cybertron Records', bpm:115, fam:'Dreamy Progressive' },
-  { a:'Dunadry', t:'Removed Mind', l:'Steyoyoke', bpm:116, fam:'Dreamy Progressive' },
-  { a:'AudioStorm', t:'Hologram Sunday', l:'Unknown Destination', bpm:117, fam:'Dreamy Progressive' },
-  { a:'Aetha', t:'Someday (Aman Anand Remix)', l:'Stellar Fountain', bpm:115, fam:'Dreamy Progressive' },
-  { a:'Lake Avalon', t:'Moon', l:'Mixed Melodic', bpm:114, fam:'Dreamy Progressive' },
-  { a:'Trilucid', t:'Stories In Light (Sunset Mix)', l:'Stories In Light', bpm:114, fam:'Dreamy Progressive' },
-  { a:'Martin Roth', t:'Beautiful Life', l:'Anjunadeep', bpm:115, fam:'Dreamy Progressive' },
-  { a:'Martin Roth', t:'Have You Ever', l:'Anjunadeep', bpm:116, fam:'Dreamy Progressive' },
-  { a:'Andy Cato', t:'7AM Drop', l:'Anjunadeep', bpm:117, fam:'Dreamy Progressive' },
-  { a:'DAVI', t:'The Bay 6 Pt. 2', l:'Anjunadeep', bpm:115, fam:'Dreamy Progressive' },
-  { a:'Stelios Vassiloudis', t:'Everybody Is Here', l:'—', bpm:116, fam:'Dreamy Progressive' },
-  { a:'A.M.R, Aether', t:'Without You', l:'—', bpm:113, fam:'Dreamy Progressive' },
-  { a:'Nuage', t:'Stones Speak Silent', l:'—', bpm:114, fam:'Dreamy Progressive' },
-  { a:'VEHA, Rondo Mo', t:'Golden Cellophane', l:'Euphoric Beats 026', bpm:117, fam:'Dreamy Progressive' },
-  { a:'Slow Hearts', t:'Higher Than the Clouds', l:'Higher Than the Clouds', bpm:117, fam:'Dreamy Progressive' },
-  { a:'Dave Leck, Izzet', t:'Opal (Izzet Remix)', l:'Opal', bpm:116, fam:'Dreamy Progressive' },
-  { a:'Travis Jesse, Mauro Masi', t:'Wildflower (Mauro Masi Remix)', l:'Salvage', bpm:115, fam:'Dreamy Progressive' },
-  { a:'XENIA REAPER', t:'Drift__', l:'Nept Polarisation', bpm:116, fam:'Indie Melodic' },
-  { a:'Superpoze', t:'Obsession', l:'Sïcle', bpm:115, fam:'Indie Melodic' },
-  { a:'Vincenzo', t:'Get To Know You', l:'Anjunadeep', bpm:117, fam:'Indie Melodic' },
-  { a:'Dusky', t:'Lost Highway', l:'Anjunadeep', bpm:116, fam:'Indie Melodic' },
-  { a:'Dusky', t:'Stick By This', l:'17 Steps', bpm:118, fam:'Indie Melodic' },
-  { a:'Soudant', t:'Lura', l:'Lura', bpm:114, fam:'Indie Melodic' },
-  { a:'Oron K, YAKOS, KSANA', t:'Jolene', l:'Ritter Butzke Records', bpm:116, fam:'Indie Melodic' },
-  { a:'ÜDORA, Kamil Grabowski', t:'Malibu (Deeplomatik Remix)', l:'Shango Records', bpm:117, fam:'Indie Melodic' },
-  { a:'Sean Branton', t:'Virtue', l:'Warung Recordings', bpm:118, fam:'Indie Melodic' },
-  { a:'MARINI, Purple Ice', t:'Nightshade', l:'Purple Ice Records', bpm:117, fam:'Indie Melodic' },
-  { a:'Hugo Samba, Brahim Samba, Sounds Of Sirin', t:'Frenka', l:'Sounds Of Sirin', bpm:115, fam:'Organic Emotional' },
-  { a:'Summer Fusion', t:'Organic Horizon', l:'Ibiza Sax', bpm:112, fam:'Organic Emotional' },
-  { a:'UCCEN WATLAS', t:'Wahia', l:'—', bpm:110, fam:'Organic Emotional' },
-  { a:'Marga Sol, Tibetania', t:'Memoria', l:'—', bpm:112, fam:'Organic Emotional' },
-  { a:'Sebastian Mullaert', t:'Traces', l:'—', bpm:114, fam:'Organic Emotional' },
-  { a:'Nox Vahn, Marsh', t:'Come Together', l:'—', bpm:113, fam:'Organic Emotional' },
-  { a:'Elavenu', t:'Mine', l:'—', bpm:108, fam:'Organic Emotional' },
-  { a:'BOHEM, Sounds Of Sirin', t:'Playing on the Heaven', l:'—', bpm:110, fam:'Organic Emotional' },
-  { a:'rÜ, Cafe De Anatolia', t:'A Strange and Special Air', l:'—', bpm:114, fam:'Organic Emotional' },
-  { a:'Mauro Masi', t:'Da Na Nahie', l:'Purple EP', bpm:116, fam:'Organic Emotional' },
-  { a:'Toni Ter Wonder, Tibetania', t:'Rumena', l:'Rumena', bpm:112, fam:'Organic Emotional' },
-  { a:'Ceas', t:'Vision', l:'—', bpm:109, fam:'Organic Emotional' },
-  { a:'BuVu, David de José', t:'Nara', l:'—', bpm:116, fam:'Organic Emotional' },
-  { a:'Max Mignot, RAMEFF', t:'Chemistry (Rameff Remix)', l:'Kairos', bpm:117, fam:'Organic Emotional' },
-  { a:'Hugo Samba, Sounds Of Sirin', t:'Your Oasis', l:'—', bpm:112, fam:'Organic Emotional' },
-  { a:'roamr', t:'Stay Low', l:'—', bpm:114, fam:'Organic Emotional' },
-  { a:'Maple Sun', t:'Life Echoes', l:'—', bpm:116, fam:'Organic Emotional' },
-  { a:'Netochno, Sounds Of Sirin', t:'In The Past', l:'Sounds Of Sirin 2025', bpm:115, fam:'Organic Emotional' },
-  { a:'Sonic Dust, Hazner', t:'Sad Island (Hazner Remix)', l:'Sad Island', bpm:116, fam:'Organic Emotional' },
-  { a:'Modd, Songspire', t:'Ikigai', l:'Songspire Records', bpm:116, fam:'Organic Emotional' },
-  { a:'Seventh Soul, Sounds Of Sirin', t:'Anar', l:'—', bpm:110, fam:'Organic Emotional' },
-  { a:'MacZito, Ntsakosoul, Vhuvii', t:'Pictures', l:'Canvas of Sound', bpm:118, fam:'Afro Groove' },
-  { a:'CHOMBA', t:'Fermee', l:'The Leftovers', bpm:119, fam:'Afro Groove' },
-  { a:'Sparrow & Barbossa, Caiiro', t:'Amore Profondo', l:'—', bpm:118, fam:'Afro Groove' },
-  { a:'Citizen Deep, Maline Aura', t:'Ubala', l:'—', bpm:116, fam:'Afro Groove' },
-  { a:'June Freedom, Naika', t:'Messi (Sunset Mix)', l:'—', bpm:115, fam:'Afro Groove' },
-  { a:'KidsILive', t:'Monsters R Us', l:'Break Your Heart', bpm:118, fam:'Afro Groove' },
-  { a:'Djena', t:'In Motion', l:'—', bpm:118, fam:'Afro Groove' },
-  { a:'Fabian Balino', t:'Have It All', l:'—', bpm:118, fam:'Afro Groove' },
-  { a:'Zigan Aldi, MetinKMusic', t:'Que Quando', l:'Abusadora', bpm:116, fam:'Afro Groove' },
-  { a:'Elias Fassos, RisK (GR)', t:'Cherry Vanilla (Sigma Pr Remix)', l:'Cherry Vanilla', bpm:117, fam:'Afro Groove' },
-  { a:'DeeJay Soul Key', t:'Abiro (Deep House Revisit)', l:'Abiro', bpm:115, fam:'Afro Groove' },
-  { a:'AIWAA, Stories of Dharma', t:'Satori', l:'Satori', bpm:108, fam:'Spiritual Organic' },
-  { a:'Pablo Bolivar', t:'Story', l:'Other Stories', bpm:113, fam:'Deep Storytelling' },
-  { a:'16BL', t:'Beat Organ', l:'Anjunadeep', bpm:116, fam:'Deep Storytelling' },
-  { a:'16BL', t:'Deep In My Soul', l:'Anjunadeep', bpm:117, fam:'Deep Storytelling' },
-  { a:'Godblesscomputers', t:'Drowned in Blue', l:'Ninja Tune', bpm:112, fam:'Deep Storytelling' },
-  { a:'Slow Riffs', t:'Vertical Horizon', l:'Simulacra Records', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Frankie M.', t:'Bark', l:'Luz De Selva', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Yoni Yarchi', t:"Don't Think Loud", l:'Subconscious EP', bpm:120, fam:'Hypnotic Raw' },
-  { a:'Leap Seconds', t:'Bushido', l:'Bushido', bpm:121, fam:'Hypnotic Raw' },
-  { a:'Aris Kindt', t:'Saichh Sequences', l:'Now Claims My Timid Heart', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Joachim Spieth', t:'Chain', l:'Affin Records', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Joachim Spieth', t:'Phantom', l:'Affin Records', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Amotik', t:'Shaam', l:'Amotik', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Amotik', t:'Din', l:'Amotik', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Kat Davids, Mascha', t:'Onera', l:'Onera', bpm:121, fam:'Hypnotic Raw' },
-  { a:'Feel Fly', t:'Thecla', l:'Festina Lente', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Repair', t:'Seven Sisters Electric Plant', l:'Lines Drawn', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Ludwig Leitner', t:'Indianman', l:'Belladonna', bpm:123, fam:'Hypnotic Raw' },
-  { a:'Johannes Volk', t:'Three Missing Puzzle Pieces', l:'A New Biosphere', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Awaken', t:'The Abyss', l:'Fragments of Frequencies', bpm:121, fam:'Hypnotic Raw' },
-  { a:'Droneghost', t:'Drip Cycle', l:'Steam Ritual', bpm:122, fam:'Hypnotic Raw' },
-  { a:'Mike Parker', t:'Forward (Donato Dozzy Remix)', l:'Geophone Records', bpm:123, fam:'Hypnotic Raw' },
-  { a:'Folding Waves', t:'Tides', l:'TEN', bpm:121, fam:'Hypnotic Raw' },
-  { a:'Krubim', t:'Mocoa Rules', l:'Séptimo Sol', bpm:121, fam:'Hypnotic Raw' },
-  { a:'Dino Sabatini', t:'Euphemus', l:'Chiron', bpm:124, fam:'Peak Raw' },
-  { a:'Dino Sabatini', t:'Echion', l:'Chiron', bpm:124, fam:'Peak Raw' },
-  { a:'DJ Bone', t:'Shook Ones', l:'Subject Detroit', bpm:124, fam:'Peak Raw' },
-  { a:'Noni', t:'Zebra', l:'Loud Thoughts', bpm:122, fam:'Peak Raw' },
-  { a:'MYTRIPISMYTRIP', t:'Rage', l:'Rage People', bpm:122, fam:'Peak Raw' },
-  { a:'Leibniz', t:'Corridor', l:'Corridor EP', bpm:123, fam:'Peak Raw' },
-  { a:'Rawdecks', t:'Chrome Hearted', l:'The Cost of Living', bpm:123, fam:'Peak Raw' },
-  { a:'Oliver Kalte', t:'Nachtglanz', l:'Klangfall', bpm:122, fam:'Peak Raw' },
-  { a:'Dino Sabatini', t:'Medea', l:'Chiron', bpm:124, fam:'Peak Raw' },
-  { a:'Jamie Bissmire', t:'Neolithic Dreams', l:'Seasons & Cycles', bpm:123, fam:'Peak Raw' },
-];
-
-// ═══════════════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════════════
-
-const STATE = {
-  artist: '',
-  lineup: [],       // [{n, g, genres, bpm, fams, ceil, photo}]
-  slot: null,
-  slotCeil: 116,
-  venue: null,
-  manualOpen: false,
-  spotifyToken: null,
-  photoCache: {},
+const VFAM={
+  club:[],
+  festival:['Organic Emotional','Spiritual Organic','Indie Melodic','Dreamy Progressive'],
+  pool:['Organic Emotional','Afro Groove'],
+  after:['Hypnotic Raw','Peak Raw','Groove Minimal'],
 };
 
-let currentScreen = 0;
-let searchDebounce = null;
+const TRACKS=[
+  {a:'Jaques Le Noir',t:'Soul and Love',l:'New Creatures',bpm:119,fam:'Winehouse'},
+  {a:'Paul Lock',t:'Say This',l:'Family Grooves',bpm:124,fam:'Winehouse'},
+  {a:'Fouk',t:'Neon Drift',l:'Heist Recordings',bpm:124,fam:'Winehouse'},
+  {a:'Aircrax',t:'707 Baby (DJ Merci Remix)',l:'Beast River Records',bpm:121,fam:'Winehouse'},
+  {a:'Franck Roger',t:"Lola's Scream",l:'Seasons Limited',bpm:119,fam:'Winehouse'},
+  {a:'Lenny Fontana',t:'If You Want Me',l:'King Street Sounds',bpm:124,fam:'Winehouse'},
+  {a:'DJ Dove, DJ Steaw',t:'Illusions',l:'Local Talk',bpm:123,fam:'Winehouse'},
+  {a:'Demarkus Lewis',t:'Shuffle Board',l:'Deez Highlight',bpm:124,fam:'Winehouse'},
+  {a:'Franck Roger',t:"You're In Love",l:'Real Tone Records',bpm:118,fam:'Winehouse'},
+  {a:'Mika Olson',t:'Chord Looper',l:"Terry's Cafe",bpm:120,fam:'Winehouse'},
+  {a:'Tony Momrelle',t:'This Could Be Us',l:'Layabout Music',bpm:118,fam:'Winehouse'},
+  {a:'Rollercone',t:'Promises',l:'Back at Home',bpm:120,fam:'Winehouse'},
+  {a:'Plaisance',t:'Afterhours',l:'Coldie EP',bpm:116,fam:'Winehouse'},
+  {a:'Cem Gemalmaz',t:'Somebody',l:'Deeperfect',bpm:123,fam:'Groove Minimal'},
+  {a:'Subb-an',t:'Grooves & Tools 007',l:'Subb-an',bpm:121,fam:'Groove Minimal'},
+  {a:'Subb-an',t:'Grooves & Tools 008',l:'Subb-an',bpm:121,fam:'Groove Minimal'},
+  {a:'Evren Ulusoy',t:'Dearly Devoted',l:'Plastic City',bpm:122,fam:'Progressive Warm'},
+  {a:'Sam Shure',t:'Louna',l:'Innervisions',bpm:118,fam:'Progressive Warm'},
+  {a:'Alexander Sound',t:'Love and Money',l:'Manual Music',bpm:120,fam:'Progressive Warm'},
+  {a:'D.M.P',t:'Passion and Pain (Dust Yard Remix)',l:'Hoomidaas',bpm:117,fam:'Progressive Warm'},
+  {a:'FMENEZS, Caio Assis',t:'Limbo',l:'LADR',bpm:118,fam:'Progressive Warm'},
+  {a:'Hraach',t:'Reality Shifting',l:'Sushupti',bpm:118,fam:'Progressive Warm'},
+  {a:'Peter Mac',t:'Enough 2026',l:'Hoomidaas',bpm:119,fam:'Progressive Warm'},
+  {a:'Abaze',t:'Rojo Vivo',l:'Hoomidaas',bpm:120,fam:'Progressive Warm'},
+  {a:'Chris Barag',t:'Tempt With Discovery',l:'Manual Music',bpm:118,fam:'Progressive Warm'},
+  {a:'Way Out West, Guy J',t:'Tuesday Maybe (Guy J Remix)',l:'Tuesday Maybe',bpm:118,fam:'Progressive Warm'},
+  {a:'FMENEZS',t:'Morning Birds',l:'LADR',bpm:116,fam:'Dreamy Progressive'},
+  {a:'Hans Gerd',t:'Aurora',l:'Cybertron Records',bpm:115,fam:'Dreamy Progressive'},
+  {a:'Dunadry',t:'Removed Mind',l:'Steyoyoke',bpm:116,fam:'Dreamy Progressive'},
+  {a:'AudioStorm',t:'Hologram Sunday',l:'Unknown Destination',bpm:117,fam:'Dreamy Progressive'},
+  {a:'Aetha',t:'Someday (Aman Anand Remix)',l:'Stellar Fountain',bpm:115,fam:'Dreamy Progressive'},
+  {a:'Lake Avalon',t:'Moon',l:'Mixed Melodic',bpm:114,fam:'Dreamy Progressive'},
+  {a:'Trilucid',t:'Stories In Light (Sunset Mix)',l:'Stories In Light',bpm:114,fam:'Dreamy Progressive'},
+  {a:'Martin Roth',t:'Beautiful Life',l:'Anjunadeep',bpm:115,fam:'Dreamy Progressive'},
+  {a:'Martin Roth',t:'Have You Ever',l:'Anjunadeep',bpm:116,fam:'Dreamy Progressive'},
+  {a:'Andy Cato',t:'7AM Drop',l:'Anjunadeep',bpm:117,fam:'Dreamy Progressive'},
+  {a:'DAVI',t:'The Bay 6 Pt. 2',l:'Anjunadeep',bpm:115,fam:'Dreamy Progressive'},
+  {a:'Stelios Vassiloudis',t:'Everybody Is Here',l:'—',bpm:116,fam:'Dreamy Progressive'},
+  {a:'A.M.R, Aether',t:'Without You',l:'—',bpm:113,fam:'Dreamy Progressive'},
+  {a:'Nuage',t:'Stones Speak Silent',l:'—',bpm:114,fam:'Dreamy Progressive'},
+  {a:'VEHA, Rondo Mo',t:'Golden Cellophane',l:'Euphoric Beats 026',bpm:117,fam:'Dreamy Progressive'},
+  {a:'Slow Hearts',t:'Higher Than the Clouds',l:'Higher Than the Clouds',bpm:117,fam:'Dreamy Progressive'},
+  {a:'XENIA REAPER',t:'Drift__',l:'Nept Polarisation',bpm:116,fam:'Indie Melodic'},
+  {a:'Superpoze',t:'Obsession',l:'Sïcle',bpm:115,fam:'Indie Melodic'},
+  {a:'Vincenzo',t:'Get To Know You',l:'Anjunadeep',bpm:117,fam:'Indie Melodic'},
+  {a:'Dusky',t:'Lost Highway',l:'Anjunadeep',bpm:116,fam:'Indie Melodic'},
+  {a:'Dusky',t:'Stick By This',l:'17 Steps',bpm:118,fam:'Indie Melodic'},
+  {a:'Soudant',t:'Lura',l:'Lura',bpm:114,fam:'Indie Melodic'},
+  {a:'Oron K, YAKOS, KSANA',t:'Jolene',l:'Ritter Butzke Records',bpm:116,fam:'Indie Melodic'},
+  {a:'ÜDORA, Kamil Grabowski',t:'Malibu (Deeplomatik Remix)',l:'Shango Records',bpm:117,fam:'Indie Melodic'},
+  {a:'Sean Branton',t:'Virtue',l:'Warung Recordings',bpm:118,fam:'Indie Melodic'},
+  {a:'MARINI, Purple Ice',t:'Nightshade',l:'Purple Ice Records',bpm:117,fam:'Indie Melodic'},
+  {a:'Hugo Samba, Brahim Samba, Sounds Of Sirin',t:'Frenka',l:'Sounds Of Sirin',bpm:115,fam:'Organic Emotional'},
+  {a:'UCCEN WATLAS',t:'Wahia',l:'—',bpm:110,fam:'Organic Emotional'},
+  {a:'Marga Sol, Tibetania',t:'Memoria',l:'—',bpm:112,fam:'Organic Emotional'},
+  {a:'Sebastian Mullaert',t:'Traces',l:'—',bpm:114,fam:'Organic Emotional'},
+  {a:'Nox Vahn, Marsh',t:'Come Together',l:'—',bpm:113,fam:'Organic Emotional'},
+  {a:'Elavenu',t:'Mine',l:'—',bpm:108,fam:'Organic Emotional'},
+  {a:'BOHEM, Sounds Of Sirin',t:'Playing on the Heaven',l:'—',bpm:110,fam:'Organic Emotional'},
+  {a:'rÜ, Cafe De Anatolia',t:'A Strange and Special Air',l:'—',bpm:114,fam:'Organic Emotional'},
+  {a:'Mauro Masi',t:'Da Na Nahie',l:'Purple EP',bpm:116,fam:'Organic Emotional'},
+  {a:'Toni Ter Wonder, Tibetania',t:'Rumena',l:'Rumena',bpm:112,fam:'Organic Emotional'},
+  {a:'Ceas',t:'Vision',l:'—',bpm:109,fam:'Organic Emotional'},
+  {a:'BuVu, David de José',t:'Nara',l:'—',bpm:116,fam:'Organic Emotional'},
+  {a:'Max Mignot, RAMEFF',t:'Chemistry (Rameff Remix)',l:'Kairos',bpm:117,fam:'Organic Emotional'},
+  {a:'Hugo Samba, Sounds Of Sirin',t:'Your Oasis',l:'—',bpm:112,fam:'Organic Emotional'},
+  {a:'roamr',t:'Stay Low',l:'—',bpm:114,fam:'Organic Emotional'},
+  {a:'Maple Sun',t:'Life Echoes',l:'—',bpm:116,fam:'Organic Emotional'},
+  {a:'Netochko, Sounds Of Sirin',t:'In The Past',l:'Sounds Of Sirin 2025',bpm:115,fam:'Organic Emotional'},
+  {a:'MacZito, Ntsakosoul, Vhuvii',t:'Pictures',l:'Canvas of Sound',bpm:118,fam:'Afro Groove'},
+  {a:'CHOMBA',t:'Fermee',l:'The Leftovers',bpm:119,fam:'Afro Groove'},
+  {a:'Sparrow & Barbossa, Caiiro',t:'Amore Profondo',l:'—',bpm:118,fam:'Afro Groove'},
+  {a:'Citizen Deep, Maline Aura',t:'Ubala',l:'—',bpm:116,fam:'Afro Groove'},
+  {a:'June Freedom, Naika',t:'Messi (Sunset Mix)',l:'—',bpm:115,fam:'Afro Groove'},
+  {a:'KidsILive',t:'Monsters R Us',l:'Break Your Heart',bpm:118,fam:'Afro Groove'},
+  {a:'Djena',t:'In Motion',l:'—',bpm:118,fam:'Afro Groove'},
+  {a:'Fabian Balino',t:'Have It All',l:'—',bpm:118,fam:'Afro Groove'},
+  {a:'AIWAA, Stories of Dharma',t:'Satori',l:'Satori',bpm:108,fam:'Spiritual Organic'},
+  {a:'Pablo Bolivar',t:'Story',l:'Other Stories',bpm:113,fam:'Deep Storytelling'},
+  {a:'16BL',t:'Beat Organ',l:'Anjunadeep',bpm:116,fam:'Deep Storytelling'},
+  {a:'16BL',t:'Deep In My Soul',l:'Anjunadeep',bpm:117,fam:'Deep Storytelling'},
+  {a:'Slow Riffs',t:'Vertical Horizon',l:'Simulacra Records',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Frankie M.',t:'Bark',l:'Luz De Selva',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Yoni Yarchi',t:"Don't Think Loud",l:'Subconscious EP',bpm:120,fam:'Hypnotic Raw'},
+  {a:'Aris Kindt',t:'Saichh Sequences',l:'Now Claims My Timid Heart',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Joachim Spieth',t:'Chain',l:'Affin Records',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Amotik',t:'Shaam',l:'Amotik',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Amotik',t:'Din',l:'Amotik',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Feel Fly',t:'Thecla',l:'Festina Lente',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Repair',t:'Seven Sisters Electric Plant',l:'Lines Drawn',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Ludwig Leitner',t:'Indianman',l:'Belladonna',bpm:123,fam:'Hypnotic Raw'},
+  {a:'Johannes Volk',t:'Three Missing Puzzle Pieces',l:'A New Biosphere',bpm:122,fam:'Hypnotic Raw'},
+  {a:'Awaken',t:'The Abyss',l:'Fragments of Frequencies',bpm:121,fam:'Hypnotic Raw'},
+  {a:'Dino Sabatini',t:'Euphemus',l:'Chiron',bpm:124,fam:'Peak Raw'},
+  {a:'Dino Sabatini',t:'Echion',l:'Chiron',bpm:124,fam:'Peak Raw'},
+  {a:'DJ Bone',t:'Shook Ones',l:'Subject Detroit',bpm:124,fam:'Peak Raw'},
+  {a:'Noni',t:'Zebra',l:'Loud Thoughts',bpm:122,fam:'Peak Raw'},
+  {a:'MYTRIPISMYTRIP',t:'Rage',l:'Rage People',bpm:122,fam:'Peak Raw'},
+  {a:'Leibniz',t:'Corridor',l:'Corridor EP',bpm:123,fam:'Peak Raw'},
+  {a:'Rawdecks',t:'Chrome Hearted',l:'The Cost of Living',bpm:123,fam:'Peak Raw'},
+];
 
-// ═══════════════════════════════════════════════════════════════
-// SPOTIFY
-// ═══════════════════════════════════════════════════════════════
+let ST={
+  artist:'',lineup:[],slot:null,venue:null,
+  manOpen:false,photoCache:{},
+  // banco de artistas enriquecido com dados do Spotify
+  enrichedArtists:{},
+};
+let cur=0, srchTimer=null, curAudio=null;
 
-async function initSpotify() {
-  try {
-    const r = await fetch('/api/spotify');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    STATE.spotifyToken = d.access_token;
-    setSpotifyStatus('ok', '● SPOTIFY: CONECTADO');
-  } catch (e) {
-    setSpotifyStatus('err', '● SPOTIFY: OFFLINE (usando iniciais)');
-  }
+// ── SPOTIFY ──────────────────────────────────────────────────────
+async function initSpotify(){
+  try{
+    const r=await fetch('/api/spotify');
+    if(!r.ok) throw new Error();
+    setSpSt('ok','● SPOTIFY: CONECTADO');
+  }catch(e){setSpSt('err','● SPOTIFY: OFFLINE')}
+}
+function setSpSt(cls,msg){
+  const el=document.getElementById('spSt');
+  if(!el) return;
+  el.innerHTML=`<span class="sp-dot"></span>${msg}`;
+  el.className=`sp-status ${cls}`;
 }
 
-function setSpotifyStatus(type, msg) {
-  const el = document.getElementById('spotifyStatus');
-  el.innerHTML = `<span class="sp-dot"></span>${msg}`;
-  el.className = `sp-status ${type}`;
-}
-
-async function getArtistPhoto(name) {
-  if (STATE.photoCache[name] !== undefined) return STATE.photoCache[name];
-
-  // 1. Tenta via /api/spotify?id=... (mais preciso)
-  const spotifyId = SPOTIFY_IDS[name];
-  if (spotifyId) {
-    try {
-      const r = await fetch(`/api/spotify?id=${spotifyId}`);
-      if (r.ok) {
-        const d = await r.json();
-        STATE.photoCache[name] = d.photo || '';
-        return STATE.photoCache[name];
-      }
-    } catch(e) {}
-  }
-
-  // 2. Tenta via busca por nome
-  try {
-    const r = await fetch(`/api/spotify?artist=${encodeURIComponent(name)}`);
-    if (r.ok) {
-      const d = await r.json();
-      STATE.photoCache[name] = d.photo || '';
-      return STATE.photoCache[name];
+// Busca foto + dados do artista no Spotify e salva no banco local
+async function enrichArtist(name){
+  if(ST.photoCache[name]!==undefined) return ST.photoCache[name];
+  try{
+    const r=await fetch(`/api/spotify?artist=${encodeURIComponent(name)}`);
+    if(!r.ok) throw new Error();
+    const d=await r.json();
+    ST.photoCache[name]=d.photo||'';
+    // Salva dados enriquecidos
+    if(d.id){
+      ST.enrichedArtists[name]={
+        spotifyId:d.id,
+        photo:d.photo||'',
+        genres:d.genres||[],
+        followers:d.followers||0,
+        popularity:d.popularity||0,
+        name:d.name||name,
+      };
     }
-  } catch(e) {}
-
-  STATE.photoCache[name] = '';
-  return '';
-}
-
-// Busca livre no Spotify para artistas fora do banco
-async function searchSpotifyFree(query) {
-  try {
-    const r = await fetch(`/api/spotify?search=${encodeURIComponent(query)}`);
-    if (!r.ok) return [];
-    const d = await r.json();
-    return d.results || [];
-  } catch(e) {
-    return [];
+    return d.photo||'';
+  }catch(e){
+    ST.photoCache[name]='';
+    return '';
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// NAVIGATION
-// ═══════════════════════════════════════════════════════════════
-
-function goTo(n) {
-  document.getElementById(`screen${currentScreen}`).classList.remove('active');
-  currentScreen = n;
-  document.getElementById(`screen${n}`).classList.add('active');
-  updateProgress();
-  if (n === 4) buildReview();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+// ── SLOTS: atualiza BPM exibido baseado nos headliners ──────────
+function updateSlotTags(){
+  if(!ST.lineup.length) return;
+  // Detecta o grupo predominante dos headliners
+  const groups=ST.lineup.map(d=>d.g);
+  const dominant=groups.sort((a,b)=>groups.filter(v=>v===a).length-groups.filter(v=>v===b).length).pop()||'g2';
+  const bpm1=GROUP_BPM[dominant]?.slot1||{min:110,max:120};
+  const bpm2=GROUP_BPM[dominant]?.slot2||{min:118,max:122};
+  const t1=document.getElementById('slot1tag');
+  const t2=document.getElementById('slot2tag');
+  if(t1) t1.textContent=`${bpm1.min} – ${bpm1.max} BPM`;
+  if(t2) t2.textContent=`${bpm2.min} – ${bpm2.max} BPM`;
+  ST.dominantGroup=dominant;
 }
 
-function updateProgress() {
-  const pct = [0, 20, 40, 60, 80][currentScreen];
-  document.getElementById('progressFill').style.width = `${pct}%`;
-  ['ps0','ps1','ps2','ps3','ps4'].forEach((id, i) => {
-    const el = document.getElementById(id);
-    el.className = 'progress-step' +
-      (i < currentScreen ? ' done' : i === currentScreen ? ' active' : '');
+// ── NAVIGATION ───────────────────────────────────────────────────
+function go(n){
+  document.getElementById('s'+cur).classList.remove('active');
+  cur=n;
+  document.getElementById('s'+n).classList.add('active');
+  updBar();
+  if(n===4) buildRev();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function updBar(){
+  const p=[0,20,40,60,80][cur];
+  document.getElementById('pfill').style.width=p+'%';
+  ['ps0','ps1','ps2','ps3','ps4'].forEach((id,i)=>{
+    document.getElementById(id).className='ps'+(i<cur?' done':i===cur?' active':'');
   });
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STEP 0 — NOME ARTÍSTICO
-// ═══════════════════════════════════════════════════════════════
-
-function checkStep0() {
-  STATE.artist = document.getElementById('artistInput').value.trim();
-  document.getElementById('nextBtn0').disabled = STATE.artist.length < 1;
+// ── S0 ───────────────────────────────────────────────────────────
+function ck0(){
+  ST.artist=document.getElementById('artistIn').value.trim();
+  document.getElementById('n0').disabled=!ST.artist;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STEP 1 — LINE-UP / BUSCA DE ARTISTAS
-// ═══════════════════════════════════════════════════════════════
-
-function handleSearch(q) {
-  // Ícone some quando digitando
-  document.getElementById('searchIcon').classList.toggle('hidden', q.length > 0);
-
-  clearTimeout(searchDebounce);
-  if (!q || q.length < 2) {
-    document.getElementById('djDropdown').style.display = 'none';
-    return;
-  }
-
-  searchDebounce = setTimeout(() => performSearch(q), 280);
+// ── S1: busca somente no banco local ────────────────────────────
+function onSearch(q){
+  document.getElementById('sico').classList.toggle('hidden',q.length>0);
+  clearTimeout(srchTimer);
+  if(!q||q.length<2){document.getElementById('drop').style.display='none';return}
+  srchTimer=setTimeout(()=>renderDrop(q),200);
 }
 
-async function performSearch(q) {
-  const dropdown = document.getElementById('djDropdown');
-
-  // Busca no banco local
-  const localResults = LOCAL_DJS.filter(d =>
-    d.n.toLowerCase().includes(q.toLowerCase()) ||
+function renderDrop(q){
+  const drop=document.getElementById('drop');
+  const res=LOCAL_DJS.filter(d=>
+    d.n.toLowerCase().includes(q.toLowerCase())||
     d.genres.toLowerCase().includes(q.toLowerCase())
-  ).slice(0, 6);
+  ).slice(0,8);
 
-  // Busca no Spotify para resultados extras
-  let spotifyResults = [];
-  if (localResults.length < 4 && q.length >= 3) {
-    const raw = await searchSpotifyFree(q);
-    // Filtra artistas que já estão no banco local
-    spotifyResults = raw
-      .filter(r => !LOCAL_DJS.find(d => d.n.toLowerCase() === r.name.toLowerCase()))
-      .slice(0, 4)
-      .map(r => ({
-        n: r.name,
-        g: 'g1', // grupo padrão para artistas externos
-        genres: r.genres?.slice(0,2).join(' / ') || 'Artista do Spotify',
-        bpm: '?–?',
-        fams: ['Winehouse','Groove Minimal'],
-        ceil: 122,
-        photo: r.photo || '',
-        fromSpotify: true,
-      }));
-  }
-
-  const allResults = [...localResults, ...spotifyResults].slice(0, 8);
-
-  if (!allResults.length) {
-    dropdown.style.display = 'none';
+  if(!res.length){
+    drop.style.display='block';
+    drop.innerHTML=`<div class="no-result">Nenhum resultado para "<strong>${q}</strong>" — use o botão abaixo para adicionar manualmente.</div>`;
     return;
   }
-
-  dropdown.style.display = 'block';
-  renderDropdown(allResults);
-
-  // Carrega fotos async para banco local
-  localResults.forEach(async (dj, i) => {
-    const url = await getArtistPhoto(dj.n);
-    if (!url) return;
-    const img = dropdown.querySelector(`[data-row="${i}"] .avatar-img`);
-    const fb  = dropdown.querySelector(`[data-row="${i}"] .avatar-fb`);
-    if (img) { img.src = url; img.classList.add('loaded'); }
-    if (fb)  fb.classList.add('hidden');
-  });
-}
-
-function renderDropdown(results) {
-  const dropdown = document.getElementById('djDropdown');
-  dropdown.innerHTML = results.map((dj, i) => {
-    const gc  = GROUP_COLORS[dj.g] || GROUP_COLORS.g1;
-    const ini = dj.n.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-    const fromSpotifyBadge = dj.fromSpotify
-      ? `<span style="font-size:5px;color:#1db954;border:1px solid #1db954;padding:1px 5px;margin-left:5px">SPOTIFY</span>`
-      : '';
-
-    return `<div class="dj-row" data-row="${i}" onclick="selectDJ(${i})">
-      <div class="avatar-wrap">
-        ${dj.photo
-          ? `<img class="avatar-img loaded" src="${dj.photo}" alt="${dj.n}">
-             <div class="avatar-fb hidden" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>`
-          : `<img class="avatar-img" src="" alt="${dj.n}">
-             <div class="avatar-fb" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>`
-        }
+  drop.style.display='block';
+  drop.innerHTML=res.map((dj,i)=>{
+    const gc=GC[dj.g]||GC.g1;
+    const ini=dj.n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const bpm=GROUP_BPM[dj.g]?.slot1||{min:'?',max:'?'};
+    return`<div class="dj-row" data-idx="${i}" onclick="selDJ(${i})">
+      <div class="av-wrap">
+        <img class="av-img" src="" alt="${dj.n}" data-n="${dj.n}">
+        <div class="av-fb" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>
       </div>
       <div class="dj-info">
-        <div class="dj-name">${dj.n}${fromSpotifyBadge}</div>
-        <div class="dj-genre">${dj.genres}</div>
+        <div class="dj-name">${dj.n}</div>
+        <div class="dj-genre">${dj.genres} · <span style="color:${gc.c}">${GROUP_NAMES[dj.g]}</span></div>
       </div>
-      <span class="dj-bpm" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${dj.bpm}</span>
+      <span class="dj-bpm-tag" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${bpm.min}–${bpm.max}</span>
     </div>`;
   }).join('');
-
-  // Guarda resultados para uso no click
-  dropdown._results = results;
-}
-
-async function selectDJ(idx) {
-  const dropdown = document.getElementById('djDropdown');
-  const results  = dropdown._results || [];
-  const dj = results[idx];
-  if (!dj) return;
-  if (STATE.lineup.find(d => d.n === dj.n)) return;
-
-  // Busca foto se não tiver
-  let photo = dj.photo || '';
-  if (!photo && !dj.fromSpotify) {
-    photo = await getArtistPhoto(dj.n);
-  }
-
-  STATE.lineup.push({ ...dj, photo });
-
-  // Limpa busca
-  document.getElementById('djSearchInput').value = '';
-  document.getElementById('djDropdown').style.display = 'none';
-  document.getElementById('searchIcon').classList.remove('hidden');
-
-  renderChips();
-  document.getElementById('nextBtn1').disabled = false;
-}
-
-function addManual() {
-  const name  = document.getElementById('manualName').value.trim();
-  const group = document.getElementById('manualGroup').value;
-  if (!name || !group) return;
-
-  const GF = {
-    g1: { fams:['Winehouse','Groove Minimal'], ceil:122 },
-    g2: { fams:['Afro Groove','Organic Emotional','Progressive Warm'], ceil:120 },
-    g3: { fams:['Dreamy Progressive','Indie Melodic'], ceil:121 },
-    g4: { fams:['Hypnotic Raw','Peak Raw'], ceil:124 },
-  };
-  const m = GF[group];
-
-  STATE.lineup.push({
-    n: name,
-    g: group,
-    genres: GROUP_COLORS[group]?.name || group,
-    bpm: '?',
-    fams: m.fams,
-    ceil: m.ceil,
-    photo: '',
-    manual: true,
+  drop._res=res;
+  // Carrega fotos async e enriquece banco
+  res.forEach(async(dj,i)=>{
+    const url=await enrichArtist(dj.n);
+    if(!url) return;
+    const img=drop.querySelector(`[data-idx="${i}"] .av-img`);
+    const fb=drop.querySelector(`[data-idx="${i}"] .av-fb`);
+    if(img){img.src=url;img.classList.add('loaded')}
+    if(fb) fb.classList.add('hidden');
   });
+}
 
-  document.getElementById('manualName').value = '';
+async function selDJ(idx){
+  const res=document.getElementById('drop')._res||[];
+  const dj=res[idx];
+  if(!dj||ST.lineup.find(d=>d.n===dj.n)) return;
+  const photo=await enrichArtist(dj.n);
+  ST.lineup.push({...dj,photo});
+  document.getElementById('djIn').value='';
+  document.getElementById('drop').style.display='none';
+  document.getElementById('sico').classList.remove('hidden');
   renderChips();
-  document.getElementById('nextBtn1').disabled = false;
+  document.getElementById('n1').disabled=false;
+  updateSlotTags();
 }
 
-function toggleManual() {
-  STATE.manualOpen = !STATE.manualOpen;
-  document.getElementById('manualPanel').style.display = STATE.manualOpen ? 'block' : 'none';
-}
-
-function removeDJ(name) {
-  STATE.lineup = STATE.lineup.filter(d => d.n !== name);
+function addMan(){
+  const nm=document.getElementById('mNm').value.trim();
+  const g=document.getElementById('mGr').value;
+  if(!nm||!g) return;
+  const famMap={
+    g1:['Winehouse','Groove Minimal'],g2:['Progressive Warm','Dreamy Progressive'],
+    g3:['Dreamy Progressive','Indie Melodic'],g4:['Hypnotic Raw','Peak Raw'],
+    g5:['Peak Raw'],g6:['Afro Groove','Organic Emotional'],g7:['Organic Emotional','Spiritual Organic'],
+  };
+  ST.lineup.push({n:nm,g,genres:GROUP_NAMES[g]||g,fams:famMap[g]||[],photo:'',manual:true});
+  document.getElementById('mNm').value='';
+  // Tenta buscar dados no Spotify mesmo para adicionados manualmente
+  enrichArtist(nm);
   renderChips();
-  document.getElementById('nextBtn1').disabled = STATE.lineup.length === 0;
+  document.getElementById('n1').disabled=false;
+  updateSlotTags();
 }
 
-function renderChips() {
-  const box = document.getElementById('lineupChips');
-  if (!STATE.lineup.length) {
-    box.innerHTML = '<span class="chips-empty">NENHUM ARTISTA SELECIONADO AINDA</span>';
-    return;
-  }
+function togMan(){
+  ST.manOpen=!ST.manOpen;
+  document.getElementById('manWrap').style.display=ST.manOpen?'block':'none';
+}
 
-  box.innerHTML = STATE.lineup.map(d => {
-    const gc  = GROUP_COLORS[d.g] || GROUP_COLORS.g1;
-    const ini = d.n.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
-    const avatar = d.photo
-      ? `<img class="chip-avatar" src="${d.photo}" alt="${d.n}">`
-      : `<div class="chip-fb" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>`;
+function remDJ(n){
+  ST.lineup=ST.lineup.filter(d=>d.n!==n);
+  renderChips();
+  document.getElementById('n1').disabled=ST.lineup.length===0;
+  updateSlotTags();
+}
 
-    return `<div class="chip" style="border-color:${gc.c};color:${gc.c};background:${gc.bg}" onclick="removeDJ('${d.n.replace(/'/g,"\\'")}')">
-      ${avatar}${d.n}${d.manual ? ' *' : ''} <span style="opacity:.4">×</span>
+function renderChips(){
+  const box=document.getElementById('chips');
+  if(!ST.lineup.length){box.innerHTML='<span class="chips-empty">Nenhum artista selecionado ainda</span>';return}
+  box.innerHTML=ST.lineup.map(d=>{
+    const gc=GC[d.g]||GC.g1;
+    const ini=d.n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    const av=d.photo
+      ?`<img class="chip-av" src="${d.photo}" alt="${d.n}">`
+      :`<div class="chip-fb" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>`;
+    return`<div class="chip" style="border-color:${gc.c};color:${gc.c};background:${gc.bg}" onclick="remDJ('${d.n.replace(/'/g,"\\'")}')">
+      ${av}${d.n}${d.manual?' *':''} <span style="opacity:.4;font-size:10px">×</span>
     </div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STEP 2 — SLOT
-// ═══════════════════════════════════════════════════════════════
-
-function selectSlot(el, name, ceil) {
-  document.querySelectorAll('#slotOptions .option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  STATE.slot = name;
-  STATE.slotCeil = ceil;
-  document.getElementById('nextBtn2').disabled = false;
+// ── S2: slot ────────────────────────────────────────────────────
+function selSlot(el,slotKey){
+  document.querySelectorAll('#slotO .opt:not(.disabled)').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  ST.slot=slotKey;
+  // Calcula BPM baseado no grupo dominante
+  const g=ST.dominantGroup||'g2';
+  const bpm=GROUP_BPM[g]?.[slotKey]||{min:110,max:120};
+  ST.bpmMin=bpm.min; ST.bpmMax=bpm.max;
+  document.getElementById('n2').disabled=false;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STEP 3 — VENUE
-// ═══════════════════════════════════════════════════════════════
-
-function selectVenue(el, v) {
-  document.querySelectorAll('#venueOptions .option').forEach(o => o.classList.remove('selected'));
-  el.classList.add('selected');
-  STATE.venue = v;
-  document.getElementById('nextBtn3').disabled = false;
+// ── S3: venue ───────────────────────────────────────────────────
+function selV(el,v){
+  document.querySelectorAll('#venueO .opt').forEach(o=>o.classList.remove('sel'));
+  el.classList.add('sel');
+  ST.venue=v;
+  document.getElementById('n3').disabled=false;
+  // Mostra nota festival
+  const note=document.getElementById('festNote');
+  note.classList.toggle('visible',v==='festival');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// STEP 4 — REVIEW + GENERATE
-// ═══════════════════════════════════════════════════════════════
-
-function buildReview() {
-  const ceil  = STATE.slotCeil;
-  const floor = Math.max(104, ceil - 13);
-  const names = STATE.lineup.map(d => d.n).join(', ');
-
-  const SLOT_LABELS = {
-    slot1: '1° SLOT — ABERTURA (22:00–23:30)',
-    slot2: '2° SLOT — WARM-UP (23:30–01:00)',
-    slot3: '3° SLOT — CRESCENTE (01:00–02:30)',
-    slot4: '4° SLOT — ÁPICE (02:30–04:00)',
-    slot5: '5° SLOT — CLOSING (04:00–06:00)',
-  };
-  const VENUE_LABELS = {
-    club:'CLUB / INDOOR', festival:'FESTIVAL / OUTDOOR',
-    beach:'BEACH / PISCINA', rooftop:'ROOFTOP / GARDEN', after:'AFTER-HOURS / LOFT',
-  };
-
-  document.getElementById('reviewBox').innerHTML = `
-    <div class="review-grid">
-      <div>
-        <div class="review-label">ARTISTA</div>
-        <div class="review-value">${STATE.artist}</div>
-      </div>
-      <div>
-        <div class="review-label">VENUE</div>
-        <div class="review-value">${VENUE_LABELS[STATE.venue] || STATE.venue}</div>
-      </div>
-      <div style="grid-column:1/-1">
-        <div class="review-label">SLOT</div>
-        <div class="review-value" style="color:#a855f7">${SLOT_LABELS[STATE.slot] || STATE.slot}</div>
-      </div>
-      <div style="grid-column:1/-1">
-        <div class="review-label">LINE-UP</div>
-        <div class="review-value" style="color:#4ade80;line-height:2.2">${names}</div>
-      </div>
-      <div style="grid-column:1/-1">
-        <div class="review-label">BPM DO WARM-UP</div>
-        <div class="review-bpm">${floor} – ${ceil} BPM</div>
-      </div>
-    </div>`;
+// ── S4: review ──────────────────────────────────────────────────
+function buildRev(){
+  const SL={slot1:'1° Slot — Abertura',slot2:'2° Slot — Warm-Up'};
+  const VL={club:'Club / Indoor',festival:'Festival / Open Air',pool:'Pool Party / Beach Party',after:'After-Hours'};
+  const g=ST.dominantGroup||'g2';
+  const bpm=GROUP_BPM[g]?.[ST.slot]||{min:'?',max:'?'};
+  document.getElementById('revBox').innerHTML=`<div class="rev-grid">
+    <div><div class="rev-lbl">Artista</div><div class="rev-val">${ST.artist}</div></div>
+    <div><div class="rev-lbl">Venue</div><div class="rev-val">${VL[ST.venue]||'—'}</div></div>
+    <div style="grid-column:1/-1"><div class="rev-lbl">Slot</div><div class="rev-val" style="color:var(--accent3)">${SL[ST.slot]||'—'} · Grupo: ${GROUP_NAMES[g]}</div></div>
+    <div style="grid-column:1/-1"><div class="rev-lbl">Line-up</div><div class="rev-val" style="color:var(--green2)">${ST.lineup.map(d=>d.n).join(' · ')}</div></div>
+    <div style="grid-column:1/-1"><div class="rev-lbl">BPM do warm-up</div><div class="rev-bpm">${bpm.min} – ${bpm.max}</div></div>
+  </div>`;
 }
 
-function generateSet() {
-  const ceil  = STATE.slotCeil;
-  const floor = Math.max(104, ceil - 13);
+// ── GERAR ───────────────────────────────────────────────────────
+function generate(){
+  const g=ST.dominantGroup||'g2';
+  const bpm=GROUP_BPM[g]?.[ST.slot]||{min:110,max:120};
+  const ceil=bpm.max, floor=bpm.min;
 
-  // Coleta famílias dos headliners
-  const allFams = [];
-  STATE.lineup.forEach(dj =>
-    (dj.fams || []).forEach(f => { if (!allFams.includes(f)) allFams.push(f); })
-  );
-  // Adiciona famílias do venue
-  (VENUE_FAMILIES[STATE.venue] || []).forEach(f => {
-    if (!allFams.includes(f)) allFams.push(f);
-  });
+  const allFam=[];
+  ST.lineup.forEach(dj=>(dj.fams||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)}));
+  (VFAM[ST.venue]||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)});
 
-  // Pool de tracks compatíveis
-  let pool = TRACKS.filter(t => allFams.includes(t.fam) && t.bpm <= ceil && t.bpm >= floor);
-  if (pool.length < 8) pool = TRACKS.filter(t => allFams.includes(t.fam) && t.bpm <= ceil + 2);
-  if (pool.length < 8) pool = TRACKS.filter(t => t.bpm <= ceil && t.bpm >= floor);
+  // Para festival, expande o pool de famílias
+  let pool;
+  if(ST.venue==='festival'){
+    pool=TRACKS.filter(t=>t.bpm>=floor-2&&t.bpm<=ceil+2);
+  }else{
+    pool=TRACKS.filter(t=>allFam.includes(t.fam)&&t.bpm>=floor&&t.bpm<=ceil);
+    if(pool.length<8) pool=TRACKS.filter(t=>allFam.includes(t.fam)&&t.bpm<=ceil+2);
+    if(pool.length<8) pool=TRACKS.filter(t=>t.bpm>=floor&&t.bpm<=ceil);
+  }
+  pool=[...pool].sort(()=>Math.random()-.5);
 
-  pool = [...pool].sort(() => Math.random() - .5);
-
-  // 4 fases narrativas com ranges de BPM progressivos
-  const phases = [
-    { fams:['Organic Emotional','Spiritual Organic','Dreamy Progressive'],           lo:floor,     hi:floor+3  },
-    { fams:['Afro Groove','Progressive Warm','Winehouse','Groove Minimal'],           lo:floor+2,   hi:floor+6  },
-    { fams:['Dreamy Progressive','Indie Melodic','Deep Storytelling','Progressive Warm'], lo:floor+5, hi:ceil-2 },
-    { fams:['Hypnotic Raw','Peak Raw','Groove Minimal'],                              lo:ceil-3,    hi:ceil     },
+  const phases=[
+    {fams:['Organic Emotional','Spiritual Organic','Dreamy Progressive'],lo:floor,hi:floor+3},
+    {fams:['Afro Groove','Progressive Warm','Winehouse','Groove Minimal'],lo:floor+2,hi:floor+6},
+    {fams:['Dreamy Progressive','Indie Melodic','Deep Storytelling','Progressive Warm'],lo:floor+4,hi:ceil-2},
+    {fams:['Hypnotic Raw','Peak Raw','Groove Minimal'],lo:ceil-3,hi:ceil},
   ];
 
-  const result = [];
-  const used   = new Set();
-
-  phases.forEach((ph, pi) => {
-    let cands = pool.filter(t =>
-      !used.has(t.t + t.a) && t.bpm >= ph.lo && t.bpm <= ph.hi && ph.fams.includes(t.fam)
-    );
-    if (cands.length < 3) cands = pool.filter(t =>
-      !used.has(t.t + t.a) && t.bpm >= ph.lo && t.bpm <= ph.hi
-    );
-    if (cands.length < 3) cands = pool.filter(t => !used.has(t.t + t.a));
-
-    cands.slice(0, 3).forEach(t => {
-      used.add(t.t + t.a);
-      result.push({ ...t, phase: pi });
-    });
+  const result=[];const used=new Set();
+  phases.forEach((ph,pi)=>{
+    let c=pool.filter(t=>!used.has(t.t+t.a)&&t.bpm>=ph.lo&&t.bpm<=ph.hi&&ph.fams.includes(t.fam));
+    if(c.length<3) c=pool.filter(t=>!used.has(t.t+t.a)&&t.bpm>=ph.lo&&t.bpm<=ph.hi);
+    if(c.length<3) c=pool.filter(t=>!used.has(t.t+t.a));
+    c.slice(0,3).forEach(t=>{used.add(t.t+t.a);result.push({...t,phase:pi})});
   });
-
-  // Completa até 12 se faltou
-  while (result.length < 12) {
-    const extra = pool.find(t => !used.has(t.t + t.a));
-    if (!extra) break;
-    used.add(extra.t + extra.a);
-    result.push({ ...extra, phase: 3 });
+  while(result.length<12){
+    const e=pool.find(t=>!used.has(t.t+t.a));
+    if(!e)break;
+    used.add(e.t+e.a);result.push({...e,phase:3});
   }
 
-  renderResults(result, ceil, floor);
-
-  // Pede nota curatorial à API Claude
-  requestCuratorialNote(result, ceil, floor);
+  renderRes(result,ceil,floor);
+  reqNote(result,ceil,floor);
+  fetchSpotifyTracks(g,ceil,floor);
 }
 
-function renderResults(tracks, ceil, floor) {
-  const box   = document.getElementById('resultsBox');
-  const names = STATE.lineup.map(d => d.n).join(' + ');
+function renderRes(tracks,ceil,floor){
+  const box=document.getElementById('resBox');
+  const names=ST.lineup.map(d=>d.n).join(' · ');
+  const famC={};tracks.forEach(t=>{famC[t.fam]=(famC[t.fam]||0)+1});
+  const topFam=Object.entries(famC).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([f])=>f).join(', ');
+  const g=ST.dominantGroup||'g2';
 
-  const famCount = {};
-  tracks.forEach(t => { famCount[t.fam] = (famCount[t.fam] || 0) + 1; });
-  const topFams = Object.entries(famCount).sort((a,b) => b[1]-a[1]).slice(0,2).map(([f]) => f).join(', ');
+  let html=`<div class="divider"></div>
+  <div class="res-title">12 Tracks Selecionadas</div>
+  <div class="res-ctx">
+    <strong>${ST.artist}</strong> · ${ST.slot} · ${GROUP_NAMES[g]}<br>
+    Line-up: ${names}<br>
+    BPM: ${floor}–${ceil} · Famílias: ${topFam}
+    ${ST.venue==='festival'?'<br><span style="color:var(--amber2)">Festival mode — pool expandido</span>':''}
+  </div>`;
 
-  let html = `
-    <div class="px-divider"></div>
-    <div class="results-title">◆ 12 TRACKS SELECIONADAS</div>
-    <div class="results-ctx">
-      ARTISTA: ${STATE.artist} · SLOT: ${STATE.slot?.toUpperCase()}<br>
-      LINE-UP: ${names}<br>
-      BPM RANGE: ${floor}–${ceil} · FAMÍLIAS: ${topFams.toUpperCase()}
+  [0,1,2,3].forEach(pi=>{
+    const ph=tracks.filter(t=>t.phase===pi);if(!ph.length)return;
+    const ps=PHASES[pi];
+    html+=`<div class="phase-hdr" style="color:${ps.c};border-color:${ps.c}20">
+      <div class="ph-dot" style="background:${ps.c}"></div>${ps.l}
     </div>`;
-
-  [0,1,2,3].forEach(pi => {
-    const phaseTracks = tracks.filter(t => t.phase === pi);
-    if (!phaseTracks.length) return;
-
-    const ps = PHASES[pi];
-    html += `
-      <div class="phase-header" style="color:${ps.color};border-bottom-color:${ps.color}30">
-        <div class="phase-dot" style="background:${ps.color}"></div>
-        ${ps.label}
+    ph.forEach((t,i)=>{
+      const fs=FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'};
+      const num=tracks.filter(x=>x.phase<pi).length+i+1;
+      html+=`<div class="track-card" style="border-left-color:${ps.c}">
+        <div class="tr-num">${String(num).padStart(2,'0')}</div>
+        <div><div class="tr-name">${t.t}</div><div class="tr-artist">${t.a}</div></div>
+        <div>
+          <span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>
+          <div class="tr-bpm">${t.bpm} BPM · ${t.l}</div>
+        </div>
       </div>`;
-
-    phaseTracks.forEach((t, i) => {
-      const fs  = FAMILY_STYLES[t.fam] || { c:'#94a3b8', bg:'rgba(148,163,184,.1)' };
-      const num = tracks.filter(x => x.phase < pi).length + i + 1;
-
-      html += `
-        <div class="track-card" style="border-left-color:${ps.color}">
-          <div class="track-num">${String(num).padStart(2, '0')}</div>
-          <div>
-            <div class="track-name">${t.t}</div>
-            <div class="track-artist">${t.a}</div>
-          </div>
-          <div>
-            <span class="track-family" style="color:${fs.c};border-color:${fs.c};background:${fs.bg}">${t.fam}</span>
-            <div class="track-bpm">${t.bpm} BPM · ${t.l}</div>
-          </div>
-        </div>`;
     });
   });
 
-  // Placeholder para nota curatorial
-  html += `
-    <div class="note-box" id="curNote">
-      <div class="note-loading">GERANDO NOTA CURATORIAL...</div>
-    </div>
-    <button class="btn-reset" onclick="generateSet()">▷ GERAR NOVA SELEÇÃO</button>
-    <button class="btn-restart" onclick="restart()">↺ RECOMEÇAR DO ZERO</button>`;
+  html+=`<div class="sp-section" id="spSection" style="display:none">
+    <div class="sp-title">◆ Descobertas recentes — Spotify</div>
+    <div id="spTracks"><div class="sp-loading">Buscando lançamentos recentes...</div></div>
+  </div>`;
 
-  box.innerHTML = html;
-  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  html+=`<div class="note" id="curNote"><div class="note-loading">Gerando nota curatorial...</div></div>`;
+  html+=`<button class="btn-reset" onclick="generate()">↺ Nova seleção</button>`;
+  html+=`<button class="btn-restart" onclick="restart()">Recomeçar do zero</button>`;
+  box.innerHTML=html;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-async function requestCuratorialNote(tracks, ceil, floor) {
-  try {
-    const payload = {
-      artist:   STATE.artist,
-      lineup:   STATE.lineup.map(d => ({ name: d.n, group: d.genres })),
-      slot:     STATE.slot,
-      venue:    STATE.venue,
-      bpmRange: `${floor}–${ceil}`,
-      tracks:   tracks.map(t => ({ track: t.t, artist: t.a, bpm: t.bpm, family: t.fam })),
-    };
+async function fetchSpotifyTracks(group,ceil,floor){
+  const headliner=ST.lineup[0]?.n;
+  if(!headliner) return;
+  try{
+    const r=await fetch(`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=180`);
+    if(!r.ok) return;
+    const d=await r.json();
+    const sec=document.getElementById('spSection');
+    const cont=document.getElementById('spTracks');
+    if(!sec||!cont) return;
+    if(!d.tracks?.length){sec.style.display='none';return}
+    sec.style.display='block';
+    cont.innerHTML=d.tracks.slice(0,6).map(t=>`
+      <div class="sp-track">
+        ${t.image?`<img class="sp-img" src="${t.image}" alt="${t.name}">`:'<div class="sp-img"></div>'}
+        <div>
+          <div class="sp-name">${t.name}</div>
+          <div class="sp-artist">${t.artist}</div>
+        </div>
+        <div class="sp-meta">
+          ${t.bpm?`<div class="sp-bpm">${t.bpm} BPM</div>`:''}
+          <div class="sp-date">${t.releaseDate||''}</div>
+        </div>
+        ${t.previewUrl?`<button class="sp-play" onclick="playPrev('${t.previewUrl}',this)">▶</button>`:''}
+      </div>`).join('');
+  }catch(e){
+    const sec=document.getElementById('spSection');
+    if(sec) sec.style.display='none';
+  }
+}
 
-    const r = await fetch('/api/generate', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
+function playPrev(url,btn){
+  if(curAudio){curAudio.pause();document.querySelectorAll('.sp-play').forEach(b=>b.textContent='▶')}
+  if(curAudio?.src===url){curAudio=null;return}
+  curAudio=new Audio(url);curAudio.play();btn.textContent='■';
+  curAudio.onended=()=>{btn.textContent='▶';curAudio=null};
+}
+
+async function reqNote(tracks,ceil,floor){
+  try{
+    const r=await fetch('/api/generate',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        artist:ST.artist,
+        lineup:ST.lineup.map(d=>({name:d.n,group:d.genres})),
+        slot:ST.slot,venue:ST.venue,
+        bpmRange:`${floor}–${ceil}`,
+        group:GROUP_NAMES[ST.dominantGroup||'g2'],
+        tracks:tracks.map(t=>({track:t.t,artist:t.a,bpm:t.bpm,family:t.fam})),
+      }),
     });
-
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-
-    const noteEl = document.getElementById('curNote');
-    if (noteEl) {
-      noteEl.innerHTML = `
-        <span class="note-label">[ NOTA CURATORIAL — FREQUENCY INTELLIGENCE ]</span>
-        ${d.note.replace(/\n/g, '<br>')}`;
-    }
-  } catch (e) {
-    const noteEl = document.getElementById('curNote');
-    if (noteEl) {
-      noteEl.innerHTML = `
-        <span class="note-label">[ NOTA CURATORIAL ]</span>
-        Warm-up para ${STATE.lineup.map(d => d.n.toUpperCase()).join(' + ')}.
-        BPM máximo: ${ceil}. Sempre abaixo do headliner.
-        Abertura atmosférica → pré-entrega com pressão crescente sem queimar o pico.`;
-    }
+    if(!r.ok) throw new Error();
+    const d=await r.json();
+    const el=document.getElementById('curNote');
+    if(el) el.innerHTML=`<span class="note-lbl">[ Nota Curatorial ]</span>${d.note.replace(/\n/g,'<br>')}`;
+  }catch(e){
+    const el=document.getElementById('curNote');
+    if(el) el.innerHTML=`<span class="note-lbl">[ Nota Curatorial ]</span>Warm-up para ${ST.lineup.map(d=>d.n).join(' + ')}. BPM: ${floor}–${ceil}. Sempre abaixo do headliner. Abertura atmosférica → pressão crescente.`;
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RESTART
-// ═══════════════════════════════════════════════════════════════
-
-function restart() {
-  STATE.artist   = '';
-  STATE.lineup   = [];
-  STATE.slot     = null;
-  STATE.slotCeil = 116;
-  STATE.venue    = null;
-  STATE.manualOpen = false;
-
-  document.getElementById('artistInput').value   = '';
-  document.getElementById('djSearchInput').value = '';
-  document.getElementById('djDropdown').style.display = 'none';
-  document.getElementById('searchIcon').classList.remove('hidden');
-  document.getElementById('lineupChips').innerHTML = '<span class="chips-empty">NENHUM ARTISTA SELECIONADO AINDA</span>';
-  document.getElementById('resultsBox').innerHTML  = '';
-  document.getElementById('reviewBox').innerHTML   = '';
-
-  document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-  document.getElementById('nextBtn0').disabled = true;
-  document.getElementById('nextBtn1').disabled = true;
-  document.getElementById('nextBtn2').disabled = true;
-  document.getElementById('nextBtn3').disabled = true;
-
-  goTo(0);
+function restart(){
+  ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},enrichedArtists:{},dominantGroup:null};
+  document.getElementById('artistIn').value='';
+  document.getElementById('djIn').value='';
+  document.getElementById('drop').style.display='none';
+  document.getElementById('sico').classList.remove('hidden');
+  document.getElementById('chips').innerHTML='<span class="chips-empty">Nenhum artista selecionado ainda</span>';
+  document.getElementById('resBox').innerHTML='';
+  document.querySelectorAll('.opt:not(.disabled)').forEach(o=>o.classList.remove('sel'));
+  document.getElementById('festNote').classList.remove('visible');
+  ['n0','n1','n2','n3'].forEach(id=>document.getElementById(id).disabled=true);
+  go(0);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('#djSearchInput') && !e.target.closest('#djDropdown')) {
-    document.getElementById('djDropdown').style.display = 'none';
-    if (!document.getElementById('djSearchInput').value) {
-      document.getElementById('searchIcon').classList.remove('hidden');
-    }
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#djIn')&&!e.target.closest('#drop')){
+    document.getElementById('drop').style.display='none';
+    if(!document.getElementById('djIn').value) document.getElementById('sico').classList.remove('hidden');
   }
 });
 
-// Inicia conexão Spotify quando chegar no step 1
-document.getElementById('nextBtn0').addEventListener('click', () => {
-  if (currentScreen === 0) setTimeout(initSpotify, 100);
-});
-
-// Fallback: inicia Spotify na carga
-document.addEventListener('DOMContentLoaded', () => {
-  initSpotify();
-});
+document.getElementById('n0').addEventListener('click',()=>setTimeout(initSpotify,100));
+document.addEventListener('DOMContentLoaded',initSpotify);
 </script>
 </body>
 </html>
