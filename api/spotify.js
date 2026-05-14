@@ -1,6 +1,53 @@
 // api/spotify.js — Frequency Intelligence / FMENEZS
 // Vercel Serverless Function
 
+// ── PLAYLISTS DE WARM-UP POR GRUPO ───────────────────────────────
+// Buscas otimizadas no Spotify por grupo sonoro
+const GROUP_SEARCH_QUERIES = {
+  g1: [
+    'warm up tech house',
+    'deep house warm up set',
+    'house music warm up underground',
+    'deep tech house playlist',
+    'soulful deep house underground',
+  ],
+  g2: [
+    'progressive house warm up',
+    'progressive house underground playlist',
+    'melodic progressive house set',
+    'progressive house deep',
+  ],
+  g3: [
+    'melodic techno warm up',
+    'indie dance melodic techno playlist',
+    'afterlife melodic techno warm',
+    'melodic techno underground',
+  ],
+  g4: [
+    'techno raw warm up',
+    'peak time techno playlist',
+    'dark techno underground warm up',
+    'industrial techno playlist',
+  ],
+  g5: [
+    'hard techno warm up',
+    'hard techno underground playlist',
+  ],
+  g6: [
+    'afro house warm up',
+    'afro house melodic playlist underground',
+    'afro house deep soulful',
+    'keinemusik afro house playlist',
+  ],
+  g7: [
+    'organic house warm up',
+    'organic house deep playlist',
+    'organic house all day i dream',
+    'organic house ethno deep',
+  ],
+};
+
+// Artistas por grupo com IDs verificados (para busca de releases)
 const GROUP_ARTISTS = {
   g1: [
     { name: 'Kerri Chandler',        id: '51tYDGpHPVBSmVjirw3lFy' },
@@ -10,8 +57,6 @@ const GROUP_ARTISTS = {
     { name: 'Seth Troxler',          id: '6yOXrJMd4TxvDUFpFu8PmS' },
     { name: 'The Martinez Brothers', id: '41Q0HrwWBtuUkJc9CfWFkF' },
     { name: 'Jamie Jones',           id: '3Jv8mZcJ8f9p1Y2e4IvpzD' },
-    { name: 'Danny Tenaglia',        id: '66KFQSRCE44JAWjaTgHpYq' },
-    { name: 'Green Velvet',          id: '3lNFl1OVzRHJJcBEWMvLBX' },
     { name: 'Fouk',                  id: '4JT6E8pevxBqWvjfPj3WlR' },
     { name: 'Franck Roger',          id: '4GiTTZgz5IFbPuHlSYxwMi' },
   ],
@@ -20,7 +65,6 @@ const GROUP_ARTISTS = {
     { name: 'Nox Vahn',        id: '2bqGPuC8kDCTLWieGOyWxu' },
     { name: 'Guy J',           id: '0Dl8j8IPLZ0EGRBizZfDdl' },
     { name: 'Sasha',           id: '2SHyvQHTbMoFVT5s5LkS38' },
-    { name: 'John Digweed',    id: '22KZUGygOLPwWIf5ZqNjUy' },
     { name: 'Sam Shure',       id: '51YmUpitluHsvMTXJ2rsiN' },
     { name: 'Hraach',          id: '6rdTxNwQhUJTodUx7voWXO' },
   ],
@@ -33,20 +77,14 @@ const GROUP_ARTISTS = {
     { name: 'Maceo Plex',   id: '7JWvBVnGEX6pHw4grQ3cJI' },
     { name: 'Mita Gami',    id: '5CyYLptaEKYxEYfLRpCwYI' },
     { name: 'Trentemøller', id: '7Kf4KU6xDXAw4pxvJJ5Bx6' },
-    { name: 'Dusky',        id: '3YcBF2ZtHV0zqMcAsJfB8u' },
-    { name: 'Martin Roth',  id: '4OJPXaDWfWiF1TjKPGrqDQ' },
-    { name: '16BL',         id: '1FuCJwKl3MEBoQULWJPMRf' },
   ],
   g4: [
     { name: 'Joachim Spieth',     id: '1PKtSAYVgTMH2rEGMPLTOO' },
-    { name: 'Amotik',             id: '5cHGiN9yImRf4IxB0EVaTK' },
     { name: 'Charlotte de Witte', id: '5O30s0HaU7PMmlFAeWtLrM' },
     { name: 'Amelie Lens',        id: '5UYjFjdCGnIjFPAMPXdFsj' },
     { name: 'Richie Hawtin',      id: '1PKbMSBEuS2vGWf8ZMXQNS' },
     { name: 'ANNA',               id: '3gqTLkCGKp5mFk7FuJKSSq' },
-    { name: 'Carl Cox',           id: '3fbDiqSGJAnd0bRBpN5xWC' },
     { name: 'Adam Beyer',         id: '7wX4BaEhFMRJ5sXdCMKF8g' },
-    { name: 'Dino Sabatini',      id: '3sRKnCYJRVBVfBomNXyqrA' },
   ],
   g5: [
     { name: 'Reinier Zonneveld', id: '21A7bhIL1m6CNZn8y57PIZ' },
@@ -71,16 +109,6 @@ const GROUP_ARTISTS = {
   ],
 };
 
-const GROUP_NAMES = {
-  g1: 'Tech House / House / Deep Tech',
-  g2: 'Progressive House',
-  g3: 'Melodic Techno / Indie Dance',
-  g4: 'Techno Raw / Peak Time',
-  g5: 'Hard Techno',
-  g6: 'Afro House / Melodic House',
-  g7: 'Organic House',
-};
-
 const HEADLINER_MAP = {
   'Kerri Chandler':'g1','Honey Dijon':'g1','Mochakk':'g1','Dennis Cruz':'g1',
   'Seth Troxler':'g1','The Martinez Brothers':'g1','Jamie Jones':'g1',
@@ -100,13 +128,11 @@ const HEADLINER_MAP = {
 };
 
 const SLOT_BPM = {
-  slot1: { min: 108, max: 116 },
-  slot2: { min: 114, max: 120 },
-  slot3: { min: 118, max: 123 },
-  slot4: { min: 122, max: 127 },
-  slot5: { min: 116, max: 122 },
+  slot1: { min: 108, max: 122 },
+  slot2: { min: 114, max: 127 },
 };
 
+// ── HANDLER ───────────────────────────────────────────────────────
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -118,46 +144,21 @@ export default async function handler(req, res) {
   try {
     const token = await getToken();
 
-    if (!q.artist && !q.id && !q.search && !q.headliner && !q.albums && !q.debug)
+    if (!q.artist && !q.id && !q.search && !q.headliner)
       return res.status(200).json({ access_token: token });
 
-    if (q.albums) {
-      const r = await fetch(
-        `https://api.spotify.com/v1/artists/${q.albums}/albums?include_groups=single,album&limit=10`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const d = await r.json();
-      return res.status(200).json({
-        total: d.total || 0,
-        items: (d.items || []).map(a => ({ name: a.name, date: a.release_date, id: a.id })),
-      });
-    }
+    if (q.id)     return res.status(200).json(await fetchArtistById(token, q.id));
+    if (q.artist) return res.status(200).json(await searchArtist(token, q.artist));
+    if (q.search) return res.status(200).json(await searchFree(token, q.search));
 
-    if (q.debug) {
-      const grp = q.debug;
-      const artists = (GROUP_ARTISTS[grp] || GROUP_ARTISTS.g6).slice(0, 2);
-      const since = new Date(); since.setDate(since.getDate() - 365);
-      const out = [];
-      for (const a of artists) {
-        const tracks = await getArtistRecentTracks(token, a.id, since);
-        const feat   = await getAudioFeatures(token, tracks.slice(0, 5));
-        out.push({
-          artist: a.name,
-          tracksRaw: tracks.length,
-          bpms: feat.map(t => ({ name: t.name, bpm: Math.round(t.tempo || 0), date: t.releaseDate })),
-        });
-      }
-      return res.status(200).json(out);
-    }
-
-    if (q.id)        return res.status(200).json(await fetchArtistById(token, q.id));
-    if (q.artist)    return res.status(200).json(await searchArtist(token, q.artist));
-    if (q.search)    return res.status(200).json(await searchFree(token, q.search));
     if (q.headliner) {
       const yearFrom = q.yearFrom ? parseInt(q.yearFrom) : null;
       const yearTo   = q.yearTo   ? parseInt(q.yearTo)   : null;
       return res.status(200).json(
-        await fetchNewTracksForHeadliner(token, q.headliner, q.slot || 'slot2', parseInt(q.days) || 90, yearFrom, yearTo)
+        await fetchTracksForHeadliner(
+          token, q.headliner, q.slot || 'slot2',
+          parseInt(q.days) || 90, yearFrom, yearTo
+        )
       );
     }
 
@@ -167,6 +168,7 @@ export default async function handler(req, res) {
   }
 }
 
+// ── AUTH ──────────────────────────────────────────────────────────
 async function getToken() {
   const { SPOTIFY_CLIENT_ID: cid, SPOTIFY_CLIENT_SECRET: csec } = process.env;
   if (!cid || !csec) throw new Error('Missing Spotify credentials');
@@ -180,15 +182,21 @@ async function getToken() {
   return (await r.json()).access_token;
 }
 
+// ── ARTISTAS ──────────────────────────────────────────────────────
 async function fetchArtistById(token, id) {
-  const r = await fetch(`https://api.spotify.com/v1/artists/${id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+  const r = await fetch(`https://api.spotify.com/v1/artists/${id}`, {
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
   if (!r.ok) throw new Error(`Artist fetch failed: ${r.status}`);
   const a = await r.json();
   return { ...formatArtist(a), group: detectGroup(a.name) };
 }
 
 async function searchArtist(token, name) {
-  const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`, { headers: { 'Authorization': `Bearer ${token}` } });
+  const r = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
   if (!r.ok) throw new Error(`Search failed: ${r.status}`);
   const d = await r.json();
   const a = d.artists?.items?.[0];
@@ -197,7 +205,10 @@ async function searchArtist(token, name) {
 }
 
 async function searchFree(token, query) {
-  const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=8`, { headers: { 'Authorization': `Bearer ${token}` } });
+  const r = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=8`,
+    { headers: { 'Authorization': `Bearer ${token}` } }
+  );
   if (!r.ok) throw new Error(`Free search failed: ${r.status}`);
   const d = await r.json();
   return { results: (d.artists?.items || []).map(a => ({ ...formatArtist(a), group: detectGroup(a.name) })) };
@@ -215,170 +226,267 @@ function formatArtist(a) {
   };
 }
 
-async function fetchNewTracksForHeadliner(token, headlinerName, slot, days, yearFrom=null, yearTo=null) {
+// ── FETCH TRACKS PARA HEADLINER ───────────────────────────────────
+async function fetchTracksForHeadliner(token, headlinerName, slot, days, yearFrom, yearTo) {
   const hlKey = Object.keys(HEADLINER_MAP).find(k => k.toLowerCase() === headlinerName.toLowerCase());
   const group = hlKey ? HEADLINER_MAP[hlKey] : detectGroup(headlinerName);
-  const groupArtists = (GROUP_ARTISTS[group] || GROUP_ARTISTS.g6)
-    .filter(a => a.name.toLowerCase() !== headlinerName.toLowerCase())
-    .slice(0, 10);
+  const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot2;
 
-  const bpmRange  = SLOT_BPM[slot] || SLOT_BPM.slot2;
-  const sinceDate = new Date();
-  sinceDate.setDate(sinceDate.getDate() - days);
+  // Estratégia dupla: playlists + artistas do grupo
+  const [playlistTracks, artistTracks] = await Promise.all([
+    searchPlaylistTracks(token, group, bpmRange, headlinerName, yearFrom, yearTo),
+    searchArtistReleaseTracks(token, group, bpmRange, headlinerName, days, yearFrom, yearTo),
+  ]);
 
-  const tracks = await fetchRecentReleases(token, groupArtists, bpmRange, sinceDate, headlinerName, yearFrom, yearTo);
+  // Merge, deduplica, ordena por relevância
+  const all = [...playlistTracks, ...artistTracks];
+  const seen = new Set();
+  const deduped = all.filter(t => {
+    const key = `${t.name}|${t.artist}`.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  // Embaralha para variedade
+  deduped.sort(() => Math.random() - 0.5);
 
   return {
     headliner: headlinerName,
     group,
-    groupName: GROUP_NAMES[group] || group,
-    artistsSearched: groupArtists.map(a => a.name),
     slot,
     bpmRange,
-    days,
-    tracks,
-    total: tracks.length,
+    tracks: deduped.slice(0, 20),
+    total: deduped.length,
   };
 }
 
-async function fetchRecentReleases(token, artists, bpmRange, sinceDate, excludeName, yearFrom=null, yearTo=null) {
+// ── BUSCA POR PLAYLISTS PÚBLICAS ──────────────────────────────────
+async function searchPlaylistTracks(token, group, bpmRange, excludeName, yearFrom, yearTo) {
+  const queries = GROUP_SEARCH_QUERIES[group] || GROUP_SEARCH_QUERIES.g6;
+  // Pega 2 queries aleatórias para variedade
+  const shuffled = [...queries].sort(() => Math.random() - 0.5).slice(0, 2);
+
   const allTracks = [];
   const seen = new Set();
 
-  const results = await Promise.allSettled(
-    artists.map(a => getArtistRecentTracks(token, a.id, sinceDate, yearFrom, yearTo))
-  );
+  await Promise.all(shuffled.map(async (query) => {
+    try {
+      // Busca playlists
+      const r = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=5&market=BR`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (!r.ok) return;
+      const d = await r.json();
+      const playlists = d.playlists?.items?.filter(p => p) || [];
 
-  for (const result of results) {
-    if (result.status !== 'fulfilled') continue;
-    for (const track of (result.value || [])) {
-      const key = `${track.name}|${track.artists?.[0]?.name}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      if (excludeName) {
-        const names = (track.artists || []).map(a => a.name.toLowerCase());
-        if (names.some(n => n.includes(excludeName.toLowerCase()))) continue;
+      // Pega tracks de cada playlist
+      await Promise.all(playlists.slice(0, 3).map(async (pl) => {
+        try {
+          const pr = await fetch(
+            `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=50&market=BR&fields=items(track(id,name,artists,album,duration_ms,preview_url,external_urls,popularity))`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          if (!pr.ok) return;
+          const pd = await pr.json();
+          const items = pd.items || [];
+
+          for (const item of items) {
+            const t = item.track;
+            if (!t || !t.id) continue;
+            const key = `${t.name}|${t.artists?.[0]?.name}`.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+
+            // Exclui headliner
+            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
+            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
+
+            allTracks.push({
+              id: t.id,
+              name: t.name,
+              artist: (t.artists || []).map(a => a.name).join(', '),
+              album: t.album?.name || '',
+              releaseDate: t.album?.release_date || '',
+              image: t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '',
+              previewUrl: t.preview_url || '',
+              spotifyUrl: t.external_urls?.spotify || '',
+              popularity: t.popularity || 0,
+              duration: formatDuration(t.duration_ms),
+              source: 'playlist',
+              tempo: 0,
+              key: -1,
+              mode: 1,
+            });
+          }
+        } catch(e) {}
+      }));
+    } catch(e) {}
+  }));
+
+  // Busca audio features para filtrar BPM
+  return await filterByBpm(token, allTracks, bpmRange, yearFrom, yearTo);
+}
+
+// ── BUSCA POR ARTISTAS DO GRUPO ───────────────────────────────────
+async function searchArtistReleaseTracks(token, group, bpmRange, excludeName, days, yearFrom, yearTo) {
+  const artists = GROUP_ARTISTS[group] || GROUP_ARTISTS.g6;
+  // Pega artistas aleatórios para variedade
+  const shuffled = [...artists].sort(() => Math.random() - 0.5).slice(0, 5);
+
+  const allTracks = [];
+  const seen = new Set();
+
+  await Promise.all(shuffled.map(async (artist) => {
+    if (artist.name.toLowerCase() === excludeName.toLowerCase()) return;
+    try {
+      const r = await fetch(
+        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=20`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (!r.ok) return;
+      const d = await r.json();
+      const all = d.items || [];
+
+      let targets;
+      if (yearFrom && yearTo) {
+        targets = all.filter(a => {
+          const y = parseInt((a.release_date || '').split('-')[0]);
+          return y >= yearFrom && y <= yearTo;
+        });
+      } else {
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        targets = all.filter(a => a.release_date && new Date(a.release_date) >= since);
       }
-      allTracks.push(track);
+
+      if (!targets.length) targets = all.slice(0, 3);
+
+      await Promise.all(targets.slice(0, 3).map(async (album) => {
+        try {
+          const tr = await fetch(
+            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=8`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          if (!tr.ok) return;
+          const td = await tr.json();
+          for (const t of (td.items || [])) {
+            const key = `${t.name}|${t.artists?.[0]?.name}`.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
+            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
+
+            allTracks.push({
+              id: t.id,
+              name: t.name,
+              artist: (t.artists || []).map(a => a.name).join(', '),
+              album: album.name,
+              releaseDate: album.release_date || '',
+              image: album.images?.[1]?.url || album.images?.[0]?.url || '',
+              previewUrl: t.preview_url || '',
+              spotifyUrl: t.external_urls?.spotify || '',
+              popularity: 0,
+              duration: formatDuration(t.duration_ms),
+              source: 'artist',
+              tempo: 0,
+              key: -1,
+              mode: 1,
+            });
+          }
+        } catch(e) {}
+      }));
+    } catch(e) {}
+  }));
+
+  return await filterByBpm(token, allTracks, bpmRange, yearFrom, yearTo);
+}
+
+// ── FILTER BY BPM ─────────────────────────────────────────────────
+async function filterByBpm(token, tracks, bpmRange, yearFrom, yearTo) {
+  if (!tracks.length) return [];
+
+  // Aplica filtro de ano se era histórica
+  let filtered = tracks;
+  if (yearFrom && yearTo) {
+    filtered = tracks.filter(t => {
+      if (!t.releaseDate) return true; // inclui sem data
+      const y = parseInt(t.releaseDate.split('-')[0]);
+      return y >= yearFrom && y <= yearTo;
+    });
+    if (!filtered.length) filtered = tracks;
+  }
+
+  // Busca audio features em batches de 50
+  const batches = [];
+  for (let i = 0; i < filtered.length; i += 50) {
+    batches.push(filtered.slice(i, i + 50));
+  }
+
+  const withFeatures = [];
+  for (const batch of batches) {
+    const ids = batch.map(t => t.id).filter(Boolean).join(',');
+    if (!ids) continue;
+    try {
+      const r = await fetch(
+        `https://api.spotify.com/v1/audio-features?ids=${ids}`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      if (!r.ok) { withFeatures.push(...batch.map(t => ({...t, tempo:0}))); continue; }
+      const d = await r.json();
+      const featMap = {};
+      (d.audio_features || []).forEach(f => { if (f) featMap[f.id] = f; });
+      batch.forEach(t => {
+        const feat = featMap[t.id];
+        withFeatures.push({
+          ...t,
+          tempo: feat?.tempo || 0,
+          key: feat?.key ?? -1,
+          mode: feat?.mode ?? 1,
+        });
+      });
+    } catch(e) {
+      withFeatures.push(...batch.map(t => ({...t, tempo:0})));
     }
   }
 
-  if (!allTracks.length) return [];
+  // Filtra por BPM — inclui tempo 0 apenas se não houver suficientes
+  const inBpm = withFeatures.filter(t => t.tempo >= bpmRange.min - 3 && t.tempo <= bpmRange.max + 3);
+  const result = inBpm.length >= 8 ? inBpm : [...inBpm, ...withFeatures.filter(t => t.tempo === 0).slice(0, 10 - inBpm.length)];
 
-  const withFeatures = await getAudioFeatures(token, allTracks.slice(0, 60));
-
-  // Filtra BPM — inclui tracks sem BPM (tempo=0) como candidatas se não houver suficientes
-  const withBpm   = withFeatures.filter(t => t.tempo && t.tempo >= bpmRange.min - 5 && t.tempo <= bpmRange.max + 5);
-  const noBpmData = withFeatures.filter(t => !t.tempo || t.tempo === 0);
-
-  // Usa tracks com BPM primeiro, completa com sem BPM se necessário
-  const filtered = withBpm.length >= 5 ? withBpm : [...withBpm, ...noBpmData.slice(0, 10 - withBpm.length)];
-
-  filtered.sort((a, b) => new Date(b.releaseDate || 0) - new Date(a.releaseDate || 0));
-
-  return filtered.slice(0, 20).map(t => ({
-    id:          t.id,
-    name:        t.name,
-    artist:      (t.artists || []).map(a => a.name).join(', '),
-    album:       t.album?.name || '',
-    bpm:         t.tempo ? Math.round(t.tempo) : null,
-    key:         formatKey(t.key, t.mode),
-    duration:    formatDuration(t.duration_ms),
-    releaseDate: t.releaseDate || '',
-    previewUrl:  t.preview_url || '',
-    spotifyUrl:  t.external_urls?.spotify || '',
-    image:       t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '',
-    popularity:  t.popularity || 0,
+  return result.slice(0, 20).map(t => ({
+    id: t.id,
+    name: t.name,
+    artist: t.artist,
+    album: t.album,
+    bpm: t.tempo ? Math.round(t.tempo) : null,
+    key: formatKey(t.key, t.mode),
+    duration: t.duration,
+    releaseDate: t.releaseDate,
+    previewUrl: t.previewUrl,
+    spotifyUrl: t.spotifyUrl,
+    image: t.image,
+    popularity: t.popularity,
   }));
 }
 
-async function getArtistRecentTracks(token, artistId, sinceDate, yearFrom=null, yearTo=null) {
-  try {
-    const r = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=single,album&limit=50`,
-      { headers: { 'Authorization': `Bearer ${token}` } }
-    );
-    if (!r.ok) return [];
-    const d = await r.json();
-    const all = d.items || [];
-    if (!all.length) return [];
-
-    let targets;
-    if (yearFrom && yearTo) {
-      // Filtro por era histórica
-      targets = all.filter(a => {
-        if (!a.release_date) return false;
-        const y = parseInt(a.release_date.split('-')[0]);
-        return y >= yearFrom && y <= yearTo;
-      });
-    } else {
-      targets = all.filter(a => a.release_date && new Date(a.release_date) >= sinceDate);
-    }
-    if (!targets.length) targets = all.slice(0, 5);
-
-    const trackResults = await Promise.allSettled(
-      targets.slice(0, 5).map(album => getAlbumTracks(token, album))
-    );
-
-    const tracks = [];
-    for (const res of trackResults) {
-      if (res.status === 'fulfilled') tracks.push(...(res.value || []));
-    }
-    return tracks;
-  } catch(e) {
-    return [];
-  }
-}
-
-async function getAlbumTracks(token, album) {
-  try {
-    const r = await fetch(
-      `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=10`,
-      { headers: { 'Authorization': `Bearer ${token}` } }
-    );
-    if (!r.ok) return [];
-    const d = await r.json();
-    return (d.items || []).map(t => ({
-      ...t,
-      album: { name: album.name, images: album.images },
-      releaseDate: album.release_date,
-    }));
-  } catch(e) { return []; }
-}
-
-async function getAudioFeatures(token, tracks) {
-  if (!tracks.length) return [];
-  try {
-    const ids = tracks.map(t => t.id).filter(Boolean).join(',');
-    const r = await fetch(
-      `https://api.spotify.com/v1/audio-features?ids=${ids}`,
-      { headers: { 'Authorization': `Bearer ${token}` } }
-    );
-    if (!r.ok) return tracks.map(t => ({ ...t, tempo: 0 }));
-    const d = await r.json();
-    const featMap = {};
-    (d.audio_features || []).forEach(f => { if (f) featMap[f.id] = f; });
-    return tracks.map(t => ({ ...t, ...(featMap[t.id] || { tempo: 0, key: -1, mode: 1 }) }));
-  } catch(e) {
-    return tracks.map(t => ({ ...t, tempo: 0 }));
-  }
-}
-
+// ── HELPERS ───────────────────────────────────────────────────────
 function detectGroup(name) {
   if (!name) return 'g1';
   const n = name.toLowerCase();
   if (['hernán cattáneo','nox vahn','guy j','sasha','john digweed','sam shure','hraach'].some(d => n.includes(d))) return 'g2';
-  if (['tale of us','artbat','anyma','adriatique','hosh','maceo plex','mita gami','trentemøller','eric prydz','axwell'].some(d => n.includes(d))) return 'g3';
-  if (['anna','richie hawtin','charlotte de witte','amelie lens','carl cox','paco osuna','adam beyer','joachim spieth','amotik'].some(d => n.includes(d))) return 'g4';
+  if (['tale of us','artbat','anyma','adriatique','hosh','maceo plex','mita gami','trentemøller','eric prydz'].some(d => n.includes(d))) return 'g3';
+  if (['anna','richie hawtin','charlotte de witte','amelie lens','carl cox','paco osuna','adam beyer'].some(d => n.includes(d))) return 'g4';
   if (['reinier zonneveld'].some(d => n.includes(d))) return 'g5';
-  if (['black coffee','adam port','bedouin','damian lazarus','ahmed spins','blond:ish','keinemusik','rampa','&me'].some(d => n.includes(d))) return 'g6';
+  if (['black coffee','adam port','bedouin','damian lazarus','ahmed spins','blond:ish','keinemusik','rampa'].some(d => n.includes(d))) return 'g6';
   if (['satori','lee burridge','mauro masi'].some(d => n.includes(d))) return 'g7';
   return 'g1';
 }
 
 function formatKey(key, mode) {
   const KEYS = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  if (key == null || key < 0 || key > 11) return '?';
+  if (key == null || key < 0 || key > 11) return null;
   return `${KEYS[key]} ${mode === 1 ? 'maj' : 'min'}`;
 }
 
