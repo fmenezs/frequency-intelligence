@@ -1,6 +1,17 @@
 {
-  "rewrites": [
-    { "source": "/api/generate", "destination": "/api/generate.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
+      ]
+    }
   ]
 }
