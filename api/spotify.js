@@ -205,7 +205,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '3.0');
+  res.setHeader('X-FI-Version', '3.1');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -249,7 +249,7 @@ export default async function handler(req, res) {
     // ── Fallback: só retorna versão (nunca mais retorna access_token sozinho) ──
     return res.status(200).json({
       service: 'Frequency Intelligence Spotify API',
-      version: '3.0',
+      version: '3.1',
       status: 'online',
       message: 'Use ?headliner=NOME para gerar tracks ou ?test=g6 para diagnóstico',
     });
@@ -368,16 +368,21 @@ async function getPlaylistTracks(token, group, excludeName, yearFrom, yearTo) {
 
       for (const pl of playlists) {
         try {
+          // Sem fields= para garantir resposta completa
           const pr = await fetch(
-            `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=50&market=BR&fields=items(track(id,name,artists,album,duration_ms,preview_url,external_urls,popularity))`,
+            `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=50&market=BR`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          if (!pr.ok) continue;
+          if (!pr.ok) {
+            console.log(`[FI] Playlist tracks ${pr.status} for ${pl.id}`);
+            continue;
+          }
           const pd = await pr.json();
+          console.log(`[FI] Playlist "${pl.name}" items: ${pd.items?.length || 0}`);
 
           for (const item of pd.items || []) {
             const t = item?.track;
-            if (!t?.id) continue;
+            if (!t?.id || t.is_local) continue;
             const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
             if (seen.has(key)) continue;
             seen.add(key);
@@ -543,19 +548,22 @@ async function runTest(token, group) {
   let sampleTracks = [];
   if (playlists.length) {
     const pr = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlists[0].id}/tracks?limit=5&market=BR&fields=items(track(id,name,artists,preview_url))`,
+      `https://api.spotify.com/v1/playlists/${playlists[0].id}/tracks?limit=5&market=BR`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     const pd = await pr.json();
-    sampleTracks = (pd.items || []).map(i => i?.track).filter(Boolean).map(t => ({
-      name: t.name,
-      artist: t.artists?.[0]?.name,
-      hasPreview: !!t.preview_url,
-    }));
+    sampleTracks = (pd.items || [])
+      .map(i => i?.track)
+      .filter(t => t?.id && !t.is_local)
+      .map(t => ({
+        name: t.name,
+        artist: t.artists?.[0]?.name,
+        hasPreview: !!t.preview_url,
+      }));
   }
 
   return {
-    version: '3.0',
+    version: '3.1',
     group: grp,
     query,
     playlistsFound: playlists.length,
