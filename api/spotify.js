@@ -153,6 +153,59 @@ export default async function handler(req, res) {
     if (q.artist) return res.status(200).json(await searchArtist(token, q.artist));
     if (q.search) return res.status(200).json(await searchFree(token, q.search));
 
+    // Endpoint de teste — mostra cada etapa da busca
+    if (q.test) {
+      const grp = q.test;
+      const queries = GROUP_SEARCH_QUERIES[grp] || GROUP_SEARCH_QUERIES.g6;
+      const query = queries[0];
+      console.log(`[TEST] searching playlists for: "${query}"`);
+
+      // Testa busca de playlist
+      const r1 = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=3&market=BR`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const d1 = await r1.json();
+      const playlists = (d1.playlists?.items || []).filter(p=>p).slice(0,2);
+      console.log(`[TEST] playlists found: ${playlists.length}`);
+
+      if (!playlists.length) return res.status(200).json({ error: 'no playlists', query, status: r1.status });
+
+      // Testa pegar tracks da primeira playlist
+      const pl = playlists[0];
+      const r2 = await fetch(
+        `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=10&market=BR&fields=items(track(id,name,artists,preview_url))`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+      const d2 = await r2.json();
+      const tracks = (d2.items || []).map(i=>i?.track).filter(Boolean).slice(0,5);
+
+      // Testa audio features
+      const ids = tracks.map(t=>t.id).join(',');
+      let features = [];
+      if (ids) {
+        const r3 = await fetch(
+          `https://api.spotify.com/v1/audio-features?ids=${ids}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        );
+        const d3 = await r3.json();
+        features = d3.audio_features || [];
+      }
+
+      return res.status(200).json({
+        query,
+        playlistsFound: playlists.length,
+        playlistName: pl.name,
+        tracksFound: tracks.length,
+        sampleTracks: tracks.map((t,i) => ({
+          name: t.name,
+          artist: t.artists?.[0]?.name,
+          bpm: Math.round(features[i]?.tempo || 0),
+          hasPreview: !!t.preview_url,
+        })),
+      });
+    }
+
     if (q.headliner) {
       const yearFrom = q.yearFrom ? parseInt(q.yearFrom) : null;
       const yearTo   = q.yearTo   ? parseInt(q.yearTo)   : null;
