@@ -1,34 +1,25 @@
-// api/generate.js — Vercel Serverless Function
-// POST /api/generate → gera nota curatorial + validação de contexto via Claude
+// api/generate.js — Frequency Intelligence / FMENEZS
+// POST /api/generate → nota curatorial única via Claude
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Missing Anthropic API key' });
-  }
+  if (!apiKey) return res.status(500).json({ error: 'Missing API key' });
 
   try {
-    const { artist, lineup, slot, venue, tracks, bpmRange } = req.body;
+    const { artist, lineup, slot, venue, bpmRange, group, tracks } = req.body;
+    if (!lineup || !tracks?.length) return res.status(400).json({ error: 'Missing fields' });
 
-    if (!lineup || !tracks || !tracks.length) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
+    // Gera seed aleatória para forçar variação
+    const seed = Math.floor(Math.random() * 1000);
+    const prompt = buildPrompt({ artist, lineup, slot, venue, bpmRange, group, tracks, seed });
 
-    const prompt = buildPrompt({ artist, lineup, slot, venue, tracks, bpmRange });
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,30 +28,21 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        messages: [
-          {
-            role: 'user',
-            content: prompt,
-          },
-        ],
-        system: `Você é o sistema de curadoria Frequency Intelligence, criado pelo DJ e mentor FMENEZS.
-Você entende profundamente de warm-up, construção de energia, leitura de pista e narrativa musical eletrônica underground.
-Você conhece organic house, afro house sofisticado, progressive house emocional, melodic techno, hypnotic techno e deep house.
-Seja direto, técnico e curatorial. Fale como um DJ experiente, não como uma IA genérica.
-Respostas sempre em português brasileiro.`,
+        max_tokens: 300,
+        system: `Você é um curador musical especializado em warm-up de música eletrônica underground.
+Conhece profundamente: organic house, afro house, progressive house, melodic techno, techno e deep house.
+Você é o sistema Frequency Intelligence — fala como um DJ experiente, direto, sem clichês.
+Nunca use as frases: "ao mesmo tempo", "num primeiro momento", "isso garante", "perfeito", "excelente".
+Cada resposta deve ser única — use ângulos diferentes, referências específicas das tracks apresentadas.
+Responda sempre em português brasileiro. Máximo 3 frases curtas.`,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 1.0,
       }),
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Claude API error: ${response.status} — ${err}`);
-    }
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text || '';
-
-    return res.status(200).json({ note: text });
+    if (!r.ok) throw new Error(`Claude API: ${r.status}`);
+    const d = await r.json();
+    return res.status(200).json({ note: d.content?.[0]?.text || '' });
 
   } catch (err) {
     console.error('Generate error:', err);
@@ -68,36 +50,48 @@ Respostas sempre em português brasileiro.`,
   }
 }
 
-// ── PROMPT ────────────────────────────────────────────────────────
-function buildPrompt({ artist, lineup, slot, venue, tracks, bpmRange }) {
+function buildPrompt({ artist, lineup, slot, venue, bpmRange, group, tracks, seed }) {
   const lineupNames = lineup.map(d => d.name).join(', ');
-  const trackList = tracks
-    .map((t, i) => `${i + 1}. "${t.track}" — ${t.artist} (${t.bpm} BPM · ${t.family})`)
-    .join('\n');
-
   const slotLabels = {
-    slot1: '1° Slot — Abertura (22:00–23:30)',
-    slot2: '2° Slot — Warm-Up (23:30–01:00)',
-    slot3: '3° Slot — Crescente (01:00–02:30)',
-    slot4: '4° Slot — Ápice (02:30–04:00)',
-    slot5: '5° Slot — Closing (04:00–06:00)',
+    slot1: '1° slot (abertura)',
+    slot2: '2° slot (warm-up)',
+    slot3: '3° slot (crescente)',
+    slot4: '4° slot (ápice)',
+    slot5: '5° slot (closing)',
+  };
+  const venueLabels = {
+    club: 'club/indoor',
+    festival: 'festival/open air',
+    pool: 'pool party',
+    after: 'after-hours',
   };
 
-  return `Analise este contexto de set e forneça uma NOTA CURATORIAL TÉCNICA em 3 parágrafos curtos:
+  // Seleciona 3-4 tracks para mencionar na nota (variedade)
+  const shuffled = [...tracks].sort(() => Math.random() - 0.5).slice(0, 3);
+  const trackMentions = shuffled.map(t => `"${t.track || t.name}" (${t.artist || t.a})`).join(', ');
 
+  // Ângulos diferentes baseados no seed
+  const angles = [
+    `Comente sobre a progressão de BPM (${bpmRange}) e como ela prepara a pista para ${lineupNames}.`,
+    `Destaque o que ${lineupNames} provavelmente vai tocar e por que essas tracks criam o espaço certo antes disso.`,
+    `Fale sobre a coerência de grupo sonoro (${group}) e por que essas escolhas funcionam nesse contexto específico.`,
+    `Analise a escolha de abertura dessas tracks para um ${venueLabels[venue] || venue} antes de ${lineupNames}.`,
+    `Destaque uma ou duas das tracks (${trackMentions}) e explique o que elas fazem narrativamente no set.`,
+    `Aponte o equilíbrio entre BPM e energia emocional dessas tracks para o contexto de ${slotLabels[slot] || slot}.`,
+  ];
+
+  const angle = angles[seed % angles.length];
+
+  return `Contexto:
 DJ: ${artist || 'não informado'}
-SLOT: ${slotLabels[slot] || slot}
-LINE-UP HEADLINERS: ${lineupNames}
-VENUE: ${venue}
-BPM RANGE DO SET: ${bpmRange}
+Slot: ${slotLabels[slot] || slot}
+Venue: ${venueLabels[venue] || venue}
+Headliners: ${lineupNames}
+Grupo sonoro: ${group}
+BPM range: ${bpmRange}
+Tracks selecionadas: ${trackMentions}
 
-TRACKS SELECIONADAS:
-${trackList}
+Ângulo desta nota: ${angle}
 
-Forneça:
-1. Um parágrafo sobre a ESTRATÉGIA DO SET — por que essas famílias sonoras fazem sentido para esse contexto específico
-2. Um parágrafo sobre a CURVA ENERGÉTICA — como o BPM e a narrativa se desenvolvem nas 4 fases
-3. Um parágrafo com 2-3 ALERTAS CURATORIAIS — o que evitar, o que o headliner provavelmente vai tocar, e como preservar o espaço dele
-
-Seja técnico, específico e útil para um DJ profissional. Máximo 200 palavras no total.`;
+Escreva a nota curatorial agora. Direto, específico, sem introdução.`;
 }
