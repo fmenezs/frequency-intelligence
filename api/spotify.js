@@ -154,10 +154,11 @@ export default async function handler(req, res) {
     if (q.headliner) {
       const yearFrom = q.yearFrom ? parseInt(q.yearFrom) : null;
       const yearTo   = q.yearTo   ? parseInt(q.yearTo)   : null;
+      const debug    = q.debug === 'true';
       return res.status(200).json(
         await fetchTracksForHeadliner(
           token, q.headliner, q.slot || 'slot2',
-          parseInt(q.days) || 90, yearFrom, yearTo
+          parseInt(q.days) || 90, yearFrom, yearTo, debug
         )
       );
     }
@@ -227,16 +228,20 @@ function formatArtist(a) {
 }
 
 // ── FETCH TRACKS PARA HEADLINER ───────────────────────────────────
-async function fetchTracksForHeadliner(token, headlinerName, slot, days, yearFrom, yearTo) {
+async function fetchTracksForHeadliner(token, headlinerName, slot, days, yearFrom, yearTo, debug=false) {
   const hlKey = Object.keys(HEADLINER_MAP).find(k => k.toLowerCase() === headlinerName.toLowerCase());
   const group = hlKey ? HEADLINER_MAP[hlKey] : detectGroup(headlinerName);
   const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot2;
+
+  console.log(`[FI] headliner=${headlinerName} group=${group} slot=${slot} days=${days} bpm=${JSON.stringify(bpmRange)}`);
 
   // Estratégia dupla: playlists + artistas do grupo
   const [playlistTracks, artistTracks] = await Promise.all([
     searchPlaylistTracks(token, group, bpmRange, headlinerName, yearFrom, yearTo),
     searchArtistReleaseTracks(token, group, bpmRange, headlinerName, days, yearFrom, yearTo),
   ]);
+
+  console.log(`[FI] playlist=${playlistTracks.length} artist=${artistTracks.length}`);
 
   // Merge, deduplica, ordena por relevância
   const all = [...playlistTracks, ...artistTracks];
@@ -452,7 +457,11 @@ async function filterByBpm(token, tracks, bpmRange, yearFrom, yearTo) {
   }
 
   // Filtra por BPM — inclui tempo 0 apenas se não houver suficientes
+  console.log(`[FI] filterByBpm: total=${withFeatures.length} bpm=${JSON.stringify(bpmRange)}`);
+  const tempos = withFeatures.slice(0,10).map(t=>Math.round(t.tempo));
+  console.log(`[FI] sample tempos: ${JSON.stringify(tempos)}`);
   const inBpm = withFeatures.filter(t => t.tempo >= bpmRange.min - 3 && t.tempo <= bpmRange.max + 3);
+  console.log(`[FI] inBpm: ${inBpm.length}`);
   const result = inBpm.length >= 8 ? inBpm : [...inBpm, ...withFeatures.filter(t => t.tempo === 0).slice(0, 10 - inBpm.length)];
 
   return result.slice(0, 20).map(t => ({
