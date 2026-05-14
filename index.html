@@ -161,10 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .btn-reset:hover{border-color:var(--accent);color:var(--accent3)}
 .btn-restart{width:100%;margin-top:6px;background:none;border:none;color:var(--text3);padding:10px;font-family:var(--font);font-size:11px;cursor:pointer;transition:color .15s}
 .btn-restart:hover{color:var(--text2)}
-.sp-status{font-size:9px;text-align:right;margin-bottom:8px;display:flex;align-items:center;justify-content:flex-end;gap:5px;font-family:var(--mono)}
-.sp-dot{width:5px;height:5px;border-radius:50%;background:var(--text3)}
-.sp-status.ok{color:var(--green2)}.sp-status.ok .sp-dot{background:var(--green)}
-.sp-status.err{color:var(--orange)}.sp-status.err .sp-dot{background:var(--orange)}
+
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
   </style>
 </head>
@@ -203,7 +200,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="step-cat">LINE-UP DA FESTA</div>
     <div class="q-title">Quem está no line-up?</div>
     <div class="q-sub">Headliners ou referências de estilo. A busca é no banco curado — não encontrou? Adicione manualmente e o sistema vai identificar o grupo sonoro.</div>
-    <div class="sp-status" id="spSt"><span class="sp-dot"></span>SPOTIFY: CONECTANDO...</div>
     <div class="search-outer">
       <i class="ti ti-search search-ico" id="sico" aria-hidden="true"></i>
       <input class="search-inner" id="djIn" placeholder="Ex: Black Coffee, Adriatique, Satori..." oninput="onSearch(this.value)" autocomplete="off">
@@ -562,17 +558,7 @@ let cur=0, srchTimer=null, curAudio=null;
 
 // ── SPOTIFY ──────────────────────────────────────────────────────
 async function initSpotify(){
-  try{
-    const r=await fetch('/api/spotify');
-    if(!r.ok) throw new Error();
-    setSpSt('ok','● SPOTIFY: CONECTADO');
-  }catch(e){setSpSt('err','● SPOTIFY: OFFLINE')}
-}
-function setSpSt(cls,msg){
-  const el=document.getElementById('spSt');
-  if(!el) return;
-  el.innerHTML=`<span class="sp-dot"></span>${msg}`;
-  el.className=`sp-status ${cls}`;
+  try{ await fetch('/api/spotify') }catch(e){}
 }
 
 // Busca foto + dados do artista no Spotify e salva no banco local
