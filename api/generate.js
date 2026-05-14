@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-5',
         max_tokens: 300,
         system: `Você é um curador musical especializado em warm-up de música eletrônica underground.
 Conhece profundamente: organic house, afro house, progressive house, melodic techno, techno e deep house.
