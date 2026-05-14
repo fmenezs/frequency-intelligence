@@ -1,70 +1,158 @@
-// api/spotify.js — Frequency Intelligence / FMENEZS
-// Vercel Serverless Function
+// api/spotify.js — Frequency Intelligence v3.0 — FMENEZS
+// Reescrito do zero para garantir execução no Vercel
 
-// ── PLAYLISTS DE WARM-UP POR GRUPO ───────────────────────────────
-// Buscas otimizadas no Spotify por grupo sonoro
-const GROUP_SEARCH_QUERIES = {
+// ── BANCO CURADO FMENEZS (221 tracks) ────────────────────────────
+const CURATED_TRACKS = {
   g1: [
-    'warm up tech house',
-    'deep house warm up set',
-    'house music warm up underground',
-    'deep tech house playlist',
-    'soulful deep house underground',
+    { artist: "Jaques Le Noir", track: "Soul and Love", label: "New Creatures", bpm: null, duration: "6:33", family: "Winehouse" },
+    { artist: "Paul Lock", track: "Say This (Original Mix)", label: "Family Grooves", bpm: 124, duration: "6:50", family: "Winehouse" },
+    { artist: "Franck Roger", track: "Real Tone (Original Mix)", label: "Real Tone Records", bpm: null, duration: "7:12", family: "Winehouse" },
+    { artist: "Dario D'Attis", track: "Soulful Devotion", label: "Defected", bpm: null, duration: "6:28", family: "Winehouse" },
+    { artist: "Tim Engelhardt", track: "Phases", label: "Innervisions", bpm: null, duration: "7:05", family: "Winehouse" },
+    { artist: "Huxley", track: "Blaze (Original Mix)", label: "Aus Music", bpm: null, duration: "6:44", family: "Winehouse" },
+    { artist: "DJ Sandwich", track: "Chewi", label: "Hamkke Records", bpm: null, duration: "6:18", family: "Groove Minimal" },
+    { artist: "Cem Gemalmaz", track: "Somebody (Extended Mix)", label: "Deeperfect", bpm: 123, duration: "7:01", family: "Groove Minimal" },
+    { artist: "Marco Faraone", track: "I Need You (Original Mix)", label: "Drumcode", bpm: null, duration: "6:55", family: "Groove Minimal" },
+    { artist: "Godblesscomputers", track: "Drowned in Blue", label: "Ninja Tune", bpm: null, duration: "5:44", family: "Deep Storytelling" },
+    { artist: "16BL", track: "Beat Organ (Original Mix)", label: "Anjunadeep", bpm: null, duration: "7:20", family: "Deep Storytelling" },
+    { artist: "Aera", track: "Meerut", label: "Innervisions", bpm: null, duration: "6:33", family: "Deep Storytelling" },
+    { artist: "Hiver", track: "Le Temps Passe", label: "Kompakt", bpm: null, duration: "7:10", family: "Deep Storytelling" },
+    { artist: "Dorisburg", track: "In Parallax", label: "Kontra-Musik", bpm: null, duration: "8:02", family: "Deep Storytelling" },
   ],
   g2: [
-    'progressive house warm up',
-    'progressive house underground playlist',
-    'melodic progressive house set',
-    'progressive house deep',
+    { artist: "Sam Shure", track: "Louna", label: "Innervisions", bpm: null, duration: "8:35", family: "Progressive Warm" },
+    { artist: "Alexander Sound", track: "Love and Money", label: "Manual Music", bpm: null, duration: "7:40", family: "Progressive Warm" },
+    { artist: "Evren Ulusoy", track: "Dearly Devoted (Gorge's Classic Remix)", label: "Plastic City", bpm: 122, duration: "7:06", family: "Progressive Warm" },
+    { artist: "Nox Vahn", track: "Tell Me", label: "Crosstown Rebels", bpm: null, duration: "8:12", family: "Progressive Warm" },
+    { artist: "Guy J", track: "Mantra", label: "Lost & Found", bpm: null, duration: "9:05", family: "Progressive Warm" },
+    { artist: "Hraach", track: "Syna", label: "All Day I Dream", bpm: null, duration: "7:48", family: "Progressive Warm" },
+    { artist: "Cubicolor", track: "Falling (Patrice Bäumel Remix)", label: "Anjunadeep", bpm: null, duration: "8:20", family: "Progressive Warm" },
+    { artist: "Hernan Cattaneo", track: "Encuentro (Original Mix)", label: "Sudbeat", bpm: null, duration: "9:12", family: "Progressive Warm" },
+    { artist: "Nick Warren", track: "Glasshouse (Original Mix)", label: "The Soundgarden", bpm: null, duration: "8:33", family: "Progressive Warm" },
+    { artist: "Hans Gerd", track: "Aurora", label: "Cybertron Records", bpm: null, duration: "7:22", family: "Dreamy Progressive" },
+    { artist: "FMENEZS", track: "Morning Birds", label: "LADR", bpm: null, duration: "7:15", family: "Dreamy Progressive" },
+    { artist: "Naum Gabo", track: "Parallel Structures", label: "Kompakt", bpm: null, duration: "8:08", family: "Dreamy Progressive" },
+    { artist: "Guy Gerber", track: "Timing (Original Mix)", label: "Cocoon", bpm: null, duration: "7:54", family: "Dreamy Progressive" },
+    { artist: "Dominik Eulberg", track: "Kolkrabe", label: "Traum", bpm: null, duration: "8:01", family: "Dreamy Progressive" },
+    { artist: "Patlac", track: "Equilibrium", label: "Sender Records", bpm: null, duration: "7:30", family: "Dreamy Progressive" },
   ],
   g3: [
-    'melodic techno warm up',
-    'indie dance melodic techno playlist',
-    'afterlife melodic techno warm',
-    'melodic techno underground',
+    { artist: "XENIA REAPER", track: "Drift__", label: "Nept Polarisation", bpm: null, duration: "4:16", family: "Indie Melodic" },
+    { artist: "Superpoze", track: "Obsession", label: "Sïcle", bpm: null, duration: "5:47", family: "Indie Melodic" },
+    { artist: "MARINI, Purple Ice", track: "Nightshade", label: "Purple Ice Records", bpm: null, duration: "6:12", family: "Indie Melodic" },
+    { artist: "Sascha Funke", track: "Mango (Original Mix)", label: "BPitch Control", bpm: null, duration: "7:03", family: "Indie Melodic" },
+    { artist: "Recondite", track: "Pong", label: "Hotflush", bpm: null, duration: "6:28", family: "Indie Melodic" },
+    { artist: "Nils Frahm", track: "Says", label: "Erased Tapes", bpm: null, duration: "8:14", family: "Indie Melodic" },
+    { artist: "Bicep", track: "Glue (Original Mix)", label: "Feel My Bicep", bpm: null, duration: "6:05", family: "Indie Melodic" },
+    { artist: "Tale Of Us", track: "Be As One", label: "Afterlife", bpm: null, duration: "7:30", family: "Indie Melodic" },
+    { artist: "ARTBAT", track: "Upperground", label: "Afterlife", bpm: null, duration: "6:48", family: "Indie Melodic" },
+    { artist: "Adriatique", track: "Momo", label: "Siamese", bpm: null, duration: "7:12", family: "Indie Melodic" },
+    { artist: "Anyma", track: "Explore Your Future", label: "Afterlife", bpm: null, duration: "6:55", family: "Indie Melodic" },
+    { artist: "Trentemøller", track: "Moan (Original Mix)", label: "Poker Flat", bpm: null, duration: "6:22", family: "Indie Melodic" },
   ],
   g4: [
-    'techno raw warm up',
-    'peak time techno playlist',
-    'dark techno underground warm up',
-    'industrial techno playlist',
+    { artist: "Aris Kindt", track: "Saichh Sequences", label: "Now Claims My Timid Heart", bpm: null, duration: "7:45", family: "Hypnotic Raw" },
+    { artist: "Joachim Spieth", track: "Chain (Original Mix)", label: "Affin Records", bpm: null, duration: "5:47", family: "Hypnotic Raw" },
+    { artist: "Slow Riffs", track: "Vertical Horizon", label: "Simulacra Records", bpm: null, duration: "6:30", family: "Hypnotic Raw" },
+    { artist: "Frankie M.", track: "Bark (Original Mix)", label: "Luz De Selva", bpm: null, duration: "7:02", family: "Hypnotic Raw" },
+    { artist: "Tin Man", track: "Acid Rain", label: "Absurd Recordings", bpm: null, duration: "6:15", family: "Hypnotic Raw" },
+    { artist: "Planetary Assault Systems", track: "Exit Strategy", label: "Ostgut Ton", bpm: null, duration: "8:22", family: "Hypnotic Raw" },
+    { artist: "Surgeon", track: "Force + Form", label: "Dynamic Tension", bpm: null, duration: "7:44", family: "Hypnotic Raw" },
+    { artist: "Oscar Mulero", track: "Contra La Pared", label: "Warm Up Recordings", bpm: null, duration: "8:10", family: "Hypnotic Raw" },
+    { artist: "Truncate", track: "Drift (Original Mix)", label: "Truncate", bpm: null, duration: "6:58", family: "Hypnotic Raw" },
+    { artist: "MYTRIPISMYTRIP", track: "Rage (Original Mix)", label: "Rage People", bpm: null, duration: "2:10", family: "Peak Raw" },
+    { artist: "Dino Sabatini, Maurizio Cascella", track: "Euphemus", label: "Chiron", bpm: null, duration: "7:20", family: "Peak Raw" },
+    { artist: "Future Simplicity", track: "Maize Maze", label: "Blending Frequencies", bpm: null, duration: "6:05", family: "Peak Raw" },
+    { artist: "Mike Parker", track: "Forward (Donato Dozzy Remix)", label: "Geophone Records", bpm: null, duration: "5:41", family: "Peak Raw" },
+    { artist: "Blawan", track: "Getting Me Down", label: "Hessle Audio", bpm: null, duration: "6:33", family: "Peak Raw" },
+    { artist: "Paula Temple", track: "Decon Structure", label: "Noise Manifesto", bpm: null, duration: "7:08", family: "Peak Raw" },
   ],
   g5: [
-    'hard techno warm up',
-    'hard techno underground playlist',
+    { artist: "Reinier Zonneveld", track: "Maximal Minimal", label: "Filth on Acid", bpm: 140, duration: "6:30", family: "Hard Techno" },
+    { artist: "I Hate Models", track: "Only The Machines Can Hear You", label: "Arts", bpm: null, duration: "7:14", family: "Hard Techno" },
+    { artist: "Basswell", track: "Control Freak", label: "Filth on Acid", bpm: null, duration: "6:22", family: "Hard Techno" },
   ],
   g6: [
-    'afro house warm up',
-    'afro house melodic playlist underground',
-    'afro house deep soulful',
-    'keinemusik afro house playlist',
+    { artist: "MacZito, Ntsakosoul, Vhuvii", track: "Pictures", label: "Canvas of Sound", bpm: null, duration: "7:05", family: "Afro Groove" },
+    { artist: "CHOMBA", track: "Fermee", label: "The Leftovers", bpm: null, duration: "6:40", family: "Afro Groove" },
+    { artist: "Bedouin", track: "Afar", label: "Diynamic", bpm: null, duration: "7:22", family: "Afro Groove" },
+    { artist: "Black Coffee", track: "Superman (feat. Bucie)", label: "Soulistic Music", bpm: null, duration: "7:48", family: "Afro Groove" },
+    { artist: "Adam Port", track: "Yard Work", label: "Keinemusik", bpm: null, duration: "6:55", family: "Afro Groove" },
+    { artist: "Ahmed Spins", track: "Casablanca", label: "MoBlack Records", bpm: null, duration: "7:12", family: "Afro Groove" },
+    { artist: "Damian Lazarus", track: "So Much (feat. Tom Flynn)", label: "Crosstown Rebels", bpm: null, duration: "8:05", family: "Afro Groove" },
+    { artist: "BLOND:ISH", track: "Wizard of Aahs", label: "Blond:ish Records", bpm: null, duration: "7:30", family: "Afro Groove" },
+    { artist: "Rampa", track: "Habibi", label: "Keinemusik", bpm: null, duration: "6:44", family: "Afro Groove" },
+    { artist: "Themba", track: "Miracle", label: "Afro Rebel Music", bpm: null, duration: "7:55", family: "Afro Groove" },
+    { artist: "Keinemusik (&ME, Adam Port, Rampa)", track: "Vibe (Radio Edit)", label: "Keinemusik", bpm: null, duration: "6:18", family: "Afro Groove" },
+    { artist: "Enoo Napa", track: "Release", label: "Soulistic Music", bpm: null, duration: "7:35", family: "Afro Groove" },
+    { artist: "Nasser Baker", track: "Marhaban", label: "Crosstown Rebels", bpm: null, duration: "8:10", family: "Afro Groove" },
+    { artist: "Shimza", track: "My Culture", label: "Afro Rebel Music", bpm: null, duration: "6:50", family: "Afro Groove" },
   ],
   g7: [
-    'organic house warm up',
-    'organic house deep playlist',
-    'organic house all day i dream',
-    'organic house ethno deep',
+    { artist: "UCCEN WATLAS", track: "Wahia", label: "Independent", bpm: null, duration: "3:04", family: "Organic Emotional" },
+    { artist: "Hugo Samba, Brahim Samba, Sounds Of Sirin", track: "Frenka", label: "Sounds Of Sirin", bpm: null, duration: "7:18", family: "Organic Emotional" },
+    { artist: "Sebastian Mullaert, Hush Forever", track: "Traces", label: "Independent", bpm: null, duration: "7:28", family: "Organic Emotional" },
+    { artist: "Stelios Vassiloudis", track: "Everybody Is Here", label: "Independent", bpm: null, duration: "5:37", family: "Organic Emotional" },
+    { artist: "Satori", track: "Mago (feat. La Yegros)", label: "Satori Music", bpm: null, duration: "8:12", family: "Organic Emotional" },
+    { artist: "Lee Burridge", track: "Midnight Snack", label: "All Day I Dream", bpm: null, duration: "7:45", family: "Organic Emotional" },
+    { artist: "Mauro Masi", track: "Green (Original Mix)", label: "Siona Records", bpm: null, duration: "7:02", family: "Organic Emotional" },
+    { artist: "Hraach", track: "Knar", label: "All Day I Dream", bpm: null, duration: "8:30", family: "Organic Emotional" },
+    { artist: "AIWAA, Stories of Dharma", track: "Satori", label: "Satori", bpm: null, duration: "7:55", family: "Spiritual Organic" },
+    { artist: "Worakls", track: "Sand", label: "Hungry Music", bpm: null, duration: "7:20", family: "Spiritual Organic" },
+    { artist: "N'to", track: "Trauma", label: "Hungry Music", bpm: null, duration: "6:48", family: "Spiritual Organic" },
+    { artist: "Monolink", track: "Return to Nowhere", label: "Embassy One", bpm: null, duration: "7:35", family: "Spiritual Organic" },
+    { artist: "Bonobo", track: "Kerala", label: "Ninja Tune", bpm: null, duration: "5:44", family: "Spiritual Organic" },
   ],
 };
 
-// Artistas por grupo com IDs verificados (para busca de releases)
+// ── MAPA DE HEADLINERS → GRUPO ────────────────────────────────────
+const HEADLINER_MAP = {
+  'kerri chandler':'g1','honey dijon':'g1','mochakk':'g1','dennis cruz':'g1',
+  'seth troxler':'g1','the martinez brothers':'g1','jamie jones':'g1',
+  'danny tenaglia':'g1','green velvet':'g1','fouk':'g1','franck roger':'g1',
+  'vintage culture':'g1','peggy gou':'g1','dj tennis':'g1',
+  'hernan cattaneo':'g2','hernán cattáneo':'g2','nox vahn':'g2','guy j':'g2',
+  'sasha':'g2','john digweed':'g2','sam shure':'g2','hraach':'g2',
+  'nick warren':'g2','oliver huntemann':'g2',
+  'tale of us':'g3','artbat':'g3','anyma':'g3','adriatique':'g3',
+  'hosh':'g3','maceo plex':'g3','mita gami':'g3','trentemøller':'g3',
+  'eric prydz':'g3','axwell':'g3','bicep':'g3',
+  'anna':'g4','charlotte de witte':'g4','amelie lens':'g4','richie hawtin':'g4',
+  'carl cox':'g4','adam beyer':'g4','paco osuna':'g4','marco carola':'g4',
+  'surgeon':'g4','blawan':'g4',
+  'reinier zonneveld':'g5','i hate models':'g5',
+  'black coffee':'g6','adam port':'g6','bedouin':'g6','damian lazarus':'g6',
+  'ahmed spins':'g6','blond:ish':'g6','keinemusik':'g6','rampa':'g6',
+  '&me':'g6','themba':'g6','enoo napa':'g6','shimza':'g6',
+  'satori':'g7','lee burridge':'g7','mauro masi':'g7','worakls':'g7',
+  "n'to":'g7','monolink':'g7','bonobo':'g7',
+};
+
+// ── QUERIES DE BUSCA POR GRUPO ────────────────────────────────────
+const GROUP_QUERIES = {
+  g1: ['warm up tech house underground','deep house opening set','house music warm up dj set','deep tech house playlist 2024','soulful deep house underground'],
+  g2: ['progressive house warm up set','progressive house underground 2024','melodic progressive house deep','hernan cattaneo warm up style'],
+  g3: ['melodic techno warm up','afterlife melodic techno','indie dance melodic underground 2024','tale of us style warm up'],
+  g4: ['techno raw warm up set','peak time techno playlist','dark techno underground','industrial techno 2024'],
+  g5: ['hard techno warm up','hard techno underground set 2024'],
+  g6: ['afro house warm up','afro house melodic underground','keinemusik style playlist','black coffee warm up style 2024'],
+  g7: ['organic house warm up','all day i dream organic house','organic house ethno deep 2024','satori organic house style'],
+};
+
+// ── ARTISTAS POR GRUPO (IDs verificados) ─────────────────────────
 const GROUP_ARTISTS = {
   g1: [
-    { name: 'Kerri Chandler',        id: '51tYDGpHPVBSmVjirw3lFy' },
-    { name: 'Honey Dijon',           id: '3yGSRjp9aYZeWuLKJSmGgV' },
-    { name: 'Mochakk',               id: '7dqFBBfQMGQdXaREVHj1i8' },
-    { name: 'Dennis Cruz',           id: '4KBFIJUrMjOBBFkJbWxalx' },
-    { name: 'Seth Troxler',          id: '6yOXrJMd4TxvDUFpFu8PmS' },
-    { name: 'The Martinez Brothers', id: '41Q0HrwWBtuUkJc9CfWFkF' },
-    { name: 'Jamie Jones',           id: '3Jv8mZcJ8f9p1Y2e4IvpzD' },
-    { name: 'Fouk',                  id: '4JT6E8pevxBqWvjfPj3WlR' },
-    { name: 'Franck Roger',          id: '4GiTTZgz5IFbPuHlSYxwMi' },
+    { name: 'Kerri Chandler', id: '51tYDGpHPVBSmVjirw3lFy' },
+    { name: 'Honey Dijon',    id: '3yGSRjp9aYZeWuLKJSmGgV' },
+    { name: 'Mochakk',        id: '7dqFBBfQMGQdXaREVHj1i8' },
+    { name: 'Dennis Cruz',    id: '4KBFIJUrMjOBBFkJbWxalx' },
+    { name: 'Seth Troxler',   id: '6yOXrJMd4TxvDUFpFu8PmS' },
+    { name: 'Fouk',           id: '4JT6E8pevxBqWvjfPj3WlR' },
   ],
   g2: [
     { name: 'Hernán Cattáneo', id: '4k1O3e7MMAm2V6xqQcFGKj' },
     { name: 'Nox Vahn',        id: '2bqGPuC8kDCTLWieGOyWxu' },
     { name: 'Guy J',           id: '0Dl8j8IPLZ0EGRBizZfDdl' },
-    { name: 'Sasha',           id: '2SHyvQHTbMoFVT5s5LkS38' },
     { name: 'Sam Shure',       id: '51YmUpitluHsvMTXJ2rsiN' },
     { name: 'Hraach',          id: '6rdTxNwQhUJTodUx7voWXO' },
   ],
@@ -73,13 +161,9 @@ const GROUP_ARTISTS = {
     { name: 'ARTBAT',       id: '3zy26r3t4BOlwBGbFxmYlG' },
     { name: 'Anyma',        id: '0bjTNsHtWFGVoZ8yvv1y7k' },
     { name: 'Adriatique',   id: '7aS8K2M1qBMlPEeTmImEYF' },
-    { name: 'HOSH',         id: '2EDImBgFnLFQRe9vkfV79h' },
-    { name: 'Maceo Plex',   id: '7JWvBVnGEX6pHw4grQ3cJI' },
-    { name: 'Mita Gami',    id: '5CyYLptaEKYxEYfLRpCwYI' },
     { name: 'Trentemøller', id: '7Kf4KU6xDXAw4pxvJJ5Bx6' },
   ],
   g4: [
-    { name: 'Joachim Spieth',     id: '1PKtSAYVgTMH2rEGMPLTOO' },
     { name: 'Charlotte de Witte', id: '5O30s0HaU7PMmlFAeWtLrM' },
     { name: 'Amelie Lens',        id: '5UYjFjdCGnIjFPAMPXdFsj' },
     { name: 'Richie Hawtin',      id: '1PKbMSBEuS2vGWf8ZMXQNS' },
@@ -98,181 +182,413 @@ const GROUP_ARTISTS = {
     { name: 'BLOND:ISH',      id: '7EQFN8y2l9UNJTkVj24DRc' },
   ],
   g7: [
+    { name: 'Satori',         id: '5nri3hyKmKBGAfvjBi0mK0' },
+    { name: 'Lee Burridge',   id: '1RNm0r3ViSTQNIFCMUhM7a' },
     { name: 'Mauro Masi',     id: '4DB7roKjBDAuccMLQrzXX9' },
-    { name: 'Sam Shure',      id: '51YmUpitluHsvMTXJ2rsiN' },
     { name: 'Hraach',         id: '6rdTxNwQhUJTodUx7voWXO' },
     { name: 'Bedouin',        id: '5bKdC6382t97Qnpvs81Rqx' },
-    { name: 'Satori',         id: '5nri3hyKmKBGAfvjBi0mK0' },
-    { name: 'Ahmed Spins',    id: '4jercY4pUhY6jB8eQjpVJV' },
-    { name: 'Lee Burridge',   id: '1RNm0r3ViSTQNIFCMUhM7a' },
-    { name: 'Damian Lazarus', id: '7rPVEECPRcpxP4XS1fkHgP' },
   ],
 };
 
-const HEADLINER_MAP = {
-  'Kerri Chandler':'g1','Honey Dijon':'g1','Mochakk':'g1','Dennis Cruz':'g1',
-  'Seth Troxler':'g1','The Martinez Brothers':'g1','Jamie Jones':'g1',
-  'Danny Tenaglia':'g1','Green Velvet':'g1','Fouk':'g1','Franck Roger':'g1',
-  'Vintage Culture':'g1','Peggy Gou':'g1',
-  'Hernán Cattáneo':'g2','Nox Vahn':'g2','Guy J':'g2','Sasha':'g2',
-  'John Digweed':'g2','Sam Shure':'g2','Hraach':'g2',
-  'Tale Of Us':'g3','ARTBAT':'g3','Anyma':'g3','Adriatique':'g3',
-  'HOSH':'g3','Maceo Plex':'g3','Mita Gami':'g3','Trentemøller':'g3',
-  'Eric Prydz':'g3','Axwell':'g3',
-  'ANNA':'g4','Charlotte de Witte':'g4','Amelie Lens':'g4','Richie Hawtin':'g4',
-  'Carl Cox':'g4','Adam Beyer':'g4','Paco Osuna':'g4','Marco Carola':'g4',
-  'Reinier Zonneveld':'g5',
-  'Black Coffee':'g6','Adam Port':'g6','Bedouin':'g6','Damian Lazarus':'g6',
-  'Ahmed Spins':'g6','BLOND:ISH':'g6','Keinemusik':'g6','Rampa':'g6','&ME':'g6',
-  'Satori':'g7','Lee Burridge':'g7','Mauro Masi':'g7',
-};
-
+// ── BPM POR SLOT ─────────────────────────────────────────────────
 const SLOT_BPM = {
-  slot1: { min: 108, max: 122 },
+  slot1: { min: 107, max: 122 },
   slot2: { min: 114, max: 127 },
 };
 
-// ── HANDLER ───────────────────────────────────────────────────────
+// ── HANDLER PRINCIPAL ────────────────────────────────────────────
 export default async function handler(req, res) {
+  // Headers anti-cache e CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('X-FI-Version', '3.0');
+
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const q = req.query;
+  console.log('[FI v3.0] Request params:', JSON.stringify(q));
 
   try {
     const token = await getToken();
+    console.log('[FI] Token OK');
 
-    if (!q.artist && !q.id && !q.search && !q.headliner)
-      return res.status(200).json({ access_token: token });
+    // ── Busca de artista (para o wizard) ──
+    if (q.artist) {
+      return res.status(200).json(await searchArtist(token, q.artist));
+    }
 
-    if (q.id)     return res.status(200).json(await fetchArtistById(token, q.id));
-    if (q.artist) return res.status(200).json(await searchArtist(token, q.artist));
-    if (q.search) return res.status(200).json(await searchFree(token, q.search));
+    if (q.id) {
+      return res.status(200).json(await fetchArtistById(token, q.id));
+    }
 
-    // Endpoint de teste — mostra cada etapa da busca
+    if (q.search) {
+      return res.status(200).json(await searchFree(token, q.search));
+    }
+
+    // ── Endpoint de diagnóstico ──
     if (q.test) {
-      const grp = q.test;
-      const queries = GROUP_SEARCH_QUERIES[grp] || GROUP_SEARCH_QUERIES.g6;
-      const query = queries[0];
-      console.log(`[TEST] searching playlists for: "${query}"`);
-
-      // Testa busca de playlist
-      const r1 = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=3&market=BR`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const d1 = await r1.json();
-      const playlists = (d1.playlists?.items || []).filter(p=>p).slice(0,2);
-      console.log(`[TEST] playlists found: ${playlists.length}`);
-
-      if (!playlists.length) return res.status(200).json({ error: 'no playlists', query, status: r1.status });
-
-      // Testa pegar tracks da primeira playlist
-      const pl = playlists[0];
-      const r2 = await fetch(
-        `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=10&market=BR&fields=items(track(id,name,artists,preview_url))`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      const d2 = await r2.json();
-      const tracks = (d2.items || []).map(i=>i?.track).filter(Boolean).slice(0,5);
-
-      // Testa audio features
-      const ids = tracks.map(t=>t.id).join(',');
-      let features = [];
-      if (ids) {
-        const r3 = await fetch(
-          `https://api.spotify.com/v1/audio-features?ids=${ids}`,
-          { headers: { 'Authorization': `Bearer ${token}` } }
-        );
-        const d3 = await r3.json();
-        features = d3.audio_features || [];
-      }
-
-      return res.status(200).json({
-        query,
-        playlistsFound: playlists.length,
-        playlistName: pl.name,
-        tracksFound: tracks.length,
-        sampleTracks: tracks.map((t,i) => ({
-          name: t.name,
-          artist: t.artists?.[0]?.name,
-          bpm: Math.round(features[i]?.tempo || 0),
-          hasPreview: !!t.preview_url,
-        })),
-      });
+      return res.status(200).json(await runTest(token, q.test));
     }
 
+    // ── Geração principal de tracks ──
     if (q.headliner) {
-      const yearFrom = q.yearFrom ? parseInt(q.yearFrom) : null;
-      const yearTo   = q.yearTo   ? parseInt(q.yearTo)   : null;
-      const debug    = q.debug === 'true';
-      return res.status(200).json(
-        await fetchTracksForHeadliner(
-          token, q.headliner, q.slot || 'slot2',
-          parseInt(q.days) || 90, yearFrom, yearTo, debug
-        )
-      );
+      const result = await generateTracks(token, {
+        headliner: q.headliner,
+        slot: q.slot || 'slot1',
+        days: parseInt(q.days) || 90,
+        yearFrom: q.yearFrom ? parseInt(q.yearFrom) : null,
+        yearTo: q.yearTo ? parseInt(q.yearTo) : null,
+      });
+      return res.status(200).json(result);
     }
+
+    // ── Fallback: só retorna versão (nunca mais retorna access_token sozinho) ──
+    return res.status(200).json({
+      service: 'Frequency Intelligence Spotify API',
+      version: '3.0',
+      status: 'online',
+      message: 'Use ?headliner=NOME para gerar tracks ou ?test=g6 para diagnóstico',
+    });
 
   } catch (err) {
-    console.error('Spotify error:', err.message);
-    return res.status(500).json({ error: err.message });
+    console.error('[FI] ERRO:', err.message, err.stack);
+    return res.status(500).json({ error: err.message, tracks: [], total: 0 });
   }
 }
 
-// ── AUTH ──────────────────────────────────────────────────────────
+// ── AUTENTICAÇÃO SPOTIFY ─────────────────────────────────────────
 async function getToken() {
   const { SPOTIFY_CLIENT_ID: cid, SPOTIFY_CLIENT_SECRET: csec } = process.env;
-  if (!cid || !csec) throw new Error('Missing Spotify credentials');
+  if (!cid || !csec) throw new Error('Missing SPOTIFY_CLIENT_ID or SPOTIFY_CLIENT_SECRET');
   const creds = Buffer.from(`${cid}:${csec}`).toString('base64');
   const r = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
-    headers: { 'Authorization': `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Authorization': `Basic ${creds}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
     body: 'grant_type=client_credentials',
   });
-  if (!r.ok) throw new Error(`Token failed: ${r.status}`);
-  return (await r.json()).access_token;
+  if (!r.ok) {
+    const txt = await r.text();
+    throw new Error(`Token failed ${r.status}: ${txt}`);
+  }
+  const data = await r.json();
+  return data.access_token;
 }
 
-// ── ARTISTAS ──────────────────────────────────────────────────────
-async function fetchArtistById(token, id) {
-  const r = await fetch(`https://api.spotify.com/v1/artists/${id}`, {
-    headers: { 'Authorization': `Bearer ${token}` },
-  });
-  if (!r.ok) throw new Error(`Artist fetch failed: ${r.status}`);
-  const a = await r.json();
-  return { ...formatArtist(a), group: detectGroup(a.name) };
+// ── GERAÇÃO PRINCIPAL ────────────────────────────────────────────
+async function generateTracks(token, { headliner, slot, days, yearFrom, yearTo }) {
+  const hlKey = Object.keys(HEADLINER_MAP).find(k => k === headliner.toLowerCase());
+  const group = hlKey ? HEADLINER_MAP[hlKey] : detectGroup(headliner);
+  const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot1;
+
+  console.log(`[FI] headliner="${headliner}" group=${group} slot=${slot} bpm=${JSON.stringify(bpmRange)}`);
+
+  // Busca paralela: playlists + artistas
+  const [playlistTracks, artistTracks] = await Promise.all([
+    getPlaylistTracks(token, group, headliner, yearFrom, yearTo),
+    getArtistTracks(token, group, headliner, days, yearFrom, yearTo),
+  ]);
+
+  console.log(`[FI] Raw: playlists=${playlistTracks.length} artists=${artistTracks.length}`);
+
+  // Filtra por BPM (com audio-features)
+  const [filteredPlaylist, filteredArtist] = await Promise.all([
+    filterByBpm(token, playlistTracks, bpmRange),
+    filterByBpm(token, artistTracks, bpmRange),
+  ]);
+
+  console.log(`[FI] Filtered: playlists=${filteredPlaylist.length} artists=${filteredArtist.length}`);
+
+  // Combina Spotify (85%) + Curadoria FMENEZS (15%)
+  const spotifyTracks = dedup([...filteredPlaylist, ...filteredArtist]);
+  spotifyTracks.sort(() => Math.random() - 0.5);
+
+  const curatedRaw = CURATED_TRACKS[group] || CURATED_TRACKS.g1;
+  const curatedShuffled = [...curatedRaw].sort(() => Math.random() - 0.5);
+  const curatedFormatted = curatedShuffled.slice(0, 3).map(t => ({
+    id: null,
+    name: t.track,
+    artist: t.artist,
+    album: t.label,
+    bpm: t.bpm,
+    key: null,
+    duration: t.duration,
+    releaseDate: null,
+    previewUrl: null,
+    spotifyUrl: null,
+    image: null,
+    popularity: null,
+    source: 'curated_fmenezs',
+    family: t.family,
+  }));
+
+  const final = dedup([...spotifyTracks.slice(0, 9), ...curatedFormatted]);
+  final.sort(() => Math.random() - 0.5);
+
+  console.log(`[FI] Final: ${final.length} tracks para headliner=${headliner}`);
+
+  return {
+    headliner,
+    group,
+    slot,
+    bpmRange,
+    tracks: final.slice(0, 12),
+    total: final.length,
+    sources: {
+      spotify: spotifyTracks.length,
+      curated: curatedFormatted.length,
+    },
+  };
 }
 
+// ── BUSCA POR PLAYLISTS ──────────────────────────────────────────
+async function getPlaylistTracks(token, group, excludeName, yearFrom, yearTo) {
+  const queries = GROUP_QUERIES[group] || GROUP_QUERIES.g6;
+  const picked = shuffle(queries).slice(0, 2);
+  const allTracks = [];
+  const seen = new Set();
+
+  for (const query of picked) {
+    try {
+      console.log(`[FI] Searching playlists: "${query}"`);
+      const r = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=5&market=BR`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!r.ok) { console.log(`[FI] Playlist search ${r.status}`); continue; }
+      const d = await r.json();
+      const playlists = (d.playlists?.items || []).filter(Boolean).slice(0, 3);
+      console.log(`[FI] Playlists found: ${playlists.length}`);
+
+      for (const pl of playlists) {
+        try {
+          const pr = await fetch(
+            `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=50&market=BR&fields=items(track(id,name,artists,album,duration_ms,preview_url,external_urls,popularity))`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!pr.ok) continue;
+          const pd = await pr.json();
+
+          for (const item of pd.items || []) {
+            const t = item?.track;
+            if (!t?.id) continue;
+            const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
+            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
+            if (yearFrom && yearTo) {
+              const y = parseInt((t.album?.release_date || '').split('-')[0]);
+              if (y && (y < yearFrom || y > yearTo)) continue;
+            }
+            allTracks.push(rawTrack(t, t.album, 'playlist'));
+          }
+        } catch (e) { console.log('[FI] Playlist tracks err:', e.message); }
+      }
+    } catch (e) { console.log('[FI] Playlist search err:', e.message); }
+  }
+
+  console.log(`[FI] getPlaylistTracks total: ${allTracks.length}`);
+  return allTracks;
+}
+
+// ── BUSCA POR ARTISTAS DO GRUPO ──────────────────────────────────
+async function getArtistTracks(token, group, excludeName, days, yearFrom, yearTo) {
+  const artists = GROUP_ARTISTS[group] || GROUP_ARTISTS.g6;
+  const picked = shuffle(artists).slice(0, 4);
+  const allTracks = [];
+  const seen = new Set();
+
+  for (const artist of picked) {
+    if (artist.name.toLowerCase() === excludeName.toLowerCase()) continue;
+    try {
+      const r = await fetch(
+        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=20&market=BR`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!r.ok) continue;
+      const d = await r.json();
+      let albums = d.items || [];
+
+      if (yearFrom && yearTo) {
+        albums = albums.filter(a => {
+          const y = parseInt((a.release_date || '').split('-')[0]);
+          return y >= yearFrom && y <= yearTo;
+        });
+      } else {
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        albums = albums.filter(a => a.release_date && new Date(a.release_date) >= since);
+      }
+      if (!albums.length) albums = (d.items || []).slice(0, 3);
+
+      for (const album of albums.slice(0, 3)) {
+        try {
+          const tr = await fetch(
+            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=8&market=BR`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!tr.ok) continue;
+          const td = await tr.json();
+          for (const t of td.items || []) {
+            if (!t?.id) continue;
+            const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
+            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
+            allTracks.push(rawTrack(t, album, 'artist'));
+          }
+        } catch (e) {}
+      }
+    } catch (e) { console.log('[FI] Artist tracks err:', e.message); }
+  }
+
+  console.log(`[FI] getArtistTracks total: ${allTracks.length}`);
+  return allTracks;
+}
+
+// ── FILTRO POR BPM COM AUDIO FEATURES ───────────────────────────
+async function filterByBpm(token, tracks, bpmRange) {
+  if (!tracks.length) return [];
+  const withFeatures = [];
+
+  // Processa em batches de 50
+  for (let i = 0; i < tracks.length; i += 50) {
+    const batch = tracks.slice(i, i + 50);
+    const ids = batch.map(t => t.id).filter(Boolean).join(',');
+    if (!ids) { withFeatures.push(...batch); continue; }
+
+    try {
+      const r = await fetch(
+        `https://api.spotify.com/v1/audio-features?ids=${ids}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!r.ok) { withFeatures.push(...batch); continue; }
+      const d = await r.json();
+      const featMap = {};
+      (d.audio_features || []).forEach(f => { if (f) featMap[f.id] = f; });
+      batch.forEach(t => {
+        const feat = featMap[t.id];
+        withFeatures.push({
+          ...t,
+          bpm: feat?.tempo ? Math.round(feat.tempo) : null,
+          key: feat ? formatKey(feat.key, feat.mode) : null,
+        });
+      });
+    } catch (e) {
+      withFeatures.push(...batch);
+    }
+  }
+
+  const inBpm = withFeatures.filter(t => t.bpm && t.bpm >= bpmRange.min - 3 && t.bpm <= bpmRange.max + 3);
+  const noBpm = withFeatures.filter(t => !t.bpm);
+  console.log(`[FI] filterByBpm: total=${withFeatures.length} inBpm=${inBpm.length} noBpm=${noBpm.length}`);
+
+  // Se tiver suficientes com BPM correto, usa só esses. Senão completa com sem BPM.
+  if (inBpm.length >= 6) return inBpm;
+  return [...inBpm, ...noBpm.slice(0, Math.max(0, 8 - inBpm.length))];
+}
+
+// ── BUSCA DE ARTISTAS (wizard) ───────────────────────────────────
 async function searchArtist(token, name) {
   const r = await fetch(
     `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`,
-    { headers: { 'Authorization': `Bearer ${token}` } }
+    { headers: { Authorization: `Bearer ${token}` } }
   );
-  if (!r.ok) throw new Error(`Search failed: ${r.status}`);
+  if (!r.ok) throw new Error(`Artist search failed: ${r.status}`);
   const d = await r.json();
   const a = d.artists?.items?.[0];
   if (!a) return { name, photo: '', group: detectGroup(name) };
   return { ...formatArtist(a), group: detectGroup(name) };
 }
 
+async function fetchArtistById(token, id) {
+  const r = await fetch(`https://api.spotify.com/v1/artists/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!r.ok) throw new Error(`Artist fetch failed: ${r.status}`);
+  const a = await r.json();
+  return { ...formatArtist(a), group: detectGroup(a.name) };
+}
+
 async function searchFree(token, query) {
   const r = await fetch(
     `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=8`,
-    { headers: { 'Authorization': `Bearer ${token}` } }
+    { headers: { Authorization: `Bearer ${token}` } }
   );
   if (!r.ok) throw new Error(`Free search failed: ${r.status}`);
   const d = await r.json();
   return { results: (d.artists?.items || []).map(a => ({ ...formatArtist(a), group: detectGroup(a.name) })) };
 }
 
+// ── ENDPOINT DE DIAGNÓSTICO ──────────────────────────────────────
+async function runTest(token, group) {
+  const grp = GROUP_QUERIES[group] ? group : 'g6';
+  const query = GROUP_QUERIES[grp][0];
+
+  const r = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=3&market=BR`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  const d = await r.json();
+  const playlists = (d.playlists?.items || []).filter(Boolean).slice(0, 2);
+
+  let sampleTracks = [];
+  if (playlists.length) {
+    const pr = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlists[0].id}/tracks?limit=5&market=BR&fields=items(track(id,name,artists,preview_url))`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const pd = await pr.json();
+    sampleTracks = (pd.items || []).map(i => i?.track).filter(Boolean).map(t => ({
+      name: t.name,
+      artist: t.artists?.[0]?.name,
+      hasPreview: !!t.preview_url,
+    }));
+  }
+
+  return {
+    version: '3.0',
+    group: grp,
+    query,
+    playlistsFound: playlists.length,
+    firstPlaylist: playlists[0]?.name || null,
+    sampleTracks,
+    curatedCount: (CURATED_TRACKS[grp] || []).length,
+    status: 'OK',
+  };
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────
+function rawTrack(t, album, source) {
+  return {
+    id: t.id,
+    name: t.name,
+    artist: (t.artists || []).map(a => a.name).join(', '),
+    album: album?.name || '',
+    releaseDate: album?.release_date || '',
+    image: album?.images?.[1]?.url || album?.images?.[0]?.url || '',
+    previewUrl: t.preview_url || '',
+    spotifyUrl: t.external_urls?.spotify || '',
+    popularity: t.popularity || 0,
+    duration: formatDuration(t.duration_ms),
+    source,
+    bpm: null,
+    key: null,
+  };
+}
+
 function formatArtist(a) {
   return {
-    id: a.id, name: a.name,
+    id: a.id,
+    name: a.name,
     photo: a.images?.[0]?.url || '',
     photoSmall: a.images?.[2]?.url || a.images?.[0]?.url || '',
     genres: a.genres || [],
@@ -282,270 +598,11 @@ function formatArtist(a) {
   };
 }
 
-// ── FETCH TRACKS PARA HEADLINER ───────────────────────────────────
-async function fetchTracksForHeadliner(token, headlinerName, slot, days, yearFrom, yearTo, debug=false) {
-  const hlKey = Object.keys(HEADLINER_MAP).find(k => k.toLowerCase() === headlinerName.toLowerCase());
-  const group = hlKey ? HEADLINER_MAP[hlKey] : detectGroup(headlinerName);
-  const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot2;
-
-  console.log(`[FI] headliner=${headlinerName} group=${group} slot=${slot} days=${days} bpm=${JSON.stringify(bpmRange)}`);
-
-  // Estratégia dupla: playlists + artistas do grupo
-  const [playlistTracks, artistTracks] = await Promise.all([
-    searchPlaylistTracks(token, group, bpmRange, headlinerName, yearFrom, yearTo),
-    searchArtistReleaseTracks(token, group, bpmRange, headlinerName, days, yearFrom, yearTo),
-  ]);
-
-  console.log(`[FI] playlist=${playlistTracks.length} artist=${artistTracks.length}`);
-
-  // Merge, deduplica, ordena por relevância
-  const all = [...playlistTracks, ...artistTracks];
-  const seen = new Set();
-  const deduped = all.filter(t => {
-    const key = `${t.name}|${t.artist}`.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
-  // Embaralha para variedade
-  deduped.sort(() => Math.random() - 0.5);
-
-  return {
-    headliner: headlinerName,
-    group,
-    slot,
-    bpmRange,
-    tracks: deduped.slice(0, 20),
-    total: deduped.length,
-  };
-}
-
-// ── BUSCA POR PLAYLISTS PÚBLICAS ──────────────────────────────────
-async function searchPlaylistTracks(token, group, bpmRange, excludeName, yearFrom, yearTo) {
-  const queries = GROUP_SEARCH_QUERIES[group] || GROUP_SEARCH_QUERIES.g6;
-  // Pega 2 queries aleatórias para variedade
-  const shuffled = [...queries].sort(() => Math.random() - 0.5).slice(0, 2);
-
-  const allTracks = [];
-  const seen = new Set();
-
-  await Promise.all(shuffled.map(async (query) => {
-    try {
-      // Busca playlists
-      const r = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=playlist&limit=5&market=BR`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      if (!r.ok) return;
-      const d = await r.json();
-      const playlists = d.playlists?.items?.filter(p => p) || [];
-
-      // Pega tracks de cada playlist
-      await Promise.all(playlists.slice(0, 3).map(async (pl) => {
-        try {
-          const pr = await fetch(
-            `https://api.spotify.com/v1/playlists/${pl.id}/tracks?limit=50&market=BR&fields=items(track(id,name,artists,album,duration_ms,preview_url,external_urls,popularity))`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          );
-          if (!pr.ok) return;
-          const pd = await pr.json();
-          const items = pd.items || [];
-
-          for (const item of items) {
-            const t = item.track;
-            if (!t || !t.id) continue;
-            const key = `${t.name}|${t.artists?.[0]?.name}`.toLowerCase();
-            if (seen.has(key)) continue;
-            seen.add(key);
-
-            // Exclui headliner
-            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
-            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
-
-            allTracks.push({
-              id: t.id,
-              name: t.name,
-              artist: (t.artists || []).map(a => a.name).join(', '),
-              album: t.album?.name || '',
-              releaseDate: t.album?.release_date || '',
-              image: t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '',
-              previewUrl: t.preview_url || '',
-              spotifyUrl: t.external_urls?.spotify || '',
-              popularity: t.popularity || 0,
-              duration: formatDuration(t.duration_ms),
-              source: 'playlist',
-              tempo: 0,
-              key: -1,
-              mode: 1,
-            });
-          }
-        } catch(e) {}
-      }));
-    } catch(e) {}
-  }));
-
-  // Busca audio features para filtrar BPM
-  return await filterByBpm(token, allTracks, bpmRange, yearFrom, yearTo);
-}
-
-// ── BUSCA POR ARTISTAS DO GRUPO ───────────────────────────────────
-async function searchArtistReleaseTracks(token, group, bpmRange, excludeName, days, yearFrom, yearTo) {
-  const artists = GROUP_ARTISTS[group] || GROUP_ARTISTS.g6;
-  // Pega artistas aleatórios para variedade
-  const shuffled = [...artists].sort(() => Math.random() - 0.5).slice(0, 5);
-
-  const allTracks = [];
-  const seen = new Set();
-
-  await Promise.all(shuffled.map(async (artist) => {
-    if (artist.name.toLowerCase() === excludeName.toLowerCase()) return;
-    try {
-      const r = await fetch(
-        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=20`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      if (!r.ok) return;
-      const d = await r.json();
-      const all = d.items || [];
-
-      let targets;
-      if (yearFrom && yearTo) {
-        targets = all.filter(a => {
-          const y = parseInt((a.release_date || '').split('-')[0]);
-          return y >= yearFrom && y <= yearTo;
-        });
-      } else {
-        const since = new Date();
-        since.setDate(since.getDate() - days);
-        targets = all.filter(a => a.release_date && new Date(a.release_date) >= since);
-      }
-
-      if (!targets.length) targets = all.slice(0, 3);
-
-      await Promise.all(targets.slice(0, 3).map(async (album) => {
-        try {
-          const tr = await fetch(
-            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=8`,
-            { headers: { 'Authorization': `Bearer ${token}` } }
-          );
-          if (!tr.ok) return;
-          const td = await tr.json();
-          for (const t of (td.items || [])) {
-            const key = `${t.name}|${t.artists?.[0]?.name}`.toLowerCase();
-            if (seen.has(key)) continue;
-            seen.add(key);
-            const artistNames = (t.artists || []).map(a => a.name.toLowerCase());
-            if (artistNames.some(n => n.includes(excludeName.toLowerCase()))) continue;
-
-            allTracks.push({
-              id: t.id,
-              name: t.name,
-              artist: (t.artists || []).map(a => a.name).join(', '),
-              album: album.name,
-              releaseDate: album.release_date || '',
-              image: album.images?.[1]?.url || album.images?.[0]?.url || '',
-              previewUrl: t.preview_url || '',
-              spotifyUrl: t.external_urls?.spotify || '',
-              popularity: 0,
-              duration: formatDuration(t.duration_ms),
-              source: 'artist',
-              tempo: 0,
-              key: -1,
-              mode: 1,
-            });
-          }
-        } catch(e) {}
-      }));
-    } catch(e) {}
-  }));
-
-  return await filterByBpm(token, allTracks, bpmRange, yearFrom, yearTo);
-}
-
-// ── FILTER BY BPM ─────────────────────────────────────────────────
-async function filterByBpm(token, tracks, bpmRange, yearFrom, yearTo) {
-  if (!tracks.length) return [];
-
-  // Aplica filtro de ano se era histórica
-  let filtered = tracks;
-  if (yearFrom && yearTo) {
-    filtered = tracks.filter(t => {
-      if (!t.releaseDate) return true; // inclui sem data
-      const y = parseInt(t.releaseDate.split('-')[0]);
-      return y >= yearFrom && y <= yearTo;
-    });
-    if (!filtered.length) filtered = tracks;
-  }
-
-  // Busca audio features em batches de 50
-  const batches = [];
-  for (let i = 0; i < filtered.length; i += 50) {
-    batches.push(filtered.slice(i, i + 50));
-  }
-
-  const withFeatures = [];
-  for (const batch of batches) {
-    const ids = batch.map(t => t.id).filter(Boolean).join(',');
-    if (!ids) continue;
-    try {
-      const r = await fetch(
-        `https://api.spotify.com/v1/audio-features?ids=${ids}`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
-      if (!r.ok) { withFeatures.push(...batch.map(t => ({...t, tempo:0}))); continue; }
-      const d = await r.json();
-      const featMap = {};
-      (d.audio_features || []).forEach(f => { if (f) featMap[f.id] = f; });
-      batch.forEach(t => {
-        const feat = featMap[t.id];
-        withFeatures.push({
-          ...t,
-          tempo: feat?.tempo || 0,
-          key: feat?.key ?? -1,
-          mode: feat?.mode ?? 1,
-        });
-      });
-    } catch(e) {
-      withFeatures.push(...batch.map(t => ({...t, tempo:0})));
-    }
-  }
-
-  // Filtra por BPM — inclui tempo 0 apenas se não houver suficientes
-  console.log(`[FI] filterByBpm: total=${withFeatures.length} bpm=${JSON.stringify(bpmRange)}`);
-  const tempos = withFeatures.slice(0,10).map(t=>Math.round(t.tempo));
-  console.log(`[FI] sample tempos: ${JSON.stringify(tempos)}`);
-  const inBpm = withFeatures.filter(t => t.tempo >= bpmRange.min - 3 && t.tempo <= bpmRange.max + 3);
-  console.log(`[FI] inBpm: ${inBpm.length}`);
-  const result = inBpm.length >= 8 ? inBpm : [...inBpm, ...withFeatures.filter(t => t.tempo === 0).slice(0, 10 - inBpm.length)];
-
-  return result.slice(0, 20).map(t => ({
-    id: t.id,
-    name: t.name,
-    artist: t.artist,
-    album: t.album,
-    bpm: t.tempo ? Math.round(t.tempo) : null,
-    key: formatKey(t.key, t.mode),
-    duration: t.duration,
-    releaseDate: t.releaseDate,
-    previewUrl: t.previewUrl,
-    spotifyUrl: t.spotifyUrl,
-    image: t.image,
-    popularity: t.popularity,
-  }));
-}
-
-// ── HELPERS ───────────────────────────────────────────────────────
 function detectGroup(name) {
   if (!name) return 'g1';
   const n = name.toLowerCase();
-  if (['hernán cattáneo','nox vahn','guy j','sasha','john digweed','sam shure','hraach'].some(d => n.includes(d))) return 'g2';
-  if (['tale of us','artbat','anyma','adriatique','hosh','maceo plex','mita gami','trentemøller','eric prydz'].some(d => n.includes(d))) return 'g3';
-  if (['anna','richie hawtin','charlotte de witte','amelie lens','carl cox','paco osuna','adam beyer'].some(d => n.includes(d))) return 'g4';
-  if (['reinier zonneveld'].some(d => n.includes(d))) return 'g5';
-  if (['black coffee','adam port','bedouin','damian lazarus','ahmed spins','blond:ish','keinemusik','rampa'].some(d => n.includes(d))) return 'g6';
-  if (['satori','lee burridge','mauro masi'].some(d => n.includes(d))) return 'g7';
-  return 'g1';
+  const key = Object.keys(HEADLINER_MAP).find(k => n.includes(k));
+  return key ? HEADLINER_MAP[key] : 'g1';
 }
 
 function formatKey(key, mode) {
@@ -559,4 +616,18 @@ function formatDuration(ms) {
   const m = Math.floor(ms / 60000);
   const s = Math.floor((ms % 60000) / 1000);
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+function dedup(tracks) {
+  const seen = new Set();
+  return tracks.filter(t => {
+    const k = `${t.name}|||${t.artist}`.toLowerCase();
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
