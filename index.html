@@ -104,8 +104,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .opt-tag{font-size:10px;padding:5px 12px;border:1px solid;border-radius:2px;white-space:nowrap;font-family:var(--mono);line-height:1.6}
 .opt-bpm{font-size:9px;color:var(--text3);margin-top:4px;font-family:var(--mono)}
 .mvp-badge{font-size:8px;padding:2px 7px;background:var(--surface3);color:var(--text3);border-radius:10px;margin-top:4px;display:inline-block;font-family:var(--mono)}
-.festival-note{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.3);padding:12px 14px;border-radius:4px;font-size:12px;color:#fbbf24;line-height:1.6;margin-top:-8px;margin-bottom:16px;display:none}
-.festival-note.visible{display:block}
 
 .nav{display:flex;gap:10px;margin-top:24px}
 .btn-next{flex:1;background:var(--accent);border:none;color:#fff;padding:15px 18px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;letter-spacing:.2px;transition:all .12s;border-radius:2px}
@@ -163,6 +161,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .btn-restart:hover{color:var(--text2)}
 
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
+
+/* WELCOME */
+.welcome{padding:8px 0 4px}
+.welcome-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.4}
+.welcome-sub{font-size:14px;color:var(--text2);margin-bottom:28px;line-height:1.8}
+.ws{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:2px;margin-bottom:10px}
+.ws-num{font-family:var(--mono);font-size:10px;color:var(--accent2);background:rgba(139,92,246,.1);border:1px solid var(--accent);border-radius:2px;padding:3px 8px;flex-shrink:0;margin-top:1px;letter-spacing:.5px}
+.ws-label{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.ws-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.welcome-note{font-size:11px;color:var(--text3);margin:20px 0 24px;line-height:1.8;border-top:1px solid var(--border);padding-top:16px}
+.btn-start{width:100%;background:var(--accent);border:none;color:#fff;padding:16px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;border-radius:2px;transition:background .15s;letter-spacing:.3px}
+.btn-start:hover{background:var(--accent2)}
   </style>
 </head>
 <body>
@@ -184,8 +194,43 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     </div>
   </div>
 
+  <!-- WELCOME -->
+  <div id="sWelcome" class="screen active">
+    <div class="welcome">
+      <div class="welcome-title">Como usar o Cuelab</div>
+      <div class="welcome-sub">Um sistema de curadoria para DJs que tocam antes do headliner. 5 perguntas, 12 tracks do banco curado.</div>
+
+      <div class="ws">
+        <span class="ws-num">01</span>
+        <div><div class="ws-label">Seu nome artístico</div><div class="ws-desc">Para personalizar a nota curatorial do set.</div></div>
+      </div>
+      <div class="ws">
+        <span class="ws-num">02</span>
+        <div><div class="ws-label">Quem está no line-up</div><div class="ws-desc">Adicione os headliners ou referências de estilo. O sistema identifica o grupo sonoro e calcula o BPM certo para o seu slot.</div></div>
+      </div>
+      <div class="ws">
+        <span class="ws-num">03</span>
+        <div><div class="ws-label">Seu slot</div><div class="ws-desc">Abertura ou warm-up? O horário é ilustrativo — o que importa é a sua posição no line-up.</div></div>
+      </div>
+      <div class="ws">
+        <span class="ws-num">04</span>
+        <div><div class="ws-label">Tipo de evento</div><div class="ws-desc">Club, festival, beach ou after-hours. Cada contexto afina a escolha das famílias sonoras.</div></div>
+      </div>
+      <div class="ws">
+        <span class="ws-num">05</span>
+        <div><div class="ws-label">12 tracks curadas</div><div class="ws-desc">Selecionadas do banco FMENEZS. BPM, família sonora e progressão energética calculados para o seu contexto específico.</div></div>
+      </div>
+
+      <div class="welcome-note">
+        A regra principal: nunca tocar o que o headliner toca, e nunca ultrapassar o BPM do slot. Quem abre a pista define o tom da noite.
+      </div>
+
+      <button class="btn-start" onclick="startWizard()">Começar →</button>
+    </div>
+  </div>
+
   <!-- S0: Nome -->
-  <div class="screen active" id="s0">
+  <div class="screen" id="s0">
     <div class="step-num">PASSO 1 / 5</div>
     <div class="step-cat">IDENTIFICAÇÃO</div>
     <div class="q-title">Qual o seu nome artístico?</div>
@@ -295,21 +340,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="q-title">Onde você vai tocar?</div>
     <div class="q-sub">Afina a escolha das famílias sonoras e o mood do set.</div>
     <div class="options" id="venueO">
-      <div class="opt" onclick="selV(this,'club')">
-        <div><div class="opt-name">Club / Indoor</div><div class="opt-desc">Espaço fechado · Som controlado · Pista de dança</div></div>
-      </div>
-      <div class="opt" onclick="selV(this,'festival')">
-        <div><div class="opt-name">Festival / Open Air</div><div class="opt-desc">Palco grande · Público diverso · Energia aberta · Cada artista tem mais liberdade para apresentar sua identidade</div></div>
-      </div>
-      <div class="opt" onclick="selV(this,'pool')">
-        <div><div class="opt-name">Pool Party / Beach Party</div><div class="opt-desc">Som aberto · Ambiente de dia · Mood solar</div></div>
-      </div>
-      <div class="opt" onclick="selV(this,'after')">
-        <div><div class="opt-name">After-Hours</div><div class="opt-desc">Pista filtrada · Madrugada avançada · Público comprometido · O warm-up existe, mas o contexto já pede mais pressão desde o início</div></div>
-      </div>
-    </div>
-    <div class="festival-note" id="festNote">
-      <strong>Festival / Open Air:</strong> o warm-up ainda é importante para construir a energia corretamente, mas em festival cada artista tem mais liberdade para apresentar sua identidade. Não se limite tanto — mostre quem você é.
+      <div class="opt" onclick="selV(this,'club')"><div class="opt-name">Club / Indoor</div></div>
+      <div class="opt" onclick="selV(this,'festival')"><div class="opt-name">Festival / Open Air</div></div>
+      <div class="opt" onclick="selV(this,'pool')"><div class="opt-name">Pool Party / Beach Party</div></div>
+      <div class="opt" onclick="selV(this,'after')"><div class="opt-name">After-Hours</div></div>
     </div>
     <div class="nav">
       <button class="btn-back" onclick="go(2)">← Voltar</button>
@@ -550,11 +584,18 @@ const TRACKS=[
 
 let ST={
   artist:'',lineup:[],slot:null,venue:null,
-  manOpen:false,photoCache:{},
-  // banco de artistas enriquecido com dados do Spotify
-  enrichedArtists:{},
+  manOpen:false,photoCache:{},enrichedArtists:{},
 };
-let cur=0, srchTimer=null, curAudio=null;
+let cur=-1, srchTimer=null, curAudio=null;
+
+function startWizard(){
+  document.getElementById('sWelcome').classList.remove('active');
+  cur=0;
+  document.getElementById('s0').classList.add('active');
+  updBar();
+  window.scrollTo({top:0,behavior:'smooth'});
+  initSpotify();
+}
 
 // ── SPOTIFY ──────────────────────────────────────────────────────
 async function initSpotify(){
@@ -751,9 +792,7 @@ function selV(el,v){
   el.classList.add('sel');
   ST.venue=v;
   document.getElementById('n3').disabled=false;
-  // Mostra nota festival
-  const note=document.getElementById('festNote');
-  note.classList.toggle('visible',v==='festival');
+
 }
 
 // ── S4: review ──────────────────────────────────────────────────
@@ -935,9 +974,15 @@ function restart(){
   document.getElementById('chips').innerHTML='<span class="chips-empty">Nenhum artista selecionado ainda</span>';
   document.getElementById('resBox').innerHTML='';
   document.querySelectorAll('.opt:not(.disabled)').forEach(o=>o.classList.remove('sel'));
-  document.getElementById('festNote').classList.remove('visible');
   ['n0','n1','n2','n3'].forEach(id=>document.getElementById(id).disabled=true);
-  go(0);
+  // Volta ao welcome
+  if(cur>=0) document.getElementById('s'+cur).classList.remove('active');
+  cur=-1;
+  document.getElementById('s0').classList.remove('active');
+  document.getElementById('sWelcome').classList.add('active');
+  document.getElementById('pfill').style.width='0%';
+  ['ps0','ps1','ps2','ps3','ps4'].forEach(id=>document.getElementById(id).className='ps');
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 document.addEventListener('click',e=>{
