@@ -160,14 +160,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .btn-restart{width:100%;margin-top:6px;background:none;border:none;color:var(--text3);padding:10px;font-family:var(--font);font-size:11px;cursor:pointer;transition:color .15s}
 .btn-restart:hover{color:var(--text2)}
 
+.period-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:7px 14px;font-family:var(--mono);font-size:9px;cursor:pointer;border-radius:2px;transition:all .12s;letter-spacing:.5px}
+.period-btn:hover{border-color:var(--accent2);color:var(--accent3)}
+.period-btn.sel{border-color:var(--accent);color:var(--accent2);background:rgba(109,40,217,.1)}
+.tr-key{font-size:8px;color:var(--text3);text-align:right;font-family:var(--mono);margin-top:2px}
+.tr-source{font-size:7px;color:#1db954;font-family:var(--mono);margin-top:2px;text-align:right}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
 
-/* WELCOME */
-.welcome{padding:40px 0 8px;text-align:center}
-.welcome-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:14px;line-height:1.4;letter-spacing:-.3px}
-.welcome-sub{font-size:15px;color:var(--text2);margin-bottom:40px;line-height:1.8;max-width:460px;margin-left:auto;margin-right:auto}
-.btn-start{width:100%;background:var(--accent);border:none;color:#fff;padding:16px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;border-radius:2px;transition:background .15s;letter-spacing:.3px}
-.btn-start:hover{background:var(--accent2)}
+
   </style>
 </head>
 <body>
@@ -188,18 +188,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <span class="ps" id="ps4">GERAR</span>
     </div>
   </div>
-
-  <!-- WELCOME -->
-  <div id="sWelcome" class="screen active">
-    <div class="welcome">
-      <div class="welcome-title">Curadoria para quem abre a pista.</div>
-      <div class="welcome-sub">Informe o contexto da festa e receba 12 tracks selecionadas para o seu slot — com BPM e progressão energética calibrados para o headliner da noite.</div>
-      <button class="btn-start" onclick="startWizard()">Começar →</button>
-    </div>
-  </div>
-
   <!-- S0: Nome -->
-  <div class="screen" id="s0">
+  <div class="screen active" id="s0">
     <div class="step-num">PASSO 1 / 5</div>
     <div class="step-cat">IDENTIFICAÇÃO</div>
     <div class="q-title">Qual o seu nome artístico?</div>
@@ -327,6 +317,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="q-title">Tudo certo.</div>
     <div class="q-sub">12 tracks do frequency intelligence para o seu contexto específico.</div>
     <div class="rev" id="revBox"></div>
+
+    <div style="margin-bottom:12px">
+      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">Período do garimpo</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="periodBtns">
+        <button class="period-btn sel" onclick="selPeriod(this,30)">30 dias</button>
+        <button class="period-btn" onclick="selPeriod(this,90)">3 meses</button>
+        <button class="period-btn" onclick="selPeriod(this,180)">6 meses</button>
+        <button class="period-btn" onclick="selPeriod(this,365)">1 ano</button>
+      </div>
+    </div>
+
     <button class="btn-gen" id="genBtn" onclick="generate()">◆ GERAR 12 TRACKS</button>
     <div class="nav" style="margin-top:12px"><button class="btn-back" onclick="go(3)">← Voltar</button></div>
     <div class="results" id="resBox"></div>
@@ -555,16 +556,8 @@ let ST={
   artist:'',lineup:[],slot:null,venue:null,
   manOpen:false,photoCache:{},enrichedArtists:{},
 };
-let cur=-1, srchTimer=null, curAudio=null;
+let cur=0, srchTimer=null, curAudio=null;
 
-function startWizard(){
-  document.getElementById('sWelcome').classList.remove('active');
-  cur=0;
-  document.getElementById('s0').classList.add('active');
-  updBar();
-  window.scrollTo({top:0,behavior:'smooth'});
-  initSpotify();
-}
 
 // ── SPOTIFY ──────────────────────────────────────────────────────
 async function initSpotify(){
@@ -779,93 +772,95 @@ function buildRev(){
   </div>`;
 }
 
+// ── PERÍODO ─────────────────────────────────────────────────────
+let ST_DAYS = 30;
+function selPeriod(el, days){
+  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  ST_DAYS = days;
+}
+
 // ── GERAR ───────────────────────────────────────────────────────
-function generate(){
+async function generate(){
   const g=ST.dominantGroup||'g2';
   const bpm=GROUP_BPM[g]?.[ST.slot]||{min:110,max:120};
   const ceil=bpm.max, floor=bpm.min;
 
+  // 15% do banco = 2 tracks de referência
   const allFam=[];
   ST.lineup.forEach(dj=>(dj.fams||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)}));
   (VFAM[ST.venue]||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)});
 
-  // Para festival, expande o pool de famílias
   let pool;
   if(ST.venue==='festival'){
     pool=TRACKS.filter(t=>t.bpm>=floor-2&&t.bpm<=ceil+2);
   }else{
     pool=TRACKS.filter(t=>allFam.includes(t.fam)&&t.bpm>=floor&&t.bpm<=ceil);
-    if(pool.length<8) pool=TRACKS.filter(t=>allFam.includes(t.fam)&&t.bpm<=ceil+2);
-    if(pool.length<8) pool=TRACKS.filter(t=>t.bpm>=floor&&t.bpm<=ceil);
+    if(pool.length<4) pool=TRACKS.filter(t=>allFam.includes(t.fam));
   }
   pool=[...pool].sort(()=>Math.random()-.5);
+  // Pega só 2 do banco (15%)
+  const bankTracks = pool.slice(0,2).map(t=>({...t, source:'banco', key:null}));
 
-  const phases=[
-    {fams:['Organic Emotional','Spiritual Organic','Dreamy Progressive'],lo:floor,hi:floor+3},
-    {fams:['Afro Groove','Progressive Warm','Winehouse','Groove Minimal'],lo:floor+2,hi:floor+6},
-    {fams:['Dreamy Progressive','Indie Melodic','Deep Storytelling','Progressive Warm'],lo:floor+4,hi:ceil-2},
-    {fams:['Hypnotic Raw','Peak Raw','Groove Minimal'],lo:ceil-3,hi:ceil},
-  ];
+  // Mostra resultado imediato com banco + loading para Spotify
+  renderRes(bankTracks, ceil, floor, true);
+  reqNote(bankTracks, ceil, floor);
 
-  const result=[];const used=new Set();
-  phases.forEach((ph,pi)=>{
-    let c=pool.filter(t=>!used.has(t.t+t.a)&&t.bpm>=ph.lo&&t.bpm<=ph.hi&&ph.fams.includes(t.fam));
-    if(c.length<3) c=pool.filter(t=>!used.has(t.t+t.a)&&t.bpm>=ph.lo&&t.bpm<=ph.hi);
-    if(c.length<3) c=pool.filter(t=>!used.has(t.t+t.a));
-    c.slice(0,3).forEach(t=>{used.add(t.t+t.a);result.push({...t,phase:pi})});
-  });
-  while(result.length<12){
-    const e=pool.find(t=>!used.has(t.t+t.a));
-    if(!e)break;
-    used.add(e.t+e.a);result.push({...e,phase:3});
-  }
-
-  renderRes(result,ceil,floor);
-  reqNote(result,ceil,floor);
-  fetchSpotifyTracks(g,ceil,floor);
+  // 85% do Spotify = busca async
+  fetchAndRenderSpotifyTracks(g, ceil, floor, bankTracks);
 }
 
-function renderRes(tracks,ceil,floor){
+function renderTrackCard(t, num){
+  const fs=FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'};
+  const borderColor = t.source==='spotify' ? '#1db954' : 'var(--accent)';
+  const keyStr = t.key && t.key!=='?' ? `<div class="tr-key">${t.key}</div>` : '';
+  const sourceStr = t.source==='spotify'
+    ? `<div class="tr-source">SPOTIFY</div>`
+    : `<div class="tr-source" style="color:var(--accent3)">BANCO</div>`;
+  const labelStr = t.source==='spotify'
+    ? (t.releaseDate||'')
+    : (t.l||'');
+  return `<div class="track-card" style="border-left-color:${borderColor}">
+    <div class="tr-num">${String(num).padStart(2,'0')}</div>
+    <div>
+      <div class="tr-name">${t.t||t.name||''}</div>
+      <div class="tr-artist">${t.a||t.artist||''}</div>
+    </div>
+    <div>
+      ${t.fam ? `<span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>` : ''}
+      <div class="tr-bpm">${t.bpm||''} BPM ${labelStr?'· '+labelStr:''}</div>
+      ${keyStr}
+      ${sourceStr}
+    </div>
+  </div>`;
+}
+
+function renderRes(tracks, ceil, floor, loading=false){
   const box=document.getElementById('resBox');
   const names=ST.lineup.map(d=>d.n).join(' · ');
-  const famC={};tracks.forEach(t=>{famC[t.fam]=(famC[t.fam]||0)+1});
-  const topFam=Object.entries(famC).sort((a,b)=>b[1]-a[1]).slice(0,2).map(([f])=>f).join(', ');
   const g=ST.dominantGroup||'g2';
 
+  // Ordena por BPM
+  const sorted=[...tracks].sort((a,b)=>(a.bpm||0)-(b.bpm||0));
+
   let html=`<div class="divider"></div>
-  <div class="res-title">12 Tracks Selecionadas</div>
+  <div class="res-title">Tracks Selecionadas</div>
   <div class="res-ctx">
-    <strong>${ST.artist}</strong> · ${ST.slot} · ${GROUP_NAMES[g]}<br>
-    Line-up: ${names}<br>
-    BPM: ${floor}–${ceil} · Famílias: ${topFam}
-    ${ST.venue==='festival'?'<br><span style="color:var(--amber2)">Festival mode — pool expandido</span>':''}
-  </div>`;
+    <strong>${ST.artist}</strong> · ${GROUP_NAMES[g]} · BPM ${floor}–${ceil}<br>
+    Line-up: ${names}
+  </div>
+  <div id="tracksList">`;
 
-  [0,1,2,3].forEach(pi=>{
-    const ph=tracks.filter(t=>t.phase===pi);if(!ph.length)return;
-    const ps=PHASES[pi];
-    html+=`<div class="phase-hdr" style="color:${ps.c};border-color:${ps.c}20">
-      <div class="ph-dot" style="background:${ps.c}"></div>${ps.l}
+  sorted.forEach((t,i)=>{ html+=renderTrackCard(t,i+1); });
+
+  if(loading){
+    html+=`<div id="spLoadingRow" style="padding:14px 16px;font-size:11px;color:#1db954;display:flex;align-items:center;gap:8px;border-left:2px solid #1db954;background:var(--surface);margin-bottom:5px">
+      <span style="width:8px;height:8px;border:2px solid #1db954;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0"></span>
+      Garimpando no Spotify — ${ST_DAYS} dias...
     </div>`;
-    ph.forEach((t,i)=>{
-      const fs=FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'};
-      const num=tracks.filter(x=>x.phase<pi).length+i+1;
-      html+=`<div class="track-card" style="border-left-color:${ps.c}">
-        <div class="tr-num">${String(num).padStart(2,'0')}</div>
-        <div><div class="tr-name">${t.t}</div><div class="tr-artist">${t.a}</div></div>
-        <div>
-          <span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>
-          <div class="tr-bpm">${t.bpm} BPM · ${t.l}</div>
-        </div>
-      </div>`;
-    });
-  });
+  }
 
-  html+=`<div class="sp-section" id="spSection" style="display:none">
-    <div class="sp-title">◆ Descobertas recentes — Spotify</div>
-    <div id="spTracks"><div class="sp-loading">Buscando lançamentos recentes...</div></div>
-  </div>`;
-
+  html+=`</div>`;
   html+=`<div class="note" id="curNote"><div class="note-loading">Gerando nota curatorial...</div></div>`;
   html+=`<button class="btn-reset" onclick="generate()">↺ Nova seleção</button>`;
   html+=`<button class="btn-restart" onclick="restart()">Recomeçar do zero</button>`;
@@ -873,34 +868,67 @@ function renderRes(tracks,ceil,floor){
   box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-async function fetchSpotifyTracks(group,ceil,floor){
+function addTracksToList(newTracks){
+  const list=document.getElementById('tracksList');
+  if(!list) return;
+  // Remove loading row
+  const loadRow=document.getElementById('spLoadingRow');
+  if(loadRow) loadRow.remove();
+  // Pega tracks existentes do banco
+  const existing=[];
+  list.querySelectorAll('.track-card').forEach((el,i)=>{
+    existing.push({el, bpm: parseInt(el.querySelector('.tr-bpm')?.textContent)||0});
+  });
+  // Merge e reordena tudo por BPM
+  const allCards=[...existing.map(e=>({html:e.el.outerHTML, bpm:e.bpm}))];
+  newTracks.forEach((t,i)=>{
+    allCards.push({html: renderTrackCard(t, 0), bpm: t.bpm||0});
+  });
+  allCards.sort((a,b)=>a.bpm-b.bpm);
+  list.innerHTML = allCards.map((c,i)=>{
+    // Atualiza número
+    return c.html.replace(/class="tr-num">[^<]+</, `class="tr-num">${String(i+1).padStart(2,'0')}<`);
+  }).join('');
+}
+
+async function fetchAndRenderSpotifyTracks(group, ceil, floor, bankTracks){
   const headliner=ST.lineup[0]?.n;
   if(!headliner) return;
   try{
-    const r=await fetch(`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=180`);
-    if(!r.ok) return;
+    const r=await fetch(`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}`);
+    if(!r.ok){
+      const loadRow=document.getElementById('spLoadingRow');
+      if(loadRow) loadRow.remove();
+      return;
+    }
     const d=await r.json();
-    const sec=document.getElementById('spSection');
-    const cont=document.getElementById('spTracks');
-    if(!sec||!cont) return;
-    if(!d.tracks?.length){sec.style.display='none';return}
-    sec.style.display='block';
-    cont.innerHTML=d.tracks.slice(0,6).map(t=>`
-      <div class="sp-track">
-        ${t.image?`<img class="sp-img" src="${t.image}" alt="${t.name}">`:'<div class="sp-img"></div>'}
-        <div>
-          <div class="sp-name">${t.name}</div>
-          <div class="sp-artist">${t.artist}</div>
-        </div>
-        <div class="sp-meta">
-          ${t.bpm?`<div class="sp-bpm">${t.bpm} BPM</div>`:''}
-          <div class="sp-date">${t.releaseDate||''}</div>
-        </div>
-        ${t.previewUrl?`<button class="sp-play" onclick="playPrev('${t.previewUrl}',this)">▶</button>`:''}
-      </div>`).join('');
+
+    if(!d.tracks?.length){
+      const loadRow=document.getElementById('spLoadingRow');
+      if(loadRow) loadRow.innerHTML=`<span style="color:var(--text3)">Nenhuma track encontrada no Spotify para esse período. Tente ampliar o filtro.</span>`;
+      return;
+    }
+
+    // Converte tracks do Spotify para formato interno
+    const spTracks = d.tracks.slice(0, 11).map(t=>({
+      t: t.name,
+      a: t.artist,
+      l: t.releaseDate||'',
+      bpm: t.bpm||0,
+      fam: null,
+      key: t.key||null,
+      source: 'spotify',
+      image: t.image||'',
+      previewUrl: t.previewUrl||'',
+      spotifyUrl: t.spotifyUrl||'',
+      releaseDate: t.releaseDate||'',
+    }));
+
+    addTracksToList(spTracks);
+
   }catch(e){
-    const sec=document.getElementById('spSection');
-    if(sec) sec.style.display='none';
+    const loadRow=document.getElementById('spLoadingRow');
+    if(loadRow) loadRow.remove();
   }
 }
 
@@ -944,14 +972,7 @@ function restart(){
   document.getElementById('resBox').innerHTML='';
   document.querySelectorAll('.opt:not(.disabled)').forEach(o=>o.classList.remove('sel'));
   ['n0','n1','n2','n3'].forEach(id=>document.getElementById(id).disabled=true);
-  // Volta ao welcome
-  if(cur>=0) document.getElementById('s'+cur).classList.remove('active');
-  cur=-1;
-  document.getElementById('s0').classList.remove('active');
-  document.getElementById('sWelcome').classList.add('active');
-  document.getElementById('pfill').style.width='0%';
-  ['ps0','ps1','ps2','ps3','ps4'].forEach(id=>document.getElementById(id).className='ps');
-  window.scrollTo({top:0,behavior:'smooth'});
+  go(0);
 }
 
 document.addEventListener('click',e=>{
@@ -961,7 +982,7 @@ document.addEventListener('click',e=>{
   }
 });
 
-document.getElementById('n0').addEventListener('click',()=>setTimeout(initSpotify,100));
+
 document.addEventListener('DOMContentLoaded',initSpotify);
 </script>
 </body>
