@@ -126,7 +126,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .res-ctx{font-size:12px;color:var(--text2);margin-bottom:20px;line-height:1.8}
 .phase-hdr{font-size:10px;font-weight:600;margin:16px 0 8px;display:flex;align-items:center;gap:8px;padding-bottom:6px;border-bottom:1px solid;font-family:var(--mono);letter-spacing:.5px}
 .ph-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.track-card{background:var(--surface);border-left:2px solid;padding:12px 16px;margin-bottom:5px;display:grid;grid-template-columns:30px 1fr auto;gap:12px;align-items:center;transition:background .1s;border-radius:0 2px 2px 0}
+.track-card{background:var(--surface);border-left:2px solid;padding:12px 16px;margin-bottom:5px;display:grid;grid-template-columns:30px 1fr auto 52px;gap:10px;align-items:center;transition:background .1s;border-radius:0 2px 2px 0}
 .track-card:hover{background:var(--surface2)}
 .tr-num{font-size:10px;color:var(--text3);text-align:center;font-family:var(--mono)}
 .tr-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px;line-height:1.4}
@@ -164,7 +164,16 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .period-btn:hover{border-color:var(--accent2);color:var(--accent3)}
 .period-btn.sel{border-color:var(--accent);color:var(--accent2);background:rgba(109,40,217,.1)}
 .tr-key{font-size:8px;color:var(--text3);text-align:right;font-family:var(--mono);margin-top:2px}
-.tr-source{font-size:7px;color:#1db954;font-family:var(--mono);margin-top:2px;text-align:right}
+.track-card{display:grid;grid-template-columns:30px 1fr auto 52px;gap:10px}
+.tr-main{}
+.tr-right{text-align:right;min-width:110px}
+.tr-actions{display:flex;align-items:center;justify-content:flex-end;gap:4px;flex-direction:column}
+.tr-play{width:26px;height:26px;border-radius:50%;background:rgba(29,185,84,.12);border:1px solid rgba(29,185,84,.25);color:#1db954;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.tr-play:hover{background:rgba(29,185,84,.25)}
+.tr-play.playing{background:rgba(29,185,84,.3);color:#fff}
+.tr-swap{width:26px;height:26px;border-radius:50%;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);color:var(--accent3);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.tr-swap:hover{background:rgba(139,92,246,.25)}
+.spin-dot{width:8px;height:8px;border:2px solid var(--text3);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
 
 
@@ -320,11 +329,15 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
     <div style="margin-bottom:12px">
       <div style="font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">Período do garimpo</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap" id="periodBtns">
-        <button class="period-btn sel" onclick="selPeriod(this,30)">30 dias</button>
-        <button class="period-btn" onclick="selPeriod(this,90)">3 meses</button>
-        <button class="period-btn" onclick="selPeriod(this,180)">6 meses</button>
-        <button class="period-btn" onclick="selPeriod(this,365)">1 ano</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="periodBtns">
+        <button class="period-btn sel" onclick="selPeriod(this,'30d',30)">30 dias</button>
+        <button class="period-btn" onclick="selPeriod(this,'60d',60)">60 dias</button>
+        <button class="period-btn" onclick="selPeriod(this,'6m',180)">6 meses</button>
+        <button class="period-btn" onclick="selPeriod(this,'1a',365)">1 ano</button>
+        <button class="period-btn" onclick="selPeriod(this,'1-4a',730)">1–4 anos</button>
+        <button class="period-btn" onclick="selPeriod(this,'5-10a',2190)">5–10 anos</button>
+        <button class="period-btn" onclick="selPeriod(this,'90s00s',9999)">Anos 90/2000</button>
+        <button class="period-btn" onclick="selPeriod(this,'80s',99999)">Anos 80</button>
       </div>
     </div>
 
@@ -774,10 +787,24 @@ function buildRev(){
 
 // ── PERÍODO ─────────────────────────────────────────────────────
 let ST_DAYS = 30;
-function selPeriod(el, days){
+let ST_ERA = '30d'; // identificador da era
+
+function selPeriod(el, era, days){
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
   ST_DAYS = days;
+  ST_ERA = era;
+}
+
+// Converte era em parâmetros de ano para a query do Spotify
+function eraToYearRange(era){
+  const now = new Date().getFullYear();
+  if(era==='30d' || era==='60d' || era==='6m' || era==='1a') return null; // usa days
+  if(era==='1-4a') return {from: now-4, to: now-1};
+  if(era==='5-10a') return {from: now-10, to: now-5};
+  if(era==='90s00s') return {from: 1990, to: 2009};
+  if(era==='80s') return {from: 1980, to: 1989};
+  return null;
 }
 
 // ── GERAR ───────────────────────────────────────────────────────
@@ -786,7 +813,7 @@ async function generate(){
   const bpm=GROUP_BPM[g]?.[ST.slot]||{min:110,max:120};
   const ceil=bpm.max, floor=bpm.min;
 
-  // 15% do banco = 2 tracks de referência
+  // 2 tracks do banco como ancora (15%)
   const allFam=[];
   ST.lineup.forEach(dj=>(dj.fams||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)}));
   (VFAM[ST.venue]||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)});
@@ -794,44 +821,59 @@ async function generate(){
   let pool;
   if(ST.venue==='festival'){
     pool=TRACKS.filter(t=>t.bpm>=floor-2&&t.bpm<=ceil+2);
-  }else{
+  } else {
     pool=TRACKS.filter(t=>allFam.includes(t.fam)&&t.bpm>=floor&&t.bpm<=ceil);
     if(pool.length<4) pool=TRACKS.filter(t=>allFam.includes(t.fam));
+    if(pool.length<4) pool=TRACKS.filter(t=>t.bpm>=floor&&t.bpm<=ceil);
   }
   pool=[...pool].sort(()=>Math.random()-.5);
-  // Pega só 2 do banco (15%)
-  const bankTracks = pool.slice(0,2).map(t=>({...t, source:'banco', key:null}));
 
-  // Mostra resultado imediato com banco + loading para Spotify
+  // Guarda contexto para trocar tracks depois
+  ST._pool = pool;
+  ST._ceil = ceil;
+  ST._floor = floor;
+  ST._allFam = allFam;
+
+  const bankTracks = pool.slice(0,2).map((t,i)=>({
+    ...t, source:'banco', key:null, id:'bank_'+i
+  }));
+
+  // Renderiza com banco + loading
   renderRes(bankTracks, ceil, floor, true);
   reqNote(bankTracks, ceil, floor);
 
-  // 85% do Spotify = busca async
-  fetchAndRenderSpotifyTracks(g, ceil, floor, bankTracks);
+  // Busca Spotify em paralelo
+  await fetchAndRenderSpotifyTracks(g, ceil, floor, bankTracks);
 }
 
+// ── RENDER TRACK CARD ────────────────────────────────────────────
 function renderTrackCard(t, num){
   const fs=FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'};
   const borderColor = t.source==='spotify' ? '#1db954' : 'var(--accent)';
-  const keyStr = t.key && t.key!=='?' ? `<div class="tr-key">${t.key}</div>` : '';
-  const sourceStr = t.source==='spotify'
-    ? `<div class="tr-source">SPOTIFY</div>`
-    : `<div class="tr-source" style="color:var(--accent3)">BANCO</div>`;
-  const labelStr = t.source==='spotify'
-    ? (t.releaseDate||'')
-    : (t.l||'');
-  return `<div class="track-card" style="border-left-color:${borderColor}">
+  const bpmStr = t.bpm ? `${t.bpm} BPM` : '';
+  const labelStr = t.source==='spotify' ? (t.releaseDate||'') : (t.l||'');
+  const meta = [bpmStr, t.key&&t.key!=='?'?t.key:'', labelStr].filter(Boolean).join(' · ');
+  const famHtml = t.fam
+    ? `<span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>`
+    : '';
+
+  const previewBtn = t.previewUrl
+    ? `<button class="tr-play" data-url="${t.previewUrl}" onclick="playTrack(this)" title="Preview 30s">▶</button>`
+    : '';
+
+  const swapBtn = `<button class="tr-swap" onclick="swapTrack('${(t.id||'').replace(/'/g,"\'")}',${num-1})" title="Trocar por outra">⟳</button>`;
+
+  return `<div class="track-card" data-id="${t.id||''}" data-num="${num}" style="border-left-color:${borderColor}">
     <div class="tr-num">${String(num).padStart(2,'0')}</div>
-    <div>
+    <div class="tr-main">
       <div class="tr-name">${t.t||t.name||''}</div>
       <div class="tr-artist">${t.a||t.artist||''}</div>
     </div>
-    <div>
-      ${t.fam ? `<span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>` : ''}
-      <div class="tr-bpm">${t.bpm||''} BPM ${labelStr?'· '+labelStr:''}</div>
-      ${keyStr}
-      ${sourceStr}
+    <div class="tr-right">
+      ${famHtml}
+      <div class="tr-bpm">${meta}</div>
     </div>
+    <div class="tr-actions">${previewBtn}${swapBtn}</div>
   </div>`;
 }
 
@@ -840,7 +882,6 @@ function renderRes(tracks, ceil, floor, loading=false){
   const names=ST.lineup.map(d=>d.n).join(' · ');
   const g=ST.dominantGroup||'g2';
 
-  // Ordena por BPM
   const sorted=[...tracks].sort((a,b)=>(a.bpm||0)-(b.bpm||0));
 
   let html=`<div class="divider"></div>
@@ -854,9 +895,8 @@ function renderRes(tracks, ceil, floor, loading=false){
   sorted.forEach((t,i)=>{ html+=renderTrackCard(t,i+1); });
 
   if(loading){
-    html+=`<div id="spLoadingRow" style="padding:14px 16px;font-size:11px;color:#1db954;display:flex;align-items:center;gap:8px;border-left:2px solid #1db954;background:var(--surface);margin-bottom:5px">
-      <span style="width:8px;height:8px;border:2px solid #1db954;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;flex-shrink:0"></span>
-      Garimpando no Spotify — ${ST_DAYS} dias...
+    html+=`<div id="spLoadingRow" style="padding:14px 16px;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;background:var(--surface);margin-bottom:5px;border-left:2px solid var(--border2)">
+      <span class="spin-dot"></span>Garimpando...
     </div>`;
   }
 
@@ -871,65 +911,115 @@ function renderRes(tracks, ceil, floor, loading=false){
 function addTracksToList(newTracks){
   const list=document.getElementById('tracksList');
   if(!list) return;
-  // Remove loading row
   const loadRow=document.getElementById('spLoadingRow');
   if(loadRow) loadRow.remove();
-  // Pega tracks existentes do banco
+
+  if(!newTracks.length) return;
+
+  // Coleta HTML existente + novos, reordena por BPM
   const existing=[];
-  list.querySelectorAll('.track-card').forEach((el,i)=>{
-    existing.push({el, bpm: parseInt(el.querySelector('.tr-bpm')?.textContent)||0});
+  list.querySelectorAll('.track-card').forEach(el=>{
+    const bpmMatch=el.querySelector('.tr-bpm')?.textContent?.match(/(\d+)\s*BPM/);
+    existing.push({html:el.outerHTML, bpm: bpmMatch?parseInt(bpmMatch[1]):0, el});
   });
-  // Merge e reordena tudo por BPM
-  const allCards=[...existing.map(e=>({html:e.el.outerHTML, bpm:e.bpm}))];
-  newTracks.forEach((t,i)=>{
-    allCards.push({html: renderTrackCard(t, 0), bpm: t.bpm||0});
+  existing.forEach(e=>e.el.remove());
+
+  const allItems=[
+    ...existing.map(e=>({html:e.html, bpm:e.bpm})),
+    ...newTracks.map(t=>({html:renderTrackCard(t,0), bpm:t.bpm||0}))
+  ];
+  allItems.sort((a,b)=>a.bpm-b.bpm);
+
+  // Limita a 12 e renumera
+  allItems.slice(0,12).forEach((item,i)=>{
+    const num=String(i+1).padStart(2,'0');
+    const tmp=document.createElement('div');
+    tmp.innerHTML=item.html;
+    const card=tmp.firstElementChild;
+    const numEl=card?.querySelector('.tr-num');
+    if(numEl) numEl.textContent=num;
+    if(card) list.insertBefore(card, list.querySelector('#spLoadingRow'));
   });
-  allCards.sort((a,b)=>a.bpm-b.bpm);
-  list.innerHTML = allCards.map((c,i)=>{
-    // Atualiza número
-    return c.html.replace(/class="tr-num">[^<]+</, `class="tr-num">${String(i+1).padStart(2,'0')}<`);
-  }).join('');
+}
+
+async function swapTrack(trackId, idx){
+  // Pega uma track aleatória do mesmo contexto que ainda não está na lista
+  const list=document.getElementById('tracksList');
+  const usedNames=new Set();
+  list.querySelectorAll('.tr-name').forEach(el=>usedNames.add(el.textContent.trim()));
+
+  const pool=ST._pool||[];
+  const candidates=pool.filter(t=>!usedNames.has(t.t));
+  if(!candidates.length) return;
+
+  const replacement=candidates[Math.floor(Math.random()*candidates.length)];
+  const card=list.querySelector(`[data-num="${idx+1}"]`);
+  if(!card) return;
+
+  const num=card.querySelector('.tr-num')?.textContent||String(idx+1).padStart(2,'0');
+  card.outerHTML=renderTrackCard({...replacement,source:'banco',id:'bank_swap_'+idx},parseInt(num));
 }
 
 async function fetchAndRenderSpotifyTracks(group, ceil, floor, bankTracks){
   const headliner=ST.lineup[0]?.n;
-  if(!headliner) return;
+  if(!headliner) {
+    const loadRow=document.getElementById('spLoadingRow');
+    if(loadRow) loadRow.remove();
+    padWithBank(bankTracks.length);
+    return;
+  }
+
   try{
-    const r=await fetch(`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}`);
-    if(!r.ok){
-      const loadRow=document.getElementById('spLoadingRow');
-      if(loadRow) loadRow.remove();
-      return;
+    // Monta query com era ou days
+    const era=ST_ERA;
+    const yearRange=eraToYearRange(era);
+    let url;
+
+    if(yearRange){
+      url=`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&yearFrom=${yearRange.from}&yearTo=${yearRange.to}`;
+    } else {
+      url=`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}`;
     }
+
+    const r=await fetch(url);
+    if(!r.ok) throw new Error('spotify fail');
     const d=await r.json();
 
-    if(!d.tracks?.length){
-      const loadRow=document.getElementById('spLoadingRow');
-      if(loadRow) loadRow.innerHTML=`<span style="color:var(--text3)">Nenhuma track encontrada no Spotify para esse período. Tente ampliar o filtro.</span>`;
-      return;
-    }
-
-    // Converte tracks do Spotify para formato interno
-    const spTracks = d.tracks.slice(0, 11).map(t=>({
-      t: t.name,
-      a: t.artist,
-      l: t.releaseDate||'',
-      bpm: t.bpm||0,
-      fam: null,
-      key: t.key||null,
-      source: 'spotify',
-      image: t.image||'',
-      previewUrl: t.previewUrl||'',
-      spotifyUrl: t.spotifyUrl||'',
-      releaseDate: t.releaseDate||'',
+    const spTracks=(d.tracks||[]).slice(0,10).map((t,i)=>({
+      t: t.name, a: t.artist, l: t.releaseDate||'',
+      bpm: t.bpm||0, fam: null, key: t.key||null,
+      source:'spotify', image:t.image||'',
+      previewUrl:t.previewUrl||'', spotifyUrl:t.spotifyUrl||'',
+      releaseDate:t.releaseDate||'', id:'sp_'+i,
     }));
 
-    addTracksToList(spTracks);
+    if(spTracks.length){
+      addTracksToList(spTracks);
+    } else {
+      const loadRow=document.getElementById('spLoadingRow');
+      if(loadRow) loadRow.remove();
+      // Silencioso — completa com banco
+      padWithBank(bankTracks.length);
+    }
 
   }catch(e){
     const loadRow=document.getElementById('spLoadingRow');
     if(loadRow) loadRow.remove();
+    padWithBank(bankTracks.length);
   }
+}
+
+// Completa até 12 tracks só com banco quando Spotify não retorna
+function padWithBank(currentCount){
+  const list=document.getElementById('tracksList');
+  if(!list) return;
+  const usedNames=new Set();
+  list.querySelectorAll('.tr-name').forEach(el=>usedNames.add(el.textContent.trim()));
+
+  const pool=(ST._pool||[]).filter(t=>!usedNames.has(t.t));
+  const needed=Math.max(0, 12-currentCount);
+  const extras=pool.slice(0,needed).map((t,i)=>({...t,source:'banco',id:'bank_pad_'+i}));
+  if(extras.length) addTracksToList(extras);
 }
 
 function playPrev(url,btn){
