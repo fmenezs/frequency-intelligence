@@ -1,6 +1,22 @@
 {
-  "rewrites": [
-    { "source": "/api/generate", "destination": "/api/generate.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
+  "version": 2,
+  "functions": {
+    "api/spotify.js": {
+      "memory": 512,
+      "maxDuration": 15
+    },
+    "api/generate.js": {
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" },
+        { "key": "Pragma", "value": "no-cache" }
+      ]
+    }
   ]
 }
