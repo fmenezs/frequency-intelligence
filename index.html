@@ -413,8 +413,11 @@ async function enrichArtist(name){
     const r=await fetch(`/api/spotify?artist=${encodeURIComponent(name)}`);
     if(!r.ok) throw new Error();
     const d=await r.json();
-    ST.photoCache[name]=d.photo||'';
-    return d.photo||'';
+    // Usa proxy para evitar CORS/hotlink do Spotify
+    const rawUrl=d.photo||'';
+    const proxyUrl=rawUrl?`/api/spotify?img=${encodeURIComponent(rawUrl)}`:'';
+    ST.photoCache[name]=proxyUrl;
+    return proxyUrl;
   }catch(e){
     ST.photoCache[name]='';
     return '';
@@ -475,11 +478,14 @@ function renderDrop(q){
     const gc=GC[dj.g]||GC.g1;
     const ini=dj.n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
     const bpm=GROUP_BPM[dj.g]?.slot1||{min:'?',max:'?'};
-    // FIX: foto — src vazio inicialmente, preenchido depois; fallback sempre visível
+    const cachedPhoto=ST.photoCache[dj.n]||'';
+    const avHtml=cachedPhoto
+      ?`<img class="av-img" src="${cachedPhoto}" alt="${dj.n}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;position:absolute;top:0;left:0;border:2px solid ${gc.c}">`
+      :'';
     return`<div class="dj-row" data-idx="${i}" onclick="selDJ(${i},event)">
-      <div class="av-wrap">
-        <div class="av-fb" id="avfb_${i}" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>
-        <img class="av-img" id="avimg_${i}" src="" alt="" style="opacity:0;position:absolute;top:0;left:0">
+      <div class="av-wrap" style="position:relative">
+        <div class="av-fb" id="avfb_drop_${i}" style="color:${gc.c};border-color:${gc.c};background:${gc.bg}">${ini}</div>
+        ${avHtml}
       </div>
       <div class="dj-info">
         <div class="dj-name">${dj.n}</div>
@@ -489,18 +495,20 @@ function renderDrop(q){
     </div>`;
   }).join('');
   drop._res=res;
-  // FIX: carrega fotos corretamente
+  // Carrega fotos em background e atualiza dropdown quando chegar
   res.forEach(async(dj,i)=>{
     const url=await enrichArtist(dj.n);
     if(!url) return;
-    const img=document.getElementById('avimg_'+i);
-    const fb=document.getElementById('avfb_'+i);
-    if(!img) return;
-    img.onload=()=>{
-      img.style.opacity='1';
-      if(fb) fb.style.opacity='0';
-    };
+    const fb=document.getElementById('avfb_drop_'+i);
+    const wrap=fb?.parentElement;
+    if(!wrap||wrap.querySelector('img')) return;
+    const img=document.createElement('img');
+    img.className='av-img';
     img.src=url;
+    img.alt=dj.n;
+    img.style.cssText=`width:44px;height:44px;border-radius:50%;object-fit:cover;position:absolute;top:0;left:0`;
+    img.onload=()=>{ if(fb) fb.style.opacity='0'; };
+    wrap.appendChild(img);
   });
 }
 
