@@ -1,8 +1,8 @@
-// api/spotify.js — Frequency Intelligence v4.2 — FMENEZS
+// api/spotify.js — Frequency Intelligence v4.3 — FMENEZS
 // Usa /artists/{id}/albums + /albums/{id}/tracks (funciona com Client Credentials)
 // top-tracks e audio-features são 403/deprecated — removidos
 
-const CURATED_DB = [
+// Usa Promise.all para paralelizar — evita timeout do Vercel
   { g:'g1', family:'Winehouse',        artist:'Jaques Le Noir',    track:'Soul and Love',           label:'New Creatures',        bpm:null, dur:'6:33' },
   { g:'g1', family:'Winehouse',        artist:'Paul Lock',         track:'Say This Original Mix',   label:'Family Grooves',       bpm:124,  dur:'6:50' },
   { g:'g1', family:'Winehouse',        artist:'Franck Roger',      track:'Real Tone',               label:'Real Tone Records',    bpm:null, dur:'7:12' },
@@ -167,12 +167,12 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '4.2');
+  res.setHeader('X-FI-Version', '4.3');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const q = req.query;
-  console.log('[FI v4.2] params:', JSON.stringify(q));
+  console.log('[FI v4.3] params:', JSON.stringify(q));
 
   try {
     const token = await getToken();
@@ -193,7 +193,7 @@ export default async function handler(req, res) {
       }));
     }
 
-    return res.status(200).json({ service:'Frequency Intelligence', version:'4.2', status:'online' });
+    return res.status(200).json({ service:'Frequency Intelligence', version:'4.3', status:'online' });
 
   } catch (err) {
     console.error('[FI] ERRO:', err.message, err.stack);
@@ -256,14 +256,16 @@ async function getTracksFromAlbums(token, group, excludeName, days, yearFrom, ye
   const allTracks = [];
   const seen = new Set();
 
-  for (const artist of picked) {
+  // Paralelo: busca álbuns de todos os artistas ao mesmo tempo
+  const artistResults = await Promise.all(picked.map(async (artist) => {
+    const tracks = [];
     try {
       console.log(`[FI] Albums for: ${artist.name}`);
       const r = await fetch(
-        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=20&market=US`,
+        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=10&market=US`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      if (!r.ok) { console.log(`[FI] Albums ${r.status} for ${artist.name}`); continue; }
+      if (!r.ok) { console.log(`[FI] Albums ${r.status} for ${artist.name}`); return tracks; }
       const d = await r.json();
       let albums = d.items || [];
       console.log(`[FI] ${artist.name}: ${albums.length} albums`);
@@ -274,50 +276,55 @@ async function getTracksFromAlbums(token, group, excludeName, days, yearFrom, ye
           const y = parseInt((a.release_date || '').split('-')[0]);
           return y >= yearFrom && y <= yearTo;
         });
-        albums = filtered.length ? filtered : albums.slice(0, 5);
+        albums = filtered.length ? filtered : albums.slice(0, 3);
       } else {
         const since = new Date();
         since.setDate(since.getDate() - days);
         const recent = albums.filter(a => a.release_date && new Date(a.release_date) >= since);
-        // Se não tiver lançamentos no período, pega os 5 mais recentes
-        albums = recent.length ? recent : albums.slice(0, 5);
+        albums = recent.length ? recent.slice(0, 2) : albums.slice(0, 2);
       }
 
-      // Pega tracks de até 3 álbuns
-      for (const album of albums.slice(0, 3)) {
+      // Pega tracks de até 2 álbuns em paralelo
+      const albumTrackResults = await Promise.all(albums.slice(0, 2).map(async (album) => {
         try {
           const tr = await fetch(
-            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=10&market=US`,
+            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=8&market=US`,
             { headers: { Authorization: `Bearer ${token}` } }
           );
-          if (!tr.ok) continue;
+          if (!tr.ok) return [];
           const td = await tr.json();
-          const albumTracks = shuffle(td.items || []).slice(0, 2);
+          return shuffle(td.items || []).slice(0, 2).map(t => ({
+            id: t.id,
+            name: t.name,
+            artist: (t.artists || []).map(a => a.name).join(', '),
+            album: album.name,
+            bpm: null, key: null,
+            duration: formatDuration(t.duration_ms),
+            releaseDate: album.release_date || '',
+            previewUrl: t.preview_url || '',
+            spotifyUrl: t.external_urls?.spotify || '',
+            image: album.images?.[1]?.url || album.images?.[0]?.url || '',
+            popularity: 0,
+            source: 'spotify_album',
+            group,
+          }));
+        } catch(e) { return []; }
+      }));
 
-          for (const t of albumTracks) {
-            if (!t?.id) continue;
-            const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
-            if (seen.has(key)) continue;
-            seen.add(key);
-            allTracks.push({
-              id: t.id,
-              name: t.name,
-              artist: (t.artists || []).map(a => a.name).join(', '),
-              album: album.name,
-              bpm: null, key: null,
-              duration: formatDuration(t.duration_ms),
-              releaseDate: album.release_date || '',
-              previewUrl: t.preview_url || '',
-              spotifyUrl: t.external_urls?.spotify || '',
-              image: album.images?.[1]?.url || album.images?.[0]?.url || '',
-              popularity: 0,
-              source: 'spotify_album',
-              group,
-            });
-          }
-        } catch(e) { console.log(`[FI] Album tracks err:`, e.message); }
-      }
+      albumTrackResults.forEach(ts => tracks.push(...ts));
     } catch(e) { console.log(`[FI] Artist err ${artist.name}:`, e.message); }
+    return tracks;
+  }));
+
+  // Merge todos os resultados
+  for (const artistTracks of artistResults) {
+    for (const t of artistTracks) {
+      if (!t?.id) continue;
+      const key = `${t.name}|||${t.artist}`.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      allTracks.push(t);
+    }
   }
 
   console.log(`[FI] getTracksFromAlbums total: ${allTracks.length}`);
@@ -327,7 +334,7 @@ async function getTracksFromAlbums(token, group, excludeName, days, yearFrom, ye
 async function runTest(token, group) {
   const grp = ARTIST_IDS[group] ? group : 'g6';
   const testArtist = ARTIST_IDS[grp][0];
-  const result = { version: '4.2', group: grp, testArtist: testArtist.name };
+  const result = { version: '4.3', group: grp, testArtist: testArtist.name };
 
   try {
     const r = await fetch(
