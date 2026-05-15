@@ -1,4 +1,6 @@
-// api/spotify.js — Frequency Intelligence v4.1 — FMENEZS
+// api/spotify.js — Frequency Intelligence v4.2 — FMENEZS
+// Usa /artists/{id}/albums + /albums/{id}/tracks (funciona com Client Credentials)
+// top-tracks e audio-features são 403/deprecated — removidos
 
 const CURATED_DB = [
   { g:'g1', family:'Winehouse',        artist:'Jaques Le Noir',    track:'Soul and Love',           label:'New Creatures',        bpm:null, dur:'6:33' },
@@ -9,7 +11,6 @@ const CURATED_DB = [
   { g:'g1', family:'Winehouse',        artist:'Frits Wentink',     track:'A Little Bit',            label:'Local Talk',           bpm:null, dur:'7:05' },
   { g:'g1', family:'Winehouse',        artist:'Dandara',           track:'Came Back Raw',           label:'Came Back Raw',        bpm:null, dur:'6:15' },
   { g:'g1', family:'Winehouse',        artist:'Demarkus Lewis',    track:'Keep On Movin',           label:'Keep On Movin EP',     bpm:null, dur:'6:55' },
-  { g:'g1', family:'Winehouse',        artist:'Donnell Knox',      track:'Galaxy',                  label:'Galaxy EP',            bpm:null, dur:'7:20' },
   { g:'g1', family:'Groove Minimal',   artist:'DJ Sandwich',       track:'Chewi',                   label:'Hamkke Records',       bpm:null, dur:'6:18' },
   { g:'g1', family:'Groove Minimal',   artist:'Cem Gemalmaz',      track:'Somebody Extended Mix',   label:'Deeperfect',           bpm:123,  dur:'7:01' },
   { g:'g1', family:'Groove Minimal',   artist:'Subb-an',           track:'Gordos Groove',           label:'Subb-an',              bpm:null, dur:'6:35' },
@@ -66,74 +67,71 @@ const CURATED_DB = [
   { g:'g7', family:'Spiritual Organic', artist:'AIWAA',            track:'Satori',                  label:'Satori',               bpm:null, dur:'7:55' },
 ];
 
-// IDs verificados no Spotify — evita busca por nome que pode falhar
+// IDs verificados — usados para /albums (funciona com Client Credentials)
 const ARTIST_IDS = {
   g1: [
-    { name:'Franck Roger',       id:'2r6vXSmwVQSHMHqRiVOjLK' },
-    { name:'Fouk',               id:'4JT6E8pevxBqWvjfPj3WlR' },
-    { name:'Frits Wentink',      id:'3JLfYFhKkFiHbqHVDRBYYZ' },
-    { name:'Jimpster',           id:'2PpCJnlSvLRfTqRVjuJg1s' },
-    { name:'Deetron',            id:'3NSGqcfHREWoJQvTEJSmk5' },
+    { name:'Franck Roger',             id:'2r6vXSmwVQSHMHqRiVOjLK' },
+    { name:'Fouk',                     id:'4JT6E8pevxBqWvjfPj3WlR' },
+    { name:'Frits Wentink',            id:'3JLfYFhKkFiHbqHVDRBYYZ' },
+    { name:'Jimpster',                 id:'2PpCJnlSvLRfTqRVjuJg1s' },
+    { name:'Deetron',                  id:'3NSGqcfHREWoJQvTEJSmk5' },
     { name:'Motor City Drum Ensemble', id:'6vBmZRiCEuaS0WBmTJqRYi' },
-    { name:'Dan Shake',          id:'1ULpDcD5UVP3V66FkWbBc3' },
-    { name:'Theo Parrish',       id:'5I8rrAmYqJON8qHd0IaD3d' },
+    { name:'Dan Shake',                id:'1ULpDcD5UVP3V66FkWbBc3' },
+    { name:'Theo Parrish',             id:'5I8rrAmYqJON8qHd0IaD3d' },
   ],
   g2: [
-    { name:'Sam Shure',          id:'51YmUpitluHsvMTXJ2rsiN' },
-    { name:'Hraach',             id:'6rdTxNwQhUJTodUx7voWXO' },
-    { name:'Guy J',              id:'0Dl8j8IPLZ0EGRBizZfDdl' },
-    { name:'Nox Vahn',           id:'2bqGPuC8kDCTLWieGOyWxu' },
-    { name:'Nick Warren',        id:'6FsDOSI9jnvPeWqQBXqAOr' },
-    { name:'Hernan Cattaneo',    id:'4k1O3e7MMAm2V6xqQcFGKj' },
-    { name:'Cubicolor',          id:'5bqkAMiapKkGVCbBDMvJJV' },
-    { name:'Matthew Dekay',      id:'05j0SfMjNJPtSGlTtEjUMH' },
+    { name:'Sam Shure',       id:'51YmUpitluHsvMTXJ2rsiN' },
+    { name:'Hraach',          id:'6rdTxNwQhUJTodUx7voWXO' },
+    { name:'Guy J',           id:'0Dl8j8IPLZ0EGRBizZfDdl' },
+    { name:'Nox Vahn',        id:'2bqGPuC8kDCTLWieGOyWxu' },
+    { name:'Nick Warren',     id:'6FsDOSI9jnvPeWqQBXqAOr' },
+    { name:'Hernan Cattaneo', id:'4k1O3e7MMAm2V6xqQcFGKj' },
+    { name:'Cubicolor',       id:'5bqkAMiapKkGVCbBDMvJJV' },
+    { name:'Matthew Dekay',   id:'05j0SfMjNJPtSGlTtEjUMH' },
   ],
   g3: [
-    { name:'Bicep',              id:'73A3bLnfnz5BoQjb4gNCga' },
-    { name:'WhoMadeWho',         id:'3aRI0QFhFTaCQ1TRBi9zVk' },
-    { name:'Recondite',          id:'2vz6GxfbFjRQI7fqCHBnN6' },
-    { name:'Innellea',           id:'1P2cPFRjXgRLFVgxWCjDOY' },
-    { name:'Dusky',              id:'1DsQKUqQFmPbLTqjnf7BKW' },
-    { name:'Ross From Friends',  id:'7dJdq0x3vkRfFPeGNcBGe8' },
-    { name:'Objekt',             id:'7wX4BaEhFMRJ5sXdCMKF8g' },
+    { name:'Bicep',           id:'73A3bLnfnz5BoQjb4gNCga' },
+    { name:'WhoMadeWho',      id:'3aRI0QFhFTaCQ1TRBi9zVk' },
+    { name:'Recondite',       id:'2vz6GxfbFjRQI7fqCHBnN6' },
+    { name:'Innellea',        id:'1P2cPFRjXgRLFVgxWCjDOY' },
+    { name:'Dusky',           id:'1DsQKUqQFmPbLTqjnf7BKW' },
+    { name:'Ross From Friends',id:'7dJdq0x3vkRfFPeGNcBGe8'},
   ],
   g4: [
-    { name:'Joachim Spieth',     id:'1PKtSAYVgTMH2rEGMPLTOO' },
-    { name:'Oscar Mulero',       id:'4HY5hFGaOSSYfQVn6FXLQG' },
-    { name:'Surgeon',            id:'4CLovOkMdpuDAGjJ7u1iia' },
-    { name:'Blawan',             id:'0LdSRmLf2yDXW0rjOIj5vH' },
-    { name:'Paula Temple',       id:'1tSaXkEWFkDsTLVkjLPdj5' },
-    { name:'Planetary Assault Systems', id:'3B0gHHHpiMPHNJtSbRTiCi' },
-    { name:'Phase Fatale',       id:'3I4VBbmq1gBNWLeBkbRqeP' },
+    { name:'Joachim Spieth',  id:'1PKtSAYVgTMH2rEGMPLTOO' },
+    { name:'Oscar Mulero',    id:'4HY5hFGaOSSYfQVn6FXLQG' },
+    { name:'Surgeon',         id:'4CLovOkMdpuDAGjJ7u1iia' },
+    { name:'Blawan',          id:'0LdSRmLf2yDXW0rjOIj5vH' },
+    { name:'Paula Temple',    id:'1tSaXkEWFkDsTLVkjLPdj5' },
+    { name:'Phase Fatale',    id:'3I4VBbmq1gBNWLeBkbRqeP' },
   ],
   g5: [
-    { name:'Reinier Zonneveld',  id:'21A7bhIL1m6CNZn8y57PIZ' },
-    { name:'I Hate Models',      id:'6DX1IPGLEiFNsVkBniLAAj' },
-    { name:'SPFDJ',              id:'7FcMHrDMaXiAHAy1H1WPIL' },
+    { name:'Reinier Zonneveld', id:'21A7bhIL1m6CNZn8y57PIZ' },
+    { name:'I Hate Models',     id:'6DX1IPGLEiFNsVkBniLAAj' },
+    { name:'SPFDJ',             id:'7FcMHrDMaXiAHAy1H1WPIL' },
   ],
   g6: [
-    { name:'Black Coffee',       id:'6wMr4zKPrrR0UVz08WtUWc' },
-    { name:'Adam Port',          id:'2loEsOijJ6XiGzWYFXMIRk' },
-    { name:'Bedouin',            id:'5bKdC6382t97Qnpvs81Rqx' },
-    { name:'Damian Lazarus',     id:'7rPVEECPRcpxP4XS1fkHgP' },
-    { name:'Ahmed Spins',        id:'4jercY4pUhY6jB8eQjpVJV' },
-    { name:'Themba',             id:'0tOCJpAHFXBxSQzMBfhpIq' },
-    { name:'Enoo Napa',          id:'5QrMrTGcX0jyXMxRZGzgbt' },
-    { name:'Rampa',              id:'3R37lMSoiWxOZZCKRNt5dN' },
-    { name:'Da Capo',            id:'1N0Uqpov1NHvJDkYb9NlNK' },
-    { name:'Sun-El Musician',    id:'4lEoyJBmHHBrFAfmvHRhfZ' },
+    { name:'Black Coffee',    id:'6wMr4zKPrrR0UVz08WtUWc' },
+    { name:'Adam Port',       id:'2loEsOijJ6XiGzWYFXMIRk' },
+    { name:'Bedouin',         id:'5bKdC6382t97Qnpvs81Rqx' },
+    { name:'Damian Lazarus',  id:'7rPVEECPRcpxP4XS1fkHgP' },
+    { name:'Ahmed Spins',     id:'4jercY4pUhY6jB8eQjpVJV' },
+    { name:'Themba',          id:'0tOCJpAHFXBxSQzMBfhpIq' },
+    { name:'Enoo Napa',       id:'5QrMrTGcX0jyXMxRZGzgbt' },
+    { name:'Rampa',           id:'3R37lMSoiWxOZZCKRNt5dN' },
+    { name:'Da Capo',         id:'1N0Uqpov1NHvJDkYb9NlNK' },
+    { name:'Sun-El Musician', id:'4lEoyJBmHHBrFAfmvHRhfZ' },
   ],
   g7: [
-    { name:'Satori',             id:'5nri3hyKmKBGAfvjBi0mK0' },
-    { name:'Lee Burridge',       id:'1RNm0r3ViSTQNIFCMUhM7a' },
-    { name:'Mauro Masi',         id:'4DB7roKjBDAuccMLQrzXX9' },
-    { name:'Hraach',             id:'6rdTxNwQhUJTodUx7voWXO' },
-    { name:'Bedouin',            id:'5bKdC6382t97Qnpvs81Rqx' },
-    { name:'Bonobo',             id:'0cmWgDlu9CwTgxPhf403hb' },
-    { name:'Monolink',           id:'2m4WFg9cExkUcXg0YvAaHp' },
-    { name:'Worakls',            id:'3nwbMWRXDZ0fMBzMDQpIKW' },
-    { name:'Nicola Cruz',        id:'4NTK7g2MLcT2jTpHKaHAbG' },
-    { name:'Acid Pauli',         id:'0YSINODhS5oDJGxGsOqo7i' },
+    { name:'Satori',          id:'5nri3hyKmKBGAfvjBi0mK0' },
+    { name:'Lee Burridge',    id:'1RNm0r3ViSTQNIFCMUhM7a' },
+    { name:'Mauro Masi',      id:'4DB7roKjBDAuccMLQrzXX9' },
+    { name:'Hraach',          id:'6rdTxNwQhUJTodUx7voWXO' },
+    { name:'Bonobo',          id:'0cmWgDlu9CwTgxPhf403hb' },
+    { name:'Monolink',        id:'2m4WFg9cExkUcXg0YvAaHp' },
+    { name:'Worakls',         id:'3nwbMWRXDZ0fMBzMDQpIKW' },
+    { name:'Nicola Cruz',     id:'4NTK7g2MLcT2jTpHKaHAbG' },
+    { name:'Acid Pauli',      id:'0YSINODhS5oDJGxGsOqo7i' },
   ],
 };
 
@@ -169,12 +167,12 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '4.1');
+  res.setHeader('X-FI-Version', '4.2');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const q = req.query;
-  console.log('[FI v4.1] params:', JSON.stringify(q));
+  console.log('[FI v4.2] params:', JSON.stringify(q));
 
   try {
     const token = await getToken();
@@ -195,7 +193,7 @@ export default async function handler(req, res) {
       }));
     }
 
-    return res.status(200).json({ service: 'Frequency Intelligence', version: '4.1', status: 'online' });
+    return res.status(200).json({ service:'Frequency Intelligence', version:'4.2', status:'online' });
 
   } catch (err) {
     console.error('[FI] ERRO:', err.message, err.stack);
@@ -223,9 +221,9 @@ async function generateSet(token, { headliner, slot, days, yearFrom, yearTo }) {
 
   console.log(`[FI] headliner="${headliner}" group=${group} slot=${slot}`);
 
-  // Spotify: top tracks de artistas com IDs verificados
-  const spotifyTracks = await getTopTracksFromGroup(token, group, headliner, yearFrom, yearTo);
-  console.log(`[FI] spotify total: ${spotifyTracks.length}`);
+  // Spotify via álbuns (único endpoint que funciona com Client Credentials)
+  const spotifyTracks = await getTracksFromAlbums(token, group, headliner, days, yearFrom, yearTo);
+  console.log(`[FI] spotify=${spotifyTracks.length}`);
 
   // Banco curado FMENEZS
   const curatedPool = CURATED_DB.filter(t => t.g === group);
@@ -247,9 +245,10 @@ async function generateSet(token, { headliner, slot, days, yearFrom, yearTo }) {
   };
 }
 
-async function getTopTracksFromGroup(token, group, excludeName, yearFrom, yearTo) {
+// Único fluxo que funciona com Client Credentials:
+// /artists/{id}/albums → /albums/{id}/tracks
+async function getTracksFromAlbums(token, group, excludeName, days, yearFrom, yearTo) {
   const artistList = ARTIST_IDS[group] || ARTIST_IDS.g6;
-  // Sorteia 5 artistas para variedade
   const picked = shuffle(artistList)
     .filter(a => a.name.toLowerCase() !== excludeName.toLowerCase())
     .slice(0, 5);
@@ -259,126 +258,113 @@ async function getTopTracksFromGroup(token, group, excludeName, yearFrom, yearTo
 
   for (const artist of picked) {
     try {
-      console.log(`[FI] Fetching top tracks for: ${artist.name} (${artist.id})`);
-
-      // Usa ID direto — sem busca por nome (mais confiável)
+      console.log(`[FI] Albums for: ${artist.name}`);
       const r = await fetch(
-        `https://api.spotify.com/v1/artists/${artist.id}/top-tracks?market=US`,
+        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=20&market=US`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      if (!r.ok) {
-        const errTxt = await r.text();
-        console.log(`[FI] top-tracks failed for ${artist.name}: ${r.status} ${errTxt}`);
-        // Fallback: busca álbuns recentes
-        const albumTracks = await getRecentAlbumTracks(token, artist.id, artist.name, yearFrom, yearTo);
-        for (const t of albumTracks) {
-          const key = `${t.name}|||${t.artist}`.toLowerCase();
-          if (!seen.has(key)) { seen.add(key); allTracks.push(t); }
-        }
-        continue;
-      }
-
+      if (!r.ok) { console.log(`[FI] Albums ${r.status} for ${artist.name}`); continue; }
       const d = await r.json();
-      const tracks = d.tracks || [];
-      console.log(`[FI] ${artist.name}: ${tracks.length} top tracks`);
+      let albums = d.items || [];
+      console.log(`[FI] ${artist.name}: ${albums.length} albums`);
 
-      // Pega 2 tracks aleatórias para variedade
-      const picked2 = shuffle(tracks).slice(0, 2);
-      for (const t of picked2) {
-        if (!t?.id) continue;
-        const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
-        if (seen.has(key)) continue;
-        seen.add(key);
-        if (yearFrom && yearTo) {
-          const y = parseInt((t.album?.release_date || '').split('-')[0]);
-          if (y && (y < yearFrom || y > yearTo)) continue;
-        }
-        allTracks.push(formatSpotifyTrack(t, group));
-      }
-    } catch (e) {
-      console.log(`[FI] Exception for ${artist.name}:`, e.message);
-    }
-  }
-
-  return allTracks;
-}
-
-async function getRecentAlbumTracks(token, artistId, artistName, yearFrom, yearTo) {
-  try {
-    const r = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=single,album&limit=10&market=US`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    if (!r.ok) return [];
-    const d = await r.json();
-    let albums = (d.items || []);
-
-    if (yearFrom && yearTo) {
-      albums = albums.filter(a => {
-        const y = parseInt((a.release_date || '').split('-')[0]);
-        return y >= yearFrom && y <= yearTo;
-      });
-    }
-    if (!albums.length) albums = (d.items || []).slice(0, 3);
-
-    const tracks = [];
-    for (const album of albums.slice(0, 2)) {
-      const tr = await fetch(
-        `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=5&market=US`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!tr.ok) continue;
-      const td = await tr.json();
-      for (const t of (td.items || []).slice(0, 2)) {
-        if (!t?.id) continue;
-        tracks.push({
-          id: t.id, name: t.name,
-          artist: (t.artists || []).map(a => a.name).join(', '),
-          album: album.name, bpm: null, key: null,
-          duration: formatDuration(t.duration_ms),
-          releaseDate: album.release_date || '',
-          previewUrl: t.preview_url || '',
-          spotifyUrl: t.external_urls?.spotify || '',
-          image: album.images?.[1]?.url || album.images?.[0]?.url || '',
-          popularity: 0, source: 'spotify_album',
+      // Filtro por período
+      if (yearFrom && yearTo) {
+        const filtered = albums.filter(a => {
+          const y = parseInt((a.release_date || '').split('-')[0]);
+          return y >= yearFrom && y <= yearTo;
         });
+        albums = filtered.length ? filtered : albums.slice(0, 5);
+      } else {
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        const recent = albums.filter(a => a.release_date && new Date(a.release_date) >= since);
+        // Se não tiver lançamentos no período, pega os 5 mais recentes
+        albums = recent.length ? recent : albums.slice(0, 5);
       }
-    }
-    console.log(`[FI] Album fallback for ${artistName}: ${tracks.length} tracks`);
-    return tracks;
-  } catch(e) {
-    return [];
+
+      // Pega tracks de até 3 álbuns
+      for (const album of albums.slice(0, 3)) {
+        try {
+          const tr = await fetch(
+            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=10&market=US`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!tr.ok) continue;
+          const td = await tr.json();
+          const albumTracks = shuffle(td.items || []).slice(0, 2);
+
+          for (const t of albumTracks) {
+            if (!t?.id) continue;
+            const key = `${t.name}|||${t.artists?.[0]?.name}`.toLowerCase();
+            if (seen.has(key)) continue;
+            seen.add(key);
+            allTracks.push({
+              id: t.id,
+              name: t.name,
+              artist: (t.artists || []).map(a => a.name).join(', '),
+              album: album.name,
+              bpm: null, key: null,
+              duration: formatDuration(t.duration_ms),
+              releaseDate: album.release_date || '',
+              previewUrl: t.preview_url || '',
+              spotifyUrl: t.external_urls?.spotify || '',
+              image: album.images?.[1]?.url || album.images?.[0]?.url || '',
+              popularity: 0,
+              source: 'spotify_album',
+              group,
+            });
+          }
+        } catch(e) { console.log(`[FI] Album tracks err:`, e.message); }
+      }
+    } catch(e) { console.log(`[FI] Artist err ${artist.name}:`, e.message); }
   }
+
+  console.log(`[FI] getTracksFromAlbums total: ${allTracks.length}`);
+  return allTracks;
 }
 
 async function runTest(token, group) {
   const grp = ARTIST_IDS[group] ? group : 'g6';
   const testArtist = ARTIST_IDS[grp][0];
-  const results = { version: '4.1', group: grp, testArtist: testArtist.name, status: 'OK' };
+  const result = { version: '4.2', group: grp, testArtist: testArtist.name };
 
   try {
     const r = await fetch(
-      `https://api.spotify.com/v1/artists/${testArtist.id}/top-tracks?market=US`,
+      `https://api.spotify.com/v1/artists/${testArtist.id}/albums?include_groups=single,album&limit=5&market=US`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
-    results.topTracksStatus = r.status;
+    result.albumsStatus = r.status;
     if (r.ok) {
       const d = await r.json();
-      results.topTracksCount = d.tracks?.length || 0;
-      results.sampleTracks = (d.tracks || []).slice(0, 3).map(t => ({
-        name: t.name, artist: t.artists?.[0]?.name,
-        hasPreview: !!t.preview_url, popularity: t.popularity,
-      }));
-    } else {
-      results.topTracksError = await r.text();
-    }
-  } catch(e) {
-    results.error = e.message;
-  }
+      const albums = d.items || [];
+      result.albumsFound = albums.length;
+      result.latestAlbum = albums[0]?.name || null;
 
-  results.curatedCount = CURATED_DB.filter(t => t.g === grp).length;
-  return results;
+      // Testa pegar tracks do primeiro álbum
+      if (albums[0]) {
+        const tr = await fetch(
+          `https://api.spotify.com/v1/albums/${albums[0].id}/tracks?limit=3&market=US`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        result.tracksStatus = tr.status;
+        if (tr.ok) {
+          const td = await tr.json();
+          result.sampleTracks = (td.items || []).slice(0, 3).map(t => ({
+            name: t.name,
+            artist: t.artists?.[0]?.name,
+            hasPreview: !!t.preview_url,
+          }));
+        }
+      }
+    } else {
+      result.albumsError = await r.text();
+    }
+  } catch(e) { result.error = e.message; }
+
+  result.curatedCount = CURATED_DB.filter(t => t.g === grp).length;
+  result.status = 'OK';
+  return result;
 }
 
 async function searchArtist(token, name) {
@@ -410,24 +396,6 @@ async function searchFree(token, query) {
   if (!r.ok) throw new Error(`Free search failed: ${r.status}`);
   const d = await r.json();
   return { results: (d.artists?.items || []).map(a => ({ ...formatArtist(a), group: detectGroup(a.name) })) };
-}
-
-function formatSpotifyTrack(t, group) {
-  return {
-    id: t.id,
-    name: t.name,
-    artist: (t.artists || []).map(a => a.name).join(', '),
-    album: t.album?.name || '',
-    bpm: null, key: null,
-    duration: formatDuration(t.duration_ms),
-    releaseDate: t.album?.release_date || '',
-    previewUrl: t.preview_url || '',
-    spotifyUrl: t.external_urls?.spotify || '',
-    image: t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '',
-    popularity: t.popularity || 0,
-    source: 'spotify_artist',
-    group,
-  };
 }
 
 function formatArtist(a) {
