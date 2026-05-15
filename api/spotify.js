@@ -2,7 +2,7 @@
 // Usa /artists/{id}/albums + /albums/{id}/tracks (funciona com Client Credentials)
 // top-tracks e audio-features são 403/deprecated — removidos
 
-// Usa Promise.all para paralelizar — evita timeout do Vercel
+const CURATED_DB = [
   { g:'g1', family:'Winehouse',        artist:'Jaques Le Noir',    track:'Soul and Love',           label:'New Creatures',        bpm:null, dur:'6:33' },
   { g:'g1', family:'Winehouse',        artist:'Paul Lock',         track:'Say This Original Mix',   label:'Family Grooves',       bpm:124,  dur:'6:50' },
   { g:'g1', family:'Winehouse',        artist:'Franck Roger',      track:'Real Tone',               label:'Real Tone Records',    bpm:null, dur:'7:12' },
