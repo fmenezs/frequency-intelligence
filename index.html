@@ -353,54 +353,156 @@ const VFAM={
   pool:['Organic Emotional','Afro Groove'],after:['Hypnotic Raw','Peak Raw','Groove Minimal'],
 };
 
-// Banco local de tracks
+// Banco local de tracks — nomes verificados no xlsx original FMENEZS
 const TRACKS=[
-  {a:'Jaques Le Noir',t:'Soul and Love',l:'New Creatures',bpm:119,fam:'Winehouse'},
-  {a:'Paul Lock',t:'Say This',l:'Family Grooves',bpm:124,fam:'Winehouse'},
-  {a:'Fouk',t:'Neon Drift',l:'Heist Recordings',bpm:124,fam:'Winehouse'},
-  {a:'Aircrax',t:'707 Baby (DJ Merci Remix)',l:'Beast River Records',bpm:121,fam:'Winehouse'},
-  {a:'Franck Roger',t:"Lola's Scream",l:'Seasons Limited',bpm:119,fam:'Winehouse'},
-  {a:'Lenny Fontana',t:'If You Want Me',l:'King Street Sounds',bpm:124,fam:'Winehouse'},
-  {a:'DJ Dove, DJ Steaw',t:'Illusions',l:'Local Talk',bpm:123,fam:'Winehouse'},
-  {a:'Demarkus Lewis',t:'Shuffle Board',l:'Deez Highlight',bpm:124,fam:'Winehouse'},
-  {a:'Franck Roger',t:"You're In Love",l:'Real Tone Records',bpm:118,fam:'Winehouse'},
-  {a:'Mika Olson',t:'Chord Looper',l:"Terry's Cafe",bpm:120,fam:'Winehouse'},
-  {a:'Tony Momrelle',t:'This Could Be Us',l:'Layabout Music',bpm:118,fam:'Winehouse'},
-  {a:'Rollercone',t:'Promises',l:'Back at Home',bpm:120,fam:'Winehouse'},
-  {a:'Cem Gemalmaz',t:'Somebody',l:'Deeperfect',bpm:123,fam:'Groove Minimal'},
-  {a:'Subb-an',t:'Grooves & Tools 007',l:'Subb-an',bpm:121,fam:'Groove Minimal'},
-  {a:'Evren Ulusoy',t:'Dearly Devoted',l:'Plastic City',bpm:122,fam:'Progressive Warm'},
-  {a:'Sam Shure',t:'Louna',l:'Innervisions',bpm:118,fam:'Progressive Warm'},
-  {a:'Alexander Sound',t:'Love and Money',l:'Manual Music',bpm:120,fam:'Progressive Warm'},
-  {a:'FMENEZS, Caio Assis',t:'Limbo',l:'LADR',bpm:118,fam:'Progressive Warm'},
-  {a:'Hraach',t:'Reality Shifting',l:'Sushupti',bpm:118,fam:'Progressive Warm'},
-  {a:'Abaze',t:'Rojo Vivo',l:'Hoomidaas',bpm:120,fam:'Progressive Warm'},
-  {a:'FMENEZS',t:'Morning Birds',l:'LADR',bpm:116,fam:'Dreamy Progressive'},
-  {a:'Hans Gerd',t:'Aurora',l:'Cybertron Records',bpm:115,fam:'Dreamy Progressive'},
-  {a:'Dunadry',t:'Removed Mind',l:'Steyoyoke',bpm:116,fam:'Dreamy Progressive'},
-  {a:'AudioStorm',t:'Hologram Sunday',l:'Unknown Destination',bpm:117,fam:'Dreamy Progressive'},
-  {a:'Lake Avalon',t:'Moon',l:'Mixed Melodic',bpm:114,fam:'Dreamy Progressive'},
-  {a:'Martin Roth',t:'Beautiful Life',l:'Anjunadeep',bpm:115,fam:'Dreamy Progressive'},
-  {a:'XENIA REAPER',t:'Drift__',l:'Nept Polarisation',bpm:116,fam:'Indie Melodic'},
-  {a:'Superpoze',t:'Obsession',l:'Sïcle',bpm:115,fam:'Indie Melodic'},
-  {a:'Vincenzo',t:'Get To Know You',l:'Anjunadeep',bpm:117,fam:'Indie Melodic'},
-  {a:'Dusky',t:'Stick By This',l:'17 Steps',bpm:118,fam:'Indie Melodic'},
-  {a:'Hugo Samba, Brahim Samba',t:'Frenka',l:'Sounds Of Sirin',bpm:115,fam:'Organic Emotional'},
-  {a:'Marga Sol, Tibetania',t:'Memoria',l:'—',bpm:112,fam:'Organic Emotional'},
-  {a:'Sebastian Mullaert',t:'Traces',l:'—',bpm:114,fam:'Organic Emotional'},
-  {a:'Mauro Masi',t:'Da Na Nahie',l:'Purple EP',bpm:116,fam:'Organic Emotional'},
-  {a:'BuVu, David de José',t:'Nara',l:'—',bpm:116,fam:'Organic Emotional'},
-  {a:'Maple Sun',t:'Life Echoes',l:'—',bpm:116,fam:'Organic Emotional'},
-  {a:'MacZito, Ntsakosoul',t:'Pictures',l:'Canvas of Sound',bpm:118,fam:'Afro Groove'},
-  {a:'CHOMBA',t:'Fermee',l:'The Leftovers',bpm:119,fam:'Afro Groove'},
-  {a:'Sparrow & Barbossa, Caiiro',t:'Amore Profondo',l:'—',bpm:118,fam:'Afro Groove'},
-  {a:'Citizen Deep',t:'Ubala',l:'—',bpm:116,fam:'Afro Groove'},
-  {a:'AIWAA, Stories of Dharma',t:'Satori',l:'Satori',bpm:108,fam:'Spiritual Organic'},
-  {a:'Aris Kindt',t:'Saichh Sequences',l:'Now Claims My Timid Heart',bpm:122,fam:'Hypnotic Raw'},
-  {a:'Joachim Spieth',t:'Chain',l:'Affin Records',bpm:122,fam:'Hypnotic Raw'},
-  {a:'Amotik',t:'Shaam',l:'Amotik',bpm:122,fam:'Hypnotic Raw'},
-  {a:'Dino Sabatini',t:'Euphemus',l:'Chiron',bpm:124,fam:'Peak Raw'},
-  {a:'DJ Bone',t:'Shook Ones',l:'Subject Detroit',bpm:124,fam:'Peak Raw'},
+  // Winehouse
+  {a:"Jaques Le Noir",t:"Soul and Love",l:"New Creatures",bpm:119,fam:"Winehouse"},
+  {a:"Paul Lock",t:"Say This (Original Mix)",l:"Family Grooves",bpm:124,fam:"Winehouse"},
+  {a:"Franck Roger",t:"Lola's Scream",l:"Seasons Limited",bpm:119,fam:"Winehouse"},
+  {a:"Aircrax",t:"707 Baby (DJ Merci Remix)",l:"Beast River Records",bpm:121,fam:"Winehouse"},
+  {a:"Fouk",t:"Neon Drift (Club Mix)",l:"Heist Recordings",bpm:124,fam:"Winehouse"},
+  {a:"Lenny Fontana, Jasmine Lovett",t:"If You Want Me (Club Mix)",l:"King Street Sounds",bpm:124,fam:"Winehouse"},
+  {a:"DJ Dove, DJ Steaw",t:"Illusions (DJ Steaw Extended Interpretation)",l:"Local Talk",bpm:123,fam:"Winehouse"},
+  {a:"Demarkus Lewis",t:"Shuffle Board (Demuir's Playboy Edit)",l:"Deez Highlight",bpm:124,fam:"Winehouse"},
+  {a:"Franck Roger",t:"You're In Love",l:"Real Tone Records",bpm:118,fam:"Winehouse"},
+  {a:"Mika Olson",t:"Chord Looper",l:"Terry's Cafe",bpm:120,fam:"Winehouse"},
+  {a:"Tony Momrelle, The Layabouts",t:"This Could Be Us (Instrumental Mix)",l:"Layabout Music",bpm:118,fam:"Winehouse"},
+  {a:"Rollercone",t:"Promises",l:"Back at Home Recordings",bpm:120,fam:"Winehouse"},
+  {a:"Plaisance",t:"Afterhours",l:"Coldie EP",bpm:116,fam:"Winehouse"},
+  {a:"T. Markakis, Blanco K",t:"Havana Jazz (Extended Mix)",l:"Deepalma Records",bpm:118,fam:"Winehouse"},
+  {a:"John Pridgen",t:"Get Up",l:"Crossed Signals",bpm:119,fam:"Winehouse"},
+  {a:"Nacho Marco, Jimpster",t:"Galaxy - Jimpster Remix",l:"Galaxy (incl. Jimpster remix)",bpm:120,fam:"Winehouse"},
+  {a:"Max Sinàl, Frits Wentink",t:"Intentions - Frits Wentink Remix",l:"Intentions Remixes",bpm:119,fam:"Winehouse"},
+  {a:"Igor Gonya, Stogov",t:"Came Back Raw - Extended Mix",l:"Came Back Raw / Pump Keen",bpm:120,fam:"Winehouse"},
+  {a:"E. Live",t:"Feeling Nervous",l:"Large Music",bpm:118,fam:"Winehouse"},
+  // Groove Minimal
+  {a:"DJ Sandwich",t:"Chewi",l:"Hamkke Records",bpm:120,fam:"Groove Minimal"},
+  {a:"Cem Gemalmaz",t:"Somebody (Extended Mix)",l:"Deeperfect",bpm:123,fam:"Groove Minimal"},
+  {a:"Subb-an",t:"Grooves & Tools (Sub Series Tool 007)",l:"Subb-an",bpm:121,fam:"Groove Minimal"},
+  {a:"Subb-an",t:"Grooves & Tools (Sub Series Tool 008)",l:"Subb-an",bpm:121,fam:"Groove Minimal"},
+  {a:"Ponti",t:"Exotic Ensemble (Original Mix)",l:"Gordo's Groove",bpm:121,fam:"Groove Minimal"},
+  // Deep Storytelling
+  {a:"Godblesscomputers",t:"Drowned in Blue",l:"Ninja Tune",bpm:114,fam:"Deep Storytelling"},
+  {a:"16BL",t:"Beat Organ (Original Mix)",l:"Anjunadeep",bpm:116,fam:"Deep Storytelling"},
+  {a:"16BL",t:"Deep In My Soul (Original Mix)",l:"Anjunadeep",bpm:117,fam:"Deep Storytelling"},
+  {a:"Pablo Bolivar, Alexandra Savvidi",t:"Story",l:"Other Stories",bpm:113,fam:"Deep Storytelling"},
+  // Progressive Warm
+  {a:"Sam Shure",t:"Louna",l:"Innervisions",bpm:118,fam:"Progressive Warm"},
+  {a:"Alexander Sound",t:"Love and Money",l:"Manual Music",bpm:120,fam:"Progressive Warm"},
+  {a:"Evren Ulusoy",t:"Dearly Devoted (Gorge's Classic Remix)",l:"Plastic City",bpm:122,fam:"Progressive Warm"},
+  {a:"D.M.P",t:"Passion and Pain (Dust Yard Remix)",l:"Hoomidaas",bpm:117,fam:"Progressive Warm"},
+  {a:"Hraach",t:"Reality Shifting",l:"Sushupti",bpm:118,fam:"Progressive Warm"},
+  {a:"FMENEZS, Caio Assis",t:"Limbo",l:"LADR",bpm:118,fam:"Progressive Warm"},
+  {a:"Peter Mac",t:"Enough 2026 (Club Mix)",l:"Hoomidaas",bpm:119,fam:"Progressive Warm"},
+  {a:"Abaze",t:"Rojo Vivo",l:"Hoomidaas",bpm:120,fam:"Progressive Warm"},
+  {a:"Chris Barag",t:"Tempt With Discovery",l:"Manual Music",bpm:118,fam:"Progressive Warm"},
+  {a:"Way Out West, Guy J",t:"Tuesday Maybe - Guy J Remix",l:"Tuesday Maybe (Remixed)",bpm:118,fam:"Progressive Warm"},
+  {a:"Digital Mess, Alex O'Rion",t:"Find Yourself (Alex O'Rion Remix)",l:"The Alleys",bpm:119,fam:"Progressive Warm"},
+  {a:"Bermuda, Happy Deny, Sonic Holiday",t:"Particles (Dimuth K. Remix)",l:"Movement Recordings",bpm:118,fam:"Progressive Warm"},
+  {a:"Emanuel Brizuela",t:"A Long Time Ago",l:"A Long Time Ago",bpm:117,fam:"Progressive Warm"},
+  // Dreamy Progressive
+  {a:"FMENEZS",t:"Morning Birds",l:"LADR",bpm:116,fam:"Dreamy Progressive"},
+  {a:"Hans Gerd",t:"Aurora",l:"Cybertron Records",bpm:115,fam:"Dreamy Progressive"},
+  {a:"Dunadry",t:"Removed Mind (Equinox 1)",l:"Steyoyoke",bpm:116,fam:"Dreamy Progressive"},
+  {a:"AudioStorm",t:"Hologram Sunday",l:"Unknown Destination",bpm:117,fam:"Dreamy Progressive"},
+  {a:"Aetha",t:"Someday (Aman Anand Moonlight Dub Remix)",l:"Stellar Fountain",bpm:115,fam:"Dreamy Progressive"},
+  {a:"Lake Avalon",t:"Moon - Mixed",l:"Melodic & Progressive House",bpm:114,fam:"Dreamy Progressive"},
+  {a:"Martin Roth",t:"Beautiful Life",l:"Anjunadeep",bpm:115,fam:"Dreamy Progressive"},
+  {a:"Martin Roth",t:"Have You Ever (Original Mix)",l:"Anjunadeep",bpm:116,fam:"Dreamy Progressive"},
+  {a:"Andy Cato",t:"7AM Drop",l:"Anjunadeep",bpm:117,fam:"Dreamy Progressive"},
+  {a:"DAVI",t:"The Bay 6, Pt. 2",l:"Anjunadeep",bpm:115,fam:"Dreamy Progressive"},
+  {a:"Trilucid",t:"Stories In Light (Sunset Mix)",l:"Stories In Light",bpm:114,fam:"Dreamy Progressive"},
+  {a:"Dave Leck, Izzet",t:"Opal - Izzet Remix",l:"Opal",bpm:115,fam:"Dreamy Progressive"},
+  {a:"Slow Hearts",t:"Higher Than the Clouds",l:"Higher Than the Clouds",bpm:117,fam:"Dreamy Progressive"},
+  // Indie Melodic
+  {a:"XENIA REAPER",t:"Drift__",l:"Nept Polarisation",bpm:116,fam:"Indie Melodic"},
+  {a:"Superpoze",t:"Obsession",l:"Sïcle",bpm:115,fam:"Indie Melodic"},
+  {a:"Vincenzo",t:"Get To Know You",l:"Anjunadeep",bpm:117,fam:"Indie Melodic"},
+  {a:"Dusky",t:"Lost Highway",l:"Anjunadeep",bpm:116,fam:"Indie Melodic"},
+  {a:"Dusky",t:"Stick By This",l:"17 Steps",bpm:118,fam:"Indie Melodic"},
+  {a:"Soudant",t:"Lura",l:"Lura",bpm:114,fam:"Indie Melodic"},
+  {a:"Oron K, YAKOS, KSANA",t:"Jolene",l:"Ritter Butzke Records",bpm:116,fam:"Indie Melodic"},
+  {a:"ÜDORA, Kamil Grabowski",t:"Malibu (Deeplomatik Remix)",l:"Shango Records",bpm:117,fam:"Indie Melodic"},
+  {a:"Sean Branton",t:"Virtue",l:"Warung Recordings",bpm:118,fam:"Indie Melodic"},
+  {a:"MARINI, Purple Ice",t:"Nightshade",l:"Purple Ice Records",bpm:117,fam:"Indie Melodic"},
+  {a:"Allies for Everyone",t:"Bunker (Jay Hill's Dreamy Tech Remix)",l:"Allies for Everyone",bpm:116,fam:"Indie Melodic"},
+  // Hypnotic Raw
+  {a:"Aris Kindt",t:"Saichh Sequences",l:"Now Claims My Timid Heart",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Joachim Spieth",t:"Chain (Original Mix)",l:"Affin Records",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Amotik",t:"Shaam",l:"Amotik",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Amotik",t:"Din",l:"Amotik",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Altinbas",t:"Submersion",l:"On Board Music",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Feel Fly",t:"Thecla",l:"Festina Lente",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Slow Riffs",t:"Vertical Horizon",l:"Simulacra Records",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Frankie M.",t:"Bark (Original Mix)",l:"Luz De Selva",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Yoni Yarchi",t:"Don't Think Loud",l:"The Subconscious EP",bpm:120,fam:"Hypnotic Raw"},
+  {a:"Johannes Volk",t:"Three Missing Puzzle Pieces",l:"A New Biosphere",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Joachim Spieth, Warmth",t:"Spectral",l:"Affin Records",bpm:121,fam:"Hypnotic Raw"},
+  {a:"Ludwig Leitner",t:"Indianman",l:"Belladonna",bpm:123,fam:"Hypnotic Raw"},
+  {a:"Kat Davids, Mascha",t:"Onera",l:"Onera",bpm:121,fam:"Hypnotic Raw"},
+  {a:"Droneghost",t:"Drip Cycle",l:"Steam Ritual",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Azu Tiwaline, Polygonia",t:"Canopée Imaginaire (Polygonia Rework)",l:"Notte Brigante",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Mike Parker",t:"Forward (Donato Dozzy Remix)",l:"Geophone Records",bpm:121,fam:"Hypnotic Raw"},
+  {a:"Audyca",t:"Sonus Aurorae",l:"Sonus Aurorae",bpm:122,fam:"Hypnotic Raw"},
+  {a:"Textlet",t:"Layer by Layer",l:"Layer by Layer EP",bpm:121,fam:"Hypnotic Raw"},
+  {a:"Folding Waves",t:"Tides",l:"TEN",bpm:121,fam:"Hypnotic Raw"},
+  {a:"Nobuharu Morimoto, Koichi Sugimoto",t:"Dontenmoyou - Koichi Sugimoto Remix",l:"Dontenmoyou",bpm:122,fam:"Hypnotic Raw"},
+  // Peak Raw
+  {a:"Dino Sabatini, Maurizio Cascella",t:"Euphemus",l:"Chiron",bpm:124,fam:"Peak Raw"},
+  {a:"Dino Sabatini, Maurizio Cascella",t:"Echion",l:"Chiron",bpm:124,fam:"Peak Raw"},
+  {a:"Dino Sabatini, Maurizio Cascella",t:"Medea",l:"Chiron",bpm:124,fam:"Peak Raw"},
+  {a:"DJ Bone",t:"Shook Ones",l:"Subject Detroit",bpm:124,fam:"Peak Raw"},
+  {a:"Future Simplicity",t:"Maize Maze",l:"Blending Frequencies",bpm:122,fam:"Peak Raw"},
+  {a:"MYTRIPISMYTRIP",t:"Rage - Original Mix",l:"Rage People",bpm:122,fam:"Peak Raw"},
+  {a:"BLZS",t:"Nightcrawler - dxrvo Remix",l:"Test Subject EP",bpm:123,fam:"Peak Raw"},
+  {a:"Catartsis, Ombrar",t:"Melancholic Therapy - Ombrar Remix",l:"Melancholic Therapy",bpm:122,fam:"Peak Raw"},
+  {a:"Leibniz",t:"Corridor",l:"Corridor EP",bpm:123,fam:"Peak Raw"},
+  {a:"Rawdecks",t:"Chrome Hearted",l:"The Cost of Living",bpm:123,fam:"Peak Raw"},
+  {a:"Noni",t:"Zebra",l:"Loud Thoughts",bpm:122,fam:"Peak Raw"},
+  {a:"Convoke",t:"New Frontier",l:"Nothing Stays The Same",bpm:123,fam:"Peak Raw"},
+  {a:"Danniel selfmade",t:"Has Begun",l:"Has Begun",bpm:122,fam:"Peak Raw"},
+  {a:"Kamen",t:"On The Run",l:"On The Run",bpm:123,fam:"Peak Raw"},
+  {a:"John Wick",t:"Mirror",l:"Mirror",bpm:122,fam:"Peak Raw"},
+  {a:"Jamie Bissmire",t:"Neolithic Dreams",l:"Seasons & Cycles",bpm:123,fam:"Peak Raw"},
+  // Organic Emotional
+  {a:"Hugo Samba, Brahim Samba, Sounds Of Sirin",t:"Frenka",l:"Sounds Of Sirin",bpm:115,fam:"Organic Emotional"},
+  {a:"UCCEN WATLAS",t:"Wahia",l:"",bpm:110,fam:"Organic Emotional"},
+  {a:"Marga Sol, Tibetania",t:"Memoria",l:"",bpm:112,fam:"Organic Emotional"},
+  {a:"Sebastian Mullaert, Hush Forever",t:"Traces",l:"",bpm:114,fam:"Organic Emotional"},
+  {a:"Nox Vahn, Marsh",t:"Come Together (Nox Vahn & Marsh Revisit)",l:"",bpm:113,fam:"Organic Emotional"},
+  {a:"Elavenu",t:"Mine",l:"",bpm:108,fam:"Organic Emotional"},
+  {a:"BOHEM, Sounds Of Sirin",t:"Playing on the Heaven (Tribute Intro)",l:"",bpm:110,fam:"Organic Emotional"},
+  {a:"rÜ, Cafe De Anatolia",t:"A Strange and Special Air",l:"",bpm:114,fam:"Organic Emotional"},
+  {a:"Mauro Masi",t:"Da Na Nahie (Extended Mix)",l:"Purple EP",bpm:116,fam:"Organic Emotional"},
+  {a:"Toni Ter Wonder, Tibetania",t:"Rumena",l:"Rumena",bpm:112,fam:"Organic Emotional"},
+  {a:"BuVu, David de José",t:"Nara",l:"",bpm:116,fam:"Organic Emotional"},
+  {a:"Max Mignot, RAMEFF",t:"Chemistry (Rameff Remix)",l:"Kairos",bpm:117,fam:"Organic Emotional"},
+  {a:"Hugo Samba, Sounds Of Sirin",t:"Your Oasis",l:"",bpm:112,fam:"Organic Emotional"},
+  {a:"Maple Sun",t:"Life Echoes (Extended Mix)",l:"",bpm:116,fam:"Organic Emotional"},
+  {a:"Netochko, Sounds Of Sirin",t:"In The Past (Extended Mix)",l:"Sounds Of Sirin: Selection 2025",bpm:115,fam:"Organic Emotional"},
+  {a:"Emilio Törnqvist",t:"PARAGOU",l:"PARAGOU",bpm:114,fam:"Organic Emotional"},
+  {a:"Sonic Dust, Hazner",t:"Sad Island (Hazner Remix)",l:"Sad Island",bpm:113,fam:"Organic Emotional"},
+  {a:"Modd, Songspire",t:"Ikigai (Mixed)",l:"Songspire Records",bpm:115,fam:"Organic Emotional"},
+  {a:"roamr",t:"Stay Low",l:"",bpm:114,fam:"Organic Emotional"},
+  {a:"Gökhan Aydogmus",t:"So Many Times",l:"",bpm:113,fam:"Organic Emotional"},
+  {a:"Mo-Omar",t:"Khalouni Neich",l:"",bpm:112,fam:"Organic Emotional"},
+  {a:"Evan Fraser, Vir McCoy, Rising Appalachia, Leah Song",t:"Yes It's You",l:"Guardians",bpm:110,fam:"Organic Emotional"},
+  {a:"Sarco, Gobi Desert Collective",t:"Qalbi",l:"",bpm:112,fam:"Organic Emotional"},
+  // Afro Groove
+  {a:"MacZito, Ntsakosoul, Vhuvii",t:"Pictures",l:"Canvas of Sound",bpm:118,fam:"Afro Groove"},
+  {a:"CHOMBA",t:"Fermee",l:"The Leftovers",bpm:119,fam:"Afro Groove"},
+  {a:"Sparrow & Barbossa, Nomvula SA, Caiiro",t:"Amore Profondo (Caiiro Remix)",l:"",bpm:118,fam:"Afro Groove"},
+  {a:"Citizen Deep, Maline Aura, DR Thulz",t:"Ubala",l:"",bpm:116,fam:"Afro Groove"},
+  {a:"June Freedom, Naika, Peace Control",t:"Messi (Sunset Mix)",l:"",bpm:115,fam:"Afro Groove"},
+  {a:"KidsILive",t:"Monsters R Us - Original Mix",l:"Break Your Heart",bpm:118,fam:"Afro Groove"},
+  {a:"Djena",t:"In Motion",l:"",bpm:118,fam:"Afro Groove"},
+  {a:"Fabian Balino",t:"Have It All (Extended Mix)",l:"",bpm:118,fam:"Afro Groove"},
+  {a:"Zigan Aldi, MetinKMusic",t:"Que Quando - Extended Version",l:"Abusadora",bpm:117,fam:"Afro Groove"},
+  {a:"Elias Fassos, RisK (GR), Joahn Dashi",t:"Cherry Vanilla - Sigma Pr Remix",l:"Cherry Vanilla",bpm:118,fam:"Afro Groove"},
+  {a:"DeeJay Soul Key, Vick's De DeeJay",t:"Abiro (Deep House Revisit)",l:"Abiro",bpm:117,fam:"Afro Groove"},
+  {a:"Alley SA",t:"Cycles",l:"Cycles",bpm:116,fam:"Afro Groove"},
+  // Spiritual Organic
+  {a:"AIWAA, Stories of Dharma",t:"Satori",l:"Satori",bpm:108,fam:"Spiritual Organic"},
 ];
 
 let ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null};
@@ -635,20 +737,76 @@ async function generate(){
   pool=[...pool].sort(()=>Math.random()-.5);
   ST._pool=pool;
 
-  // FIX: começa com 0 tracks do banco — Spotify vai preencher
-  // Só usa banco se Spotify falhar totalmente
-  renderRes([], ceil, floor, true);
+  // Mostra loading screen
+  showLoading(ceil, floor);
 
-  // Busca Spotify primeiro — quando retornar, renderiza
-  await fetchAndRenderSpotifyTracks(g, ceil, floor, pool);
+  // Mínimo 10s + busca paralela
+  const [spotifyTracks] = await Promise.all([
+    fetchSpotifyTracks(g, ceil, floor, pool),
+    new Promise(r=>setTimeout(r,10000)),
+  ]);
+
+  renderRes(spotifyTracks, ceil, floor, pool);
 }
 
-// ── RENDER TRACK CARD ──────────────────────────────────────────
+// ── LOADING SCREEN ─────────────────────────────────────
+const LOADING_MESSAGES = [
+  'Analisando contexto do headliner...',
+  'Escaneando frequências underground...',
+  'Consultando banco de 221 tracks...',
+  'Calibrando BPM range do slot...',
+  'Cruzando famílias sonoras...',
+  'Garimpo em andamento...',
+  'Verificando coerência estética...',
+  'Montando sequência de warm-up...',
+];
+
+function showLoading(ceil, floor){
+  const g=ST.dominantGroup||'g2';
+  const names=ST.lineup.map(d=>d.n).join(' · ');
+  const box=document.getElementById('resBox');
+  box.innerHTML=`<div class="divider"></div>
+  <div id="loadingScreen" style="padding:40px 20px;text-align:center">
+    <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:24px;text-transform:uppercase">${GROUP_NAMES[g]} · BPM ${floor}–${ceil}</div>
+    <div style="margin-bottom:28px">
+      <div style="width:48px;height:48px;border:2px solid var(--border2);border-top-color:var(--accent2);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 20px"></div>
+      <div id="loadingMsg" style="font-size:13px;color:var(--accent3);font-family:var(--mono);letter-spacing:.5px;min-height:20px;transition:opacity .3s">Iniciando garimpo...</div>
+    </div>
+    <div style="height:2px;background:var(--surface3);border-radius:1px;overflow:hidden;margin:0 auto;max-width:280px">
+      <div id="loadingBar" style="height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .5s ease;border-radius:1px"></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:10px;font-family:var(--mono)" id="loadingPct">0%</div>
+  </div>`;
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+
+  // Anima progress bar e mensagens ao longo de 10s
+  let step=0;
+  const totalSteps=LOADING_MESSAGES.length;
+  const interval=setInterval(()=>{
+    step++;
+    const pct=Math.min(Math.round((step/totalSteps)*95),95);
+    const bar=document.getElementById('loadingBar');
+    const pctEl=document.getElementById('loadingPct');
+    const msgEl=document.getElementById('loadingMsg');
+    if(bar) bar.style.width=pct+'%';
+    if(pctEl) pctEl.textContent=pct+'%';
+    if(msgEl){
+      msgEl.style.opacity='0';
+      setTimeout(()=>{
+        if(msgEl) msgEl.textContent=LOADING_MESSAGES[step-1]||'';
+        if(msgEl) msgEl.style.opacity='1';
+      },150);
+    }
+    if(step>=totalSteps) clearInterval(interval);
+  },1200);
+  ST._loadingInterval=interval;
+}
+
+// ── RENDER TRACK CARD ──────────────────────────────────
 function renderTrackCard(t, num){
-  // FIX: tag de família só aparece para tracks do banco curado
   const showFam = t.source==='banco' && t.fam;
   const fs=showFam?(FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'}):{};
-  const borderColor=t.source==='spotify_album'?'#1db954':'var(--accent)';
+  const borderColor=t.source==='banco'?'var(--accent)':'#1db954';
   const name=t.t||t.name||'';
   const artist=t.a||t.artist||'';
   const bpmStr=t.bpm&&t.bpm>0?`${t.bpm} BPM`:'';
@@ -661,8 +819,8 @@ function renderTrackCard(t, num){
   const previewBtn=t.previewUrl
     ?`<button class="tr-play" data-url="${t.previewUrl}" onclick="playTrack(this)" title="Preview 30s">▶</button>`
     :'<div style="width:26px"></div>';
-  const safeId=(t.id||num).toString().replace(/'/g,'');
-  return`<div class="track-card" data-id="${safeId}" data-num="${num}" style="border-left-color:${borderColor}">
+  const safeNum=(num||1).toString();
+  return`<div class="track-card" data-num="${safeNum}" style="border-left-color:${borderColor}">
     <div class="tr-num">${String(num).padStart(2,'0')}</div>
     <div class="tr-main">
       <div class="tr-name">${name}</div>
@@ -671,110 +829,70 @@ function renderTrackCard(t, num){
     <div class="tr-right">${famHtml}<div class="tr-bpm">${meta}</div></div>
     <div class="tr-actions">
       ${previewBtn}
-      <button class="tr-swap" onclick="swapTrack(${num})" title="Trocar por outra">⟳</button>
+      <button class="tr-swap" onclick="swapTrack(${safeNum})" title="Trocar por outra">⟳</button>
     </div>
   </div>`;
 }
 
-function renderRes(tracks, ceil, floor, loading=false){
+function renderRes(spotifyTracks, ceil, floor, localPool){
+  if(ST._loadingInterval) clearInterval(ST._loadingInterval);
   const box=document.getElementById('resBox');
   const g=ST.dominantGroup||'g2';
   const names=ST.lineup.map(d=>d.n).join(' · ');
-  let html=`<div class="divider"></div>
-  <div class="res-title">Tracks Selecionadas</div>
-  <div class="res-ctx"><strong>${ST.artist}</strong> · ${GROUP_NAMES[g]} · BPM ${floor}–${ceil}<br>Line-up: ${names}</div>
-  <div id="tracksList">`;
-  tracks.forEach((t,i)=>{html+=renderTrackCard(t,i+1);});
-  if(loading){
-    html+=`<div id="spLoadingRow" style="padding:14px 16px;font-size:11px;color:var(--text3);display:flex;align-items:center;gap:8px;background:var(--surface);margin-bottom:5px;border-left:2px solid var(--border2)">
-      <span class="spin-dot"></span> Garimpando no Spotify...
-    </div>`;
-  }
-  html+=`</div>`;
-  html+=`<div class="note" id="curNote"><div class="note-loading">Gerando nota curatorial...</div></div>`;
-  html+=`<button class="btn-reset" onclick="generate()">↺ Nova seleção</button>`;
-  html+=`<button class="btn-restart" onclick="restart()">Recomeçar do zero</button>`;
-  box.innerHTML=html;
-  box.scrollIntoView({behavior:'smooth',block:'start'});
+
+  // Completa barra de loading até 100%
+  const bar=document.getElementById('loadingBar');
+  const pctEl=document.getElementById('loadingPct');
+  const msgEl=document.getElementById('loadingMsg');
+  if(bar) bar.style.width='100%';
+  if(pctEl) pctEl.textContent='100%';
+  if(msgEl) msgEl.textContent='Pronto.';
+
+  setTimeout(()=>{
+    // Dedup e limita a 12
+    const seen=new Set();
+    const bankFormatted=(localPool||[]).map((t,i)=>({...t,source:'banco',id:'bank_'+i}));
+    const all=[...spotifyTracks,...bankFormatted];
+    const deduped=all.filter(t=>{
+      const k=`${t.t||t.name}|||${t.a||t.artist}`.toLowerCase();
+      if(seen.has(k)) return false; seen.add(k); return true;
+    }).slice(0,12);
+
+    let html=`<div class="divider"></div>
+    <div class="res-title">Tracks Selecionadas</div>
+    <div class="res-ctx"><strong>${ST.artist}</strong> · ${GROUP_NAMES[g]} · BPM ${floor}–${ceil}<br>Line-up: ${names}</div>
+    <div id="tracksList">`;
+    deduped.forEach((t,i)=>{html+=renderTrackCard(t,i+1);});
+    html+=`</div>`;
+    html+=`<button class="btn-reset" onclick="generate()" style="margin-top:16px">↺ Nova seleção</button>`;
+    html+=`<button class="btn-restart" onclick="restart()">Recomeçar do zero</button>`;
+    box.innerHTML=html;
+  }, 400);
 }
 
-function renderAllTracks(tracks){
-  const list=document.getElementById('tracksList');
-  if(!list) return;
-  const loadRow=document.getElementById('spLoadingRow');
-  if(loadRow) loadRow.remove();
 
-  // FIX dedup por nome+artista antes de renderizar
-  const seen=new Set();
-  const deduped=tracks.filter(t=>{
-    const k=`${t.t||t.name}|||${t.a||t.artist}`.toLowerCase();
-    if(seen.has(k)) return false;
-    seen.add(k); return true;
-  });
-
-  list.innerHTML='';
-  deduped.slice(0,12).forEach((t,i)=>{
-    list.insertAdjacentHTML('beforeend', renderTrackCard(t, i+1));
-  });
-}
-
-async function fetchAndRenderSpotifyTracks(group, ceil, floor, localPool){
+async function fetchSpotifyTracks(group, ceil, floor, localPool){
   const headliner=ST.lineup[0]?.n;
-  if(!headliner){
-    // Sem headliner: usa só banco
-    const loadRow=document.getElementById('spLoadingRow');
-    if(loadRow) loadRow.remove();
-    renderAllTracks(localPool.slice(0,12).map((t,i)=>({...t,source:'banco',id:'bank_'+i})));
-    reqNote(localPool.slice(0,4));
-    return;
-  }
-
+  if(!headliner) return [];
   try{
     const yearRange=eraToYearRange(ST_ERA);
-    let url=yearRange
+    const url=yearRange
       ?`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&yearFrom=${yearRange.from}&yearTo=${yearRange.to}`
       :`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}`;
-
     const r=await fetch(url);
-    if(!r.ok) throw new Error('spotify fail');
+    if(!r.ok) return [];
     const d=await r.json();
-
-    // FIX: mapeia tracks do Spotify para formato unificado
-    const spTracks=(d.tracks||[]).map((t,i)=>({
-      t: t.name||'',
-      a: t.artist||'',
-      l: t.album||'',
-      bpm: t.bpm||0,
-      fam: t.family||null,    // null para tracks do Spotify = sem tag de família
-      key: t.key||null,
-      source: t.source||'spotify_album',
-      image: t.image||'',
-      previewUrl: t.previewUrl||'',
-      spotifyUrl: t.spotifyUrl||'',
-      releaseDate: t.releaseDate||'',
-      id: 'sp_'+i,
+    return (d.tracks||[]).map((t,i)=>({
+      t:t.name||'', a:t.artist||'', l:t.album||'',
+      bpm:t.bpm||0, fam:null, key:t.key||null,
+      source:t.source||'spotify_album',
+      image:t.image||'', previewUrl:t.previewUrl||'',
+      spotifyUrl:t.spotifyUrl||'', releaseDate:t.releaseDate||'',
+      id:'sp_'+i,
     }));
-
-    // Combina: Spotify primeiro, banco completa até 12
-    const allFam=[];
-    ST.lineup.forEach(dj=>(dj.fams||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)}));
-    const bankPool=localPool.map((t,i)=>({...t,source:'banco',id:'bank_'+i}));
-
-    const combined=[...spTracks, ...bankPool];
-    renderAllTracks(combined);
-
-    // FIX: nota curatorial recebe tracks finais reais
-    const finalTracks=combined.slice(0,8);
-    reqNote(finalTracks, ceil, floor);
-
-  }catch(e){
-    const loadRow=document.getElementById('spLoadingRow');
-    if(loadRow) loadRow.remove();
-    const bankTracks=localPool.slice(0,12).map((t,i)=>({...t,source:'banco',id:'bank_'+i}));
-    renderAllTracks(bankTracks);
-    reqNote(bankTracks.slice(0,4), ceil, floor);
-  }
+  }catch(e){ return []; }
 }
+
 
 function swapTrack(num){
   const list=document.getElementById('tracksList');
@@ -804,38 +922,6 @@ function playTrack(btn){
   curAudio.onended=()=>{btn.textContent='▶';btn.classList.remove('playing');curAudio=null};
 }
 
-// FIX: nota curatorial recebe contexto completo incluindo tracks do Spotify
-async function reqNote(tracks, ceil, floor){
-  const g=ST.dominantGroup||'g2';
-  try{
-    const r=await fetch('/api/generate',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        djName: ST.artist,
-        headliner: ST.lineup[0]?.n||'',
-        slot: ST.slot,
-        venue: ST.venue,
-        group: g,
-        bpmRange: {min: floor||108, max: ceil||122},
-        tracks: tracks.slice(0,10).map(t=>({
-          name: t.t||t.name||'',
-          artist: t.a||t.artist||'',
-          bpm: t.bpm||null,
-          key: t.key||null,
-          source: t.source||'spotify',
-        })),
-      }),
-    });
-    if(!r.ok) throw new Error();
-    const d=await r.json();
-    const el=document.getElementById('curNote');
-    if(el) el.innerHTML=`<span class="note-lbl">[ Nota Curatorial ]</span>${(d.note||'').replace(/\n/g,'<br>')}`;
-  }catch(e){
-    const el=document.getElementById('curNote');
-    if(el) el.innerHTML=`<span class="note-lbl">[ Nota Curatorial ]</span>Warm-up para ${ST.lineup.map(d=>d.n).join(' + ')}. BPM: ${floor}–${ceil}. Construção gradual de energia, sempre abaixo do headliner.`;
-  }
-}
 
 function restart(){
   ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null};
