@@ -160,7 +160,28 @@ const SLOT_BPM = {
   slot2: { min: 114, max: 127 },
 };
 
+// ── PROXY DE IMAGEM (evita CORS/hotlink do Spotify) ─────────────
+async function proxyImage(url, res) {
+  try {
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    if (!r.ok) { res.status(404).end(); return; }
+    const buf = await r.arrayBuffer();
+    const ct = r.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', ct);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.status(200).send(Buffer.from(buf));
+  } catch(e) {
+    res.status(404).end();
+  }
+}
+
 export default async function handler(req, res) {
+  // Proxy de imagem: /api/spotify?img=URL
+  if (req.query.img) {
+    return proxyImage(decodeURIComponent(req.query.img), res);
+  }
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
