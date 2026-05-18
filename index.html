@@ -129,6 +129,38 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .period-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:7px 14px;font-family:var(--mono);font-size:9px;cursor:pointer;border-radius:2px;transition:all .12s;letter-spacing:.5px}
 .period-btn:hover{border-color:var(--accent2);color:var(--accent3)}
 .period-btn.sel{border-color:var(--accent);color:var(--accent2);background:rgba(109,40,217,.1)}
+/* Player de pré-escuta */
+.player-bar{display:none;margin-top:12px;padding:10px 14px;background:var(--surface2);border:1px solid #1db954;border-radius:4px;align-items:center;gap:12px}
+.player-bar.active{display:flex}
+.player-info{flex:1;min-width:0}
+.player-title{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-artist{font-size:10px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-progress{flex:1;height:3px;background:var(--border2);border-radius:2px;cursor:pointer;position:relative}
+.player-progress-fill{height:100%;background:#1db954;border-radius:2px;transition:width .5s linear;width:0%}
+.player-time{font-size:9px;color:var(--text3);font-family:var(--mono);white-space:nowrap}
+.player-close{color:var(--text3);cursor:pointer;font-size:14px;flex-shrink:0;transition:color .15s}
+.player-close:hover{color:var(--text)}
+/* Waveform animado */
+.waveform{display:flex;align-items:center;gap:2px;height:20px;flex-shrink:0}
+.waveform span{display:block;width:3px;background:#1db954;border-radius:1px;animation:wave 1s ease-in-out infinite}
+.waveform span:nth-child(1){height:6px;animation-delay:0s}
+.waveform span:nth-child(2){height:14px;animation-delay:.1s}
+.waveform span:nth-child(3){height:10px;animation-delay:.2s}
+.waveform span:nth-child(4){height:18px;animation-delay:.3s}
+.waveform span:nth-child(5){height:8px;animation-delay:.4s}
+.waveform span:nth-child(6){height:16px;animation-delay:.15s}
+.waveform span:nth-child(7){height:6px;animation-delay:.25s}
+@keyframes wave{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.4)}}
+.waveform.paused span{animation-play-state:paused}
+/* Filtro de estilo */
+.style-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:24px}
+.style-opt{background:var(--surface);border:1px solid var(--border);padding:14px 12px;cursor:pointer;text-align:center;border-radius:4px;transition:all .12s;position:relative}
+.style-opt:hover{border-color:var(--border2);background:var(--surface2)}
+.style-opt.sel{border-color:var(--accent2);background:rgba(139,92,246,.08)}
+.style-opt.sel::after{content:'✓';position:absolute;top:6px;right:8px;font-size:9px;color:var(--accent2)}
+.style-icon{font-size:20px;margin-bottom:6px}
+.style-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:3px}
+.style-desc{font-size:9px;color:var(--text2);line-height:1.4}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--accent);border-radius:2px}
   </style>
 </head>
@@ -145,6 +177,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       <span class="ps" id="ps1">LINE-UP</span>
       <span class="ps" id="ps2">SLOT</span>
       <span class="ps" id="ps3">VENUE</span>
+      <span class="ps" id="ps5">ESTILO</span>
       <span class="ps" id="ps4">GERAR</span>
     </div>
   </div>
@@ -233,8 +266,53 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     </div>
     <div class="nav">
       <button class="btn-back" onclick="go(2)">← Voltar</button>
-      <button class="btn-next" id="n3" onclick="go(4)" disabled>Próximo →</button>
+      <button class="btn-next" id="n3" onclick="go(5)" disabled>Próximo →</button>
     </div>
+  </div>
+
+  <!-- S5: Estilo de track (novo passo) -->
+  <div class="screen" id="s5">
+    <div class="step-num">PASSO 5 / 6</div>
+    <div class="step-cat">ESTILO DE TRACK</div>
+    <div class="q-title">Como você quer soar?</div>
+    <div class="q-sub">Define o caráter sonoro predominante do seu set. Pode escolher mais de um.</div>
+    <div class="style-grid">
+      <div class="style-opt sel" onclick="togStyle(this,'vocal')" id="style_vocal">
+        <div class="style-icon">🎤</div>
+        <div class="style-name">Com Vocal</div>
+        <div class="style-desc">Emoção direta · Letras que ficam · Conexão imediata</div>
+      </div>
+      <div class="style-opt sel" onclick="togStyle(this,'groove')" id="style_groove">
+        <div class="style-icon">🥁</div>
+        <div class="style-name">Groove</div>
+        <div class="style-desc">Instrumental percussivo · Construção hipnótica · Corpo em movimento</div>
+      </div>
+      <div class="style-opt sel" onclick="togStyle(this,'atmospheric')" id="style_atmospheric">
+        <div class="style-icon">🌊</div>
+        <div class="style-name">Atmosférico</div>
+        <div class="style-desc">Textural · Cinematográfico · Paisagem sonora</div>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="btn-back" onclick="go(3)">← Voltar</button>
+      <button class="btn-next" id="n5" onclick="go(4)">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- Player global de pré-escuta -->
+  <div class="player-bar" id="globalPlayer" style="position:fixed;bottom:0;left:0;right:0;max-width:680px;margin:0 auto;z-index:100;border-radius:0;border-left:none;border-right:none;border-bottom:none">
+    <div class="waveform" id="waveform">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="player-info">
+      <div class="player-title" id="playerTitle">—</div>
+      <div class="player-artist" id="playerArtist">—</div>
+    </div>
+    <div class="player-progress" id="playerProgress" onclick="seekTrack(event)">
+      <div class="player-progress-fill" id="playerFill"></div>
+    </div>
+    <div class="player-time" id="playerTime">0:00</div>
+    <div class="player-close" onclick="stopPlayer()">✕</div>
   </div>
 
   <!-- S4 -->
@@ -258,7 +336,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
       </div>
     </div>
     <button class="btn-gen" id="genBtn" onclick="generate()">◆ GERAR 12 TRACKS</button>
-    <div class="nav" style="margin-top:12px"><button class="btn-back" onclick="go(3)">← Voltar</button></div>
+    <div class="nav" style="margin-top:12px"><button class="btn-back" onclick="go(5)">← Voltar</button></div>
     <div class="results" id="resBox"></div>
   </div>
 </div>
@@ -505,7 +583,7 @@ const TRACKS=[
   {a:"AIWAA, Stories of Dharma",t:"Satori",l:"Satori",bpm:108,fam:"Spiritual Organic"},
 ];
 
-let ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null};
+let ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null,styles:['vocal','groove','atmospheric']};
 let cur=0,srchTimer=null,curAudio=null,ST_DAYS=30,ST_ERA='30d';
 
 // ── FOTO: FIX — usa objeto Image para detectar carga ─────────────
@@ -548,10 +626,14 @@ function go(n){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function updBar(){
-  const p=[0,20,40,60,80][cur];
-  document.getElementById('pfill').style.width=p+'%';
-  ['ps0','ps1','ps2','ps3','ps4'].forEach((id,i)=>{
-    document.getElementById(id).className='ps'+(i<cur?' done':i===cur?' active':'');
+  // Mapeia telas para % e índice de passo
+  const screenPct={0:0,1:17,2:34,3:51,5:68,4:85};
+  const screenStep={0:0,1:1,2:2,3:3,5:4,4:5};
+  document.getElementById('pfill').style.width=(screenPct[cur]||0)+'%';
+  const stepCur=screenStep[cur]||0;
+  ['ps0','ps1','ps2','ps3','ps5','ps4'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(el) el.className='ps'+(i<stepCur?' done':i===stepCur?' active':'');
   });
 }
 function ck0(){
@@ -816,12 +898,18 @@ function renderTrackCard(t, num){
   const famHtml=showFam
     ?`<span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>`
     :'';
-  const previewBtn=t.previewUrl
+  const hasPreview=!!t.previewUrl;
+  const previewBtn=hasPreview
     ?`<button class="tr-play" data-url="${t.previewUrl}" onclick="playTrack(this)" title="Preview 30s">▶</button>`
-    :'<div style="width:26px"></div>';
+    :`<button class="tr-play" style="opacity:.25;cursor:default" title="Sem preview disponível" onclick="return false">▶</button>`;
+  const imgUrl=t.image||'';
+  const albumImg=imgUrl
+    ?`<img src="${imgUrl}" style="width:36px;height:36px;border-radius:2px;object-fit:cover;flex-shrink:0;margin-right:2px" alt="" loading="lazy">`
+    :'';
   const safeNum=(num||1).toString();
-  return`<div class="track-card" data-num="${safeNum}" style="border-left-color:${borderColor}">
+  return`<div class="track-card" data-num="${safeNum}" style="border-left-color:${borderColor};grid-template-columns:30px ${imgUrl?'38px ':''} 1fr auto 52px">
     <div class="tr-num">${String(num).padStart(2,'0')}</div>
+    ${albumImg}
     <div class="tr-main">
       <div class="tr-name">${name}</div>
       <div class="tr-artist">${artist}</div>
@@ -876,9 +964,10 @@ async function fetchSpotifyTracks(group, ceil, floor, localPool){
   if(!headliner) return [];
   try{
     const yearRange=eraToYearRange(ST_ERA);
+    const stylesParam=ST.styles.join(',');
     const url=yearRange
-      ?`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&yearFrom=${yearRange.from}&yearTo=${yearRange.to}`
-      :`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}`;
+      ?`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&yearFrom=${yearRange.from}&yearTo=${yearRange.to}&styles=${stylesParam}`
+      :`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}&styles=${stylesParam}`;
     const r=await fetch(url);
     if(!r.ok) return [];
     const d=await r.json();
@@ -907,24 +996,102 @@ function swapTrack(num){
   card.outerHTML=renderTrackCard({...replacement,source:'banco',id:'bank_swap_'+num}, num);
 }
 
+// ── PLAYER GLOBAL ─────────────────────────────────────
+let playerInterval=null;
+
 function playTrack(btn){
   const url=btn.dataset.url;
+  const card=btn.closest('.track-card');
+  const title=card?.querySelector('.tr-name')?.textContent||'';
+  const artist=card?.querySelector('.tr-artist')?.textContent||'';
+
+  // Se já tocando a mesma — pausa
+  if(curAudio&&curAudio._url===url){
+    if(curAudio.paused){
+      curAudio.play();
+      btn.textContent='■';
+      btn.classList.add('playing');
+      document.getElementById('waveform')?.classList.remove('paused');
+    } else {
+      curAudio.pause();
+      btn.textContent='▶';
+      btn.classList.remove('playing');
+      document.getElementById('waveform')?.classList.add('paused');
+    }
+    return;
+  }
+
+  // Para áudio anterior
   if(curAudio){
     curAudio.pause();
     document.querySelectorAll('.tr-play').forEach(b=>{b.textContent='▶';b.classList.remove('playing')});
-    if(curAudio._url===url){curAudio=null;return}
+    clearInterval(playerInterval);
   }
+
   curAudio=new Audio(url);
   curAudio._url=url;
-  curAudio.play();
+  curAudio.play().catch(e=>console.log('Play error:',e));
   btn.textContent='■';
   btn.classList.add('playing');
-  curAudio.onended=()=>{btn.textContent='▶';btn.classList.remove('playing');curAudio=null};
+
+  // Mostra player global
+  const player=document.getElementById('globalPlayer');
+  document.getElementById('playerTitle').textContent=title;
+  document.getElementById('playerArtist').textContent=artist;
+  document.getElementById('playerFill').style.width='0%';
+  document.getElementById('playerTime').textContent='0:00';
+  document.getElementById('waveform')?.classList.remove('paused');
+  player?.classList.add('active');
+
+  // Atualiza progress a cada 500ms
+  playerInterval=setInterval(()=>{
+    if(!curAudio||curAudio.paused) return;
+    const pct=curAudio.duration?(curAudio.currentTime/curAudio.duration)*100:0;
+    const sec=Math.floor(curAudio.currentTime);
+    document.getElementById('playerFill').style.width=pct+'%';
+    document.getElementById('playerTime').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  },500);
+
+  curAudio.onended=()=>{
+    btn.textContent='▶';
+    btn.classList.remove('playing');
+    clearInterval(playerInterval);
+    document.getElementById('playerFill').style.width='100%';
+    document.getElementById('waveform')?.classList.add('paused');
+    setTimeout(()=>stopPlayer(),1500);
+    curAudio=null;
+  };
+}
+
+function stopPlayer(){
+  if(curAudio){curAudio.pause();curAudio=null;}
+  clearInterval(playerInterval);
+  document.querySelectorAll('.tr-play').forEach(b=>{b.textContent='▶';b.classList.remove('playing')});
+  document.getElementById('globalPlayer')?.classList.remove('active');
+}
+
+function seekTrack(e){
+  if(!curAudio||!curAudio.duration) return;
+  const bar=e.currentTarget;
+  const pct=e.offsetX/bar.offsetWidth;
+  curAudio.currentTime=pct*curAudio.duration;
+}
+
+// ── FILTRO DE ESTILO ───────────────────────────────────
+function togStyle(el,style){
+  el.classList.toggle('sel');
+  if(el.classList.contains('sel')){
+    if(!ST.styles.includes(style)) ST.styles.push(style);
+  } else {
+    ST.styles=ST.styles.filter(s=>s!==style);
+    // Pelo menos 1 sempre ativo
+    if(ST.styles.length===0){ el.classList.add('sel'); ST.styles=[style]; }
+  }
 }
 
 
 function restart(){
-  ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null};
+  ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null,styles:['vocal','groove','atmospheric']};
   ST_DAYS=30; ST_ERA='30d';
   document.getElementById('artistIn').value='';
   document.getElementById('djIn').value='';
