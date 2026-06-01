@@ -579,10 +579,10 @@ async function enrichArtist(name){
     const r=await fetch(`/api/spotify?artist=${encodeURIComponent(name)}`);
     if(!r.ok) throw new Error();
     const d=await r.json();
-    // URL direta funciona em <img> (CORS só bloqueia fetch, não img src)
-    const url=d.photo||'';
+    const rawUrl=d.photo||'';
+    // Usa proxy no backend para servir a imagem (Spotify bloqueia hotlink direto)
+    const url=rawUrl?`/api/spotify?img=${encodeURIComponent(rawUrl)}`:'';
     ST.photoCache[name]=url;
-    // Salva ID e grupo se disponível
     if(d.id) ST.photoCache[name+'_id']=d.id;
     return url;
   }catch(e){
@@ -892,7 +892,7 @@ function showLoading(ceil, floor){
 function renderTrackCard(t, num){
   const showFam = t.source==='banco' && t.fam;
   const fs=showFam?(FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'}):{};
-  const borderColor=t.source==='banco'?'var(--accent)':'#1db954';
+  const borderColor=t.source==='spotify_album'?'#1db954':'var(--accent)';
   const name=t.t||t.name||'';
   const artist=t.a||t.artist||'';
   const bpmStr=t.bpm&&t.bpm>0?`${t.bpm} BPM`:'';
@@ -902,23 +902,17 @@ function renderTrackCard(t, num){
   const famHtml=showFam
     ?`<span class="tr-fam" style="color:${fs.c};border-color:${fs.c};background:${fs.b}">${t.fam}</span>`
     :'';
-  // Extrai track ID do spotifyUrl para embed
-  const spotifyId=t.spotifyUrl?t.spotifyUrl.split('/track/')[1]?.split('?')[0]:'';
-  // Para tracks do banco curado sem spotifyUrl, cria link de busca no Spotify
-  const trackName=t.t||t.name||'';
-  const artistName=t.a||t.artist||'';
-  const searchQuery=encodeURIComponent(`${trackName} ${artistName}`);
-  const spotifySearch=`https://open.spotify.com/search/${searchQuery}`;
-  const hasEmbed=!!spotifyId;
-  const hasPreview=!!t.previewUrl;
-  // Sempre mostra botão — se tem ID abre track, senão abre busca no Spotify
-  const previewBtn=`<button class="tr-play" data-url="${t.previewUrl||''}" data-spotify-id="${spotifyId}" data-search="${spotifySearch}" onclick="playTrack(this)" title="Ouvir no Spotify" style="${hasPreview||hasEmbed?'':'opacity:.6'}">▶</button>`;
   const imgUrl=t.image||'';
   const albumImg=imgUrl
-    ?`<img src="${imgUrl}" style="width:36px;height:36px;border-radius:2px;object-fit:cover;flex-shrink:0;margin-right:2px" alt="" loading="lazy">`
+    ?`<img src="${imgUrl}" style="width:36px;height:36px;border-radius:2px;object-fit:cover;flex-shrink:0" alt="" loading="lazy">`
     :'';
+  // Play: só mostra ativo se tem spotifyUrl com track ID
+  const spotifyId=t.spotifyUrl?t.spotifyUrl.split('/track/')[1]?.split('?')[0]:'';
+  const playBtn=spotifyId
+    ?`<button class="tr-play" data-spotify-id="${spotifyId}" onclick="playTrack(this)" title="Preview">▶</button>`
+    :`<button class="tr-play" style="opacity:.2;cursor:default" title="Sem preview">▶</button>`;
   const safeNum=(num||1).toString();
-  return`<div class="track-card" data-num="${safeNum}" style="border-left-color:${borderColor};grid-template-columns:30px ${imgUrl?'38px ':''} 1fr auto 52px">
+  return`<div class="track-card" data-num="${safeNum}" style="border-left-color:${borderColor};grid-template-columns:30px ${imgUrl?'40px ':''} 1fr auto 52px">
     <div class="tr-num">${String(num).padStart(2,'0')}</div>
     ${albumImg}
     <div class="tr-main">
@@ -927,11 +921,12 @@ function renderTrackCard(t, num){
     </div>
     <div class="tr-right">${famHtml}<div class="tr-bpm">${meta}</div></div>
     <div class="tr-actions">
-      ${previewBtn}
-      <button class="tr-swap" onclick="swapTrack(${safeNum})" title="Trocar por outra">⟳</button>
+      ${playBtn}
+      <button class="tr-swap" onclick="swapTrack(${safeNum})" title="Trocar">⟳</button>
     </div>
   </div>`;
 }
+
 
 function renderRes(spotifyTracks, ceil, floor, localPool){
   if(ST._loadingInterval) clearInterval(ST._loadingInterval);
@@ -1019,121 +1014,63 @@ function swapTrack(num){
 let playerInterval=null;
 
 function playTrack(btn){
-  const previewUrl=btn.dataset.url;
   const spotifyId=btn.dataset.spotifyId;
+  if(!spotifyId) return;
+
   const card=btn.closest('.track-card');
   const title=card?.querySelector('.tr-name')?.textContent||'';
   const artist=card?.querySelector('.tr-artist')?.textContent||'';
 
-  // Para qualquer áudio tocando
-  if(curAudio){
-    curAudio.pause();
-    document.querySelectorAll('.tr-play').forEach(b=>{b.textContent='▶';b.classList.remove('playing')});
-    clearInterval(playerInterval);
-    // Toggle: se era o mesmo, fecha
-    if(curAudio._url===previewUrl&&curAudio._sid===spotifyId){
-      curAudio=null;
-      stopPlayer();
-      return;
-    }
-    curAudio=null;
+  // Toggle: se clicou no mesmo que está tocando, fecha
+  const player=document.getElementById('globalPlayer');
+  if(player._activeId===spotifyId){
+    stopPlayer();
+    return;
   }
 
-  const player=document.getElementById('globalPlayer');
-  document.getElementById('playerTitle').textContent=title;
-  document.getElementById('playerArtist').textContent=artist;
-  document.getElementById('waveform')?.classList.remove('paused');
+  // Marca todos os botões como não-tocando
+  document.querySelectorAll('.tr-play').forEach(b=>{b.textContent='▶';b.classList.remove('playing')});
 
-  if(previewUrl){
-    // Tem preview direto — usa Audio API
-    curAudio=new Audio(previewUrl);
-    curAudio._url=previewUrl;
-    curAudio._sid=spotifyId;
-    curAudio.play().catch(e=>{
-      console.log('Preview falhou, abrindo embed:', e.message);
-      openSpotifyEmbed(spotifyId, title, artist, btn);
-    });
-    btn.textContent='■';
-    btn.classList.add('playing');
-    document.getElementById('playerFill').style.width='0%';
-    document.getElementById('playerTime').textContent='0:00';
-    player?.classList.add('active');
-
-    playerInterval=setInterval(()=>{
-      if(!curAudio||curAudio.paused) return;
-      const pct=curAudio.duration?(curAudio.currentTime/curAudio.duration)*100:0;
-      const sec=Math.floor(curAudio.currentTime);
-      document.getElementById('playerFill').style.width=pct+'%';
-      document.getElementById('playerTime').textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
-    },500);
-
-    curAudio.onended=()=>{
-      btn.textContent='▶';
-      btn.classList.remove('playing');
-      clearInterval(playerInterval);
-      document.getElementById('waveform')?.classList.add('paused');
-      setTimeout(()=>stopPlayer(),1500);
-      curAudio=null;
-    };
-  } else if(spotifyId){
-    // Sem preview direto — abre link do Spotify
-    openSpotifyEmbed(spotifyId, title, artist, btn);
-  } else {
-    // Tracks do banco sem ID — busca no Spotify
-    const searchUrl=btn.dataset.search||`https://open.spotify.com/search/${encodeURIComponent(title+' '+artist)}`;
-    window.open(searchUrl, '_blank');
-  }
-}
-
-function openSpotifyEmbed(spotifyId, title, artist, btn){
-  if(!spotifyId) return;
-  const player=document.getElementById('globalPlayer');
-  // Substitui conteúdo do player por iframe embed
-  const embedHtml=`
-    <div style="flex:1;display:flex;align-items:center;gap:12px">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
-        <div style="font-size:10px;color:var(--text2)">${artist}</div>
-      </div>
-      <a href="https://open.spotify.com/track/${spotifyId}" target="_blank" rel="noopener" 
-         style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#1db954;color:#000;font-size:11px;font-weight:700;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-        Ouvir no Spotify
-      </a>
-      <span onclick="stopPlayer()" style="color:var(--text3);cursor:pointer;font-size:14px;flex-shrink:0">✕</span>
-    </div>`;
-  player.innerHTML=embedHtml;
-  player.classList.add('active');
-  btn.textContent='♫';
+  // Ativa o botão
+  btn.textContent='■';
   btn.classList.add('playing');
-  // Marca como embed ativo
-  curAudio={_url:'embed', _sid:spotifyId, pause:()=>{}, paused:false};
+  player._activeId=spotifyId;
+
+  // Monta player com iframe embed do Spotify
+  player.innerHTML=`
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px">${title}</div>
+      <div style="font-size:10px;color:var(--text2)">${artist}</div>
+    </div>
+    <iframe
+      src="https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator&theme=0"
+      width="260" height="52"
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      style="border-radius:8px;flex-shrink:0"
+      loading="lazy">
+    </iframe>
+    <span onclick="stopPlayer()" style="color:var(--text3);cursor:pointer;font-size:16px;flex-shrink:0;padding:4px">✕</span>`;
+  player.classList.add('active');
 }
 
 function stopPlayer(){
-  if(curAudio&&curAudio._url!=='embed'){curAudio.pause();curAudio=null;}
-  else {curAudio=null;}
-  clearInterval(playerInterval);
-  document.querySelectorAll('.tr-play').forEach(b=>{b.textContent='▶';b.classList.remove('playing')});
   const player=document.getElementById('globalPlayer');
   if(player){
     player.classList.remove('active');
-    // Restaura HTML original do player
+    player._activeId=null;
     player.innerHTML=`
-      <div class="waveform" id="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="waveform paused" id="waveform"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
       <div class="player-info"><div class="player-title" id="playerTitle">—</div><div class="player-artist" id="playerArtist">—</div></div>
-      <div class="player-progress" id="playerProgress" onclick="seekTrack(event)"><div class="player-progress-fill" id="playerFill"></div></div>
-      <div class="player-time" id="playerTime">0:00</div>
+      <div class="player-progress"><div class="player-progress-fill"></div></div>
+      <div class="player-time">0:00</div>
       <div class="player-close" onclick="stopPlayer()">✕</div>`;
   }
+  document.querySelectorAll('.tr-play').forEach(b=>{b.textContent='▶';b.classList.remove('playing')});
+  curAudio=null;
 }
 
-function seekTrack(e){
-  if(!curAudio||curAudio._url==='embed'||!curAudio.duration) return;
-  const bar=e.currentTarget;
-  const pct=e.offsetX/bar.offsetWidth;
-  curAudio.currentTime=pct*curAudio.duration;
-}
+function seekTrack(){}
 
 // ── FILTRO DE ESTILO ───────────────────────────────────
 function togStyle(el,style){
