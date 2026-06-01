@@ -817,22 +817,16 @@ async function generate(){
   ST.lineup.forEach(dj=>(dj.fams||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)}));
   (VFAM[ST.venue]||[]).forEach(f=>{if(!allFam.includes(f))allFam.push(f)});
 
-  let pool=TRACKS.filter(t=>allFam.includes(t.fam)&&t.bpm>=floor&&t.bpm<=ceil);
-  if(pool.length<4) pool=TRACKS.filter(t=>allFam.includes(t.fam));
-  if(pool.length<4) pool=TRACKS.filter(t=>t.bpm>=floor&&t.bpm<=ceil);
-  pool=[...pool].sort(()=>Math.random()-.5);
-  ST._pool=pool;
-
   // Mostra loading screen
   showLoading(ceil, floor);
 
   // Mínimo 10s + busca paralela
   const [spotifyTracks] = await Promise.all([
-    fetchSpotifyTracks(g, ceil, floor, pool),
+    fetchSpotifyTracks(g, ceil, floor),
     new Promise(r=>setTimeout(r,10000)),
   ]);
 
-  renderRes(spotifyTracks, ceil, floor, pool);
+  renderRes(spotifyTracks, ceil, floor);
 }
 
 // ── LOADING SCREEN ─────────────────────────────────────
@@ -928,7 +922,7 @@ function renderTrackCard(t, num){
 }
 
 
-function renderRes(spotifyTracks, ceil, floor, localPool){
+function renderRes(spotifyTracks, ceil, floor){
   if(ST._loadingInterval) clearInterval(ST._loadingInterval);
   const box=document.getElementById('resBox');
   const g=ST.dominantGroup||'g2';
@@ -943,25 +937,12 @@ function renderRes(spotifyTracks, ceil, floor, localPool){
   if(msgEl) msgEl.textContent='Pronto.';
 
   setTimeout(()=>{
-    // Spotify SEMPRE primeiro, banco completa se necessário
+    // Só Spotify — sem banco
     const seen=new Set();
-    const spFormatted=spotifyTracks.filter(t=>t.t||t.name);
-    const bankFormatted=(localPool||[]).map((t,i)=>({...t,source:'banco',id:'bank_'+i}));
-    
-    // Deduplica Spotify
-    const spDeduped=spFormatted.filter(t=>{
+    const deduped=(spotifyTracks||[]).filter(t=>{
       const k=`${t.t||t.name}|||${t.a||t.artist}`.toLowerCase();
       if(seen.has(k)) return false; seen.add(k); return true;
-    });
-    
-    // Banco só completa até 12 (máx 4 do banco)
-    const bankNeeded=Math.max(0, Math.min(4, 12-spDeduped.length));
-    const bankDeduped=bankFormatted.filter(t=>{
-      const k=`${t.t||t.name}|||${t.a||t.artist}`.toLowerCase();
-      if(seen.has(k)) return false; seen.add(k); return true;
-    }).slice(0, bankNeeded);
-    
-    const deduped=[...spDeduped, ...bankDeduped].slice(0,12);
+    }).slice(0,12);
 
     let html=`<div class="divider"></div>
     <div class="res-title">Tracks Selecionadas</div>
@@ -976,7 +957,7 @@ function renderRes(spotifyTracks, ceil, floor, localPool){
 }
 
 
-async function fetchSpotifyTracks(group, ceil, floor, localPool){
+async function fetchSpotifyTracks(group, ceil, floor){
   const headliner=ST.lineup[0]?.n;
   if(!headliner) return [];
   try{
@@ -998,16 +979,14 @@ async function fetchSpotifyTracks(group, ceil, floor, localPool){
 
 
 function swapTrack(num){
+  // Remove a track e regenera uma nova posição
   const list=document.getElementById('tracksList');
-  if(!list) return;
-  const usedNames=new Set();
-  list.querySelectorAll('.tr-name').forEach(el=>usedNames.add(el.textContent.trim()));
-  const pool=(ST._pool||[]).filter(t=>!usedNames.has(t.t));
-  if(!pool.length) return;
-  const replacement=pool[Math.floor(Math.random()*pool.length)];
-  const card=list.querySelector(`[data-num="${num}"]`);
-  if(!card) return;
-  card.outerHTML=renderTrackCard({...replacement,source:'banco',id:'bank_swap_'+num}, num);
+  const card=list?.querySelector(`[data-num="${num}"]`);
+  if(card){ 
+    card.style.opacity='0.3';
+    card.style.transition='opacity .3s';
+    setTimeout(()=>{ card.remove(); }, 300);
+  }
 }
 
 // ── PLAYER GLOBAL ─────────────────────────────────────
