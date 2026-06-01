@@ -142,7 +142,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '7.0');
+  res.setHeader('X-FI-Version', '7.1');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -208,12 +208,17 @@ async function resolveArtistIds(token, names, fixedList) {
     if (existing) { result.push(existing); return; }
     try {
       const r = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1&market=US`,
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(name + ' electronic')}&type=artist&limit=5&market=US`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!r.ok) return;
       const d = await r.json();
-      const a = d.artists?.items?.[0];
+      const artists = d.artists?.items || [];
+      // Preferir artista com gênero eletrônico
+      const elec = artists.find(a => (a.genres||[]).some(g =>
+        ['electronic','house','techno','deep house','organic','afro'].some(eg => g.toLowerCase().includes(eg))
+      ));
+      const a = elec || artists[0];
       if (a) { result.push({ name: a.name, id: a.id }); }
     } catch(e) {}
   }));
@@ -294,42 +299,82 @@ async function fetchAlbumTracks(token, artists, excludeName) {
 
 async function runTest(token, group) {
   const grp = ARTIST_IDS[group] ? group : 'g6';
-  const testArtist = ARTIST_IDS[grp][0];
-  const result = { version:'7.0', group:grp, testArtist:testArtist.name };
-  try {
-    const r = await fetch(
-      `https://api.spotify.com/v1/artists/${testArtist.id}/albums?include_groups=single,album&limit=5&market=US`,
-      { headers: { Authorization:`Bearer ${token}` } }
-    );
-    result.albumsStatus = r.status;
-    if (r.ok) {
-      const d = await r.json();
-      result.albumsFound = d.items?.length||0;
-      result.latestAlbum = d.items?.[0]?.name||null;
-      if (d.items?.[0]) {
-        const tr = await fetch(`https://api.spotify.com/v1/albums/${d.items[0].id}/tracks?limit=3&market=US`,
-          { headers: { Authorization:`Bearer ${token}` } });
-        if (tr.ok) {
-          const td = await tr.json();
-          result.sampleTracks = (td.items||[]).slice(0,3).map(t=>({
-            name:t.name, artist:t.artists?.[0]?.name, hasPreview:!!t.preview_url
-          }));
+  const result = { version:'7.1', group:grp, artistTests:[] };
+
+  for (const artist of (ARTIST_IDS[grp]||[]).slice(0,3)) {
+    const test = { name:artist.name, id:artist.id };
+    try {
+      const r = await fetch(
+        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=3&market=US`,
+        { headers: { Authorization:`Bearer ${token}` } }
+      );
+      test.albumsStatus = r.status;
+      if (r.ok) {
+        const d = await r.json();
+        test.albumsFound = d.items?.length||0;
+        test.firstAlbum = d.items?.[0]?.name||null;
+        if (d.items?.[0]) {
+          const tr = await fetch(
+            `https://api.spotify.com/v1/albums/${d.items[0].id}/tracks?limit=2&market=US`,
+            { headers: { Authorization:`Bearer ${token}` } }
+          );
+          test.tracksStatus = tr.status;
+          if (tr.ok) {
+            const td = await tr.json();
+            test.tracks = (td.items||[]).map(t=>({ name:t.name, hasPreview:!!t.preview_url }));
+          }
         }
-      }
-    }
-  } catch(e) { result.error = e.message; }
+      } else { test.error = await r.text(); }
+    } catch(e) { test.error = e.message; }
+    result.artistTests.push(test);
+  }
   result.status = 'OK';
   return result;
 }
 
+
 async function searchArtist(token, name) {
-  const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1`,
-    { headers: { Authorization:`Bearer ${token}` } });
-  if (!r.ok) throw new Error(`Artist search failed: ${r.status}`);
-  const d = await r.json();
-  const a = d.artists?.items?.[0];
-  if (!a) return { name, photo:'', group:detectGroup(name) };
-  return { ...formatArtist(a), group:detectGroup(name) };
+  // Busca com filtro de gênero eletrônico para evitar artistas pop/outros com mesmo nome
+  const queries = [
+    `${name} genre:electronic`,
+    `${name} genre:house`,
+    `${name} genre:techno`,
+    `${name}`,  // fallback sem filtro
+  ];
+
+  const ELECTRONIC_GENRES = [
+    'electronic','house','techno','deep house','tech house','progressive house',
+    'minimal techno','melodic techno','afro house','organic house','trance',
+    'drum and bass','electro','ambient','industrial','acid house','hard techno',
+    'dance','edm','electronica','idm','downtempo','chillout',
+  ];
+
+  for (const q of queries) {
+    try {
+      const r = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=artist&limit=5`,
+        { headers: { Authorization:`Bearer ${token}` } }
+      );
+      if (!r.ok) continue;
+      const d = await r.json();
+      const artists = d.artists?.items || [];
+      if (!artists.length) continue;
+
+      // Preferir artista com gênero eletrônico
+      const electronic = artists.find(a =>
+        (a.genres||[]).some(g => ELECTRONIC_GENRES.some(eg => g.toLowerCase().includes(eg)))
+      );
+
+      // Se encontrou com gênero eletrônico, usa. Senão na última tentativa usa o primeiro.
+      const pick = electronic || (q === name ? artists[0] : null);
+      if (pick) {
+        console.log(`[FI] searchArtist "${name}" → ${pick.name} genres: ${pick.genres?.slice(0,3).join(', ')}`);
+        return { ...formatArtist(pick), group:detectGroup(name) };
+      }
+    } catch(e) {}
+  }
+
+  return { name, photo:'', group:detectGroup(name) };
 }
 
 async function fetchArtistById(token, id) {
