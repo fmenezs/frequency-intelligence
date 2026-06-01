@@ -153,16 +153,25 @@ const SLOT_BPM = {
 
 async function proxyImage(url, res) {
   try {
-    const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const r = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Referer': 'https://open.spotify.com/',
+      }
+    });
     if (!r.ok) { res.status(404).end(); return; }
     const buf = await r.arrayBuffer();
     res.setHeader('Content-Type', r.headers.get('content-type') || 'image/jpeg');
     res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     res.status(200).send(Buffer.from(buf));
   } catch(e) { res.status(404).end(); }
 }
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+
   if (req.query.img) return proxyImage(decodeURIComponent(req.query.img), res);
 
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -171,7 +180,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '6.0');
+  res.setHeader('X-FI-Version', '6.2');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -211,39 +220,61 @@ async function generateSet(token, headliner, slot) {
   const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot1;
   console.log(`[FI] headliner="${headliner}" group=${group} slot=${slot}`);
 
-  const spotifyTracks = await getTracksFromAlbums(token, group, headliner);
+  // Extrai artistas únicos do banco curado para usar como referência
+  const curatedArtists = [...new Set(
+    CURATED_DB.filter(t => t.g === group).map(t => t.artist.split(',')[0].trim())
+  )];
+  console.log(`[FI] Artistas referência do banco: ${curatedArtists.slice(0,5).join(', ')}...`);
+
+  // Busca tracks no Spotify: artistas do banco curado + artistas da lista principal
+  const spotifyTracks = await getTracksFromAlbums(token, group, headliner, curatedArtists);
   console.log(`[FI] spotify=${spotifyTracks.length}`);
 
-  // Banco curado — completa até 12 se Spotify retornar pouco
-  const curatedPool = shuffle(CURATED_DB.filter(t => t.g === group));
-  const seen = new Set(spotifyTracks.map(t => `${t.name}|||${t.artist}`.toLowerCase()));
-  const curatedNeeded = Math.max(0, Math.min(4, 12 - spotifyTracks.length));
-  const curatedTracks = curatedPool
-    .filter(t => {
-      const k = `${t.track}|||${t.artist}`.toLowerCase();
-      if (seen.has(k)) return false;
-      seen.add(k);
-      return true;
-    })
-    .slice(0, curatedNeeded)
-    .map(t => ({
-      id: null, name: t.track, artist: t.artist, album: t.label,
-      bpm: t.bpm||null, key: null, duration: t.dur,
-      releaseDate: null, previewUrl: null, spotifyUrl: null, image: null,
-      source: 'curated_fmenezs', family: t.family, group,
-    }));
-
-  const final = [...spotifyTracks, ...curatedTracks].slice(0, 12);
-  return { headliner, group, slot, bpmRange, tracks: final, total: final.length,
-    sources: { spotify: spotifyTracks.length, curated: curatedTracks.length } };
+  const final = spotifyTracks.slice(0, 12);
+  return {
+    headliner, group, slot, bpmRange,
+    tracks: final, total: final.length,
+    sources: { spotify: spotifyTracks.length, curated: 0 }
+  };
 }
 
-// Busca álbuns recentes de artistas do grupo — SEM filtro de tempo
-async function getTracksFromAlbums(token, group, excludeName) {
-  const artistList = ARTIST_IDS[group] || ARTIST_IDS.g6;
-  const picked = shuffle(artistList)
+// Busca álbuns: artistas do banco curado (referência) + lista principal
+async function getTracksFromAlbums(token, group, excludeName, curatedArtistNames=[]) {
+  const fixedList = ARTIST_IDS[group] || ARTIST_IDS.g6;
+
+  // Busca IDs dos artistas de referência do banco curado no Spotify
+  const curatedWithIds = await Promise.all(
+    curatedArtistNames.slice(0, 8).map(async (name) => {
+      // Verifica se já está na lista principal
+      const existing = fixedList.find(a => a.name.toLowerCase() === name.toLowerCase());
+      if (existing) return existing;
+      // Busca no Spotify
+      try {
+        const r = await fetch(
+          `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=1&market=US`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!r.ok) return null;
+        const d = await r.json();
+        const a = d.artists?.items?.[0];
+        if (!a) return null;
+        console.log(`[FI] Referência encontrada: ${a.name} (${a.id})`);
+        return { name: a.name, id: a.id };
+      } catch(e) { return null; }
+    })
+  );
+
+  // Combina: referências do banco + lista principal, sem duplicatas
+  const allIds = new Map();
+  [...fixedList, ...curatedWithIds.filter(Boolean)].forEach(a => {
+    if (a && !allIds.has(a.id)) allIds.set(a.id, a);
+  });
+
+  const artistList = shuffle([...allIds.values()])
     .filter(a => a.name.toLowerCase() !== excludeName.toLowerCase())
-    .slice(0, 7);
+    .slice(0, 8);
+
+  console.log(`[FI] Buscando álbuns de ${artistList.length} artistas`);
 
   console.log(`[FI] Buscando álbuns de: ${picked.map(a=>a.name).join(', ')}`);
 
