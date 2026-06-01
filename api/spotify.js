@@ -78,7 +78,8 @@ const ARTIST_IDS = {
   ],
   g7: [
     { name:'Satori',          id:'5nri3hyKmKBGAfvjBi0mK0' },
-    { name:'Lee Burridge',    id:'1RNm0r3ViSTQNIFCMUhM7a' },
+    { name:'WhoMadeWho',      id:'3aRI0QFhFTaCQ1TRBi9zVk' },
+    { name:'Sebastian Mullaert', id:'2TDnTIaLLK2B13OoXSFkSH' },
     { name:'Mauro Masi',      id:'4DB7roKjBDAuccMLQrzXX9' },
     { name:'Hraach',          id:'6rdTxNwQhUJTodUx7voWXO' },
     { name:'Bonobo',          id:'0cmWgDlu9CwTgxPhf403hb' },
@@ -142,7 +143,7 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '7.1');
+  res.setHeader('X-FI-Version', '7.2');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -156,7 +157,7 @@ export default async function handler(req, res) {
     if (q.search)    return res.status(200).json(await searchFree(token, q.search));
     if (q.test)      return res.status(200).json(await runTest(token, q.test));
     if (q.headliner) return res.status(200).json(await generateSet(token, q.headliner, q.slot||'slot1'));
-    return res.status(200).json({ service:'Frequency Intelligence', version:'7.0', status:'online' });
+    return res.status(200).json({ service:'Frequency Intelligence', version:'7.2', status:'online' });
   } catch (err) {
     console.error('[FI] ERRO:', err.message);
     return res.status(500).json({ error: err.message, tracks: [], total: 0 });
@@ -299,7 +300,7 @@ async function fetchAlbumTracks(token, artists, excludeName) {
 
 async function runTest(token, group) {
   const grp = ARTIST_IDS[group] ? group : 'g6';
-  const result = { version:'7.1', group:grp, artistTests:[] };
+  const result = { version:'7.2', group:grp, artistTests:[] };
 
   for (const artist of (ARTIST_IDS[grp]||[]).slice(0,3)) {
     const test = { name:artist.name, id:artist.id };
