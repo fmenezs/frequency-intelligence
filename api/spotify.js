@@ -91,6 +91,16 @@ const ARTIST_IDS = {
   ],
 };
 
+// IDs diretos para artistas com nome ambíguo (evita buscar cantora pop)
+const AMBIGUOUS_ARTIST_IDS = {
+  'sasha': '2SHyvQHTbMoFVT5s5LkS38',  // DJ Sasha, não Sasha Meneghel
+  'anna': '3gqTLkCGKp5mFk7FuJKSSq',   // ANNA techno
+  'bedouin': '5bKdC6382t97Qnpvs81Rqx',
+  'monolink': '2m4WFg9cExkUcXg0YvAaHp',
+  'bonobo': '0cmWgDlu9CwTgxPhf403hb',
+  'bicep': '73A3bLnfnz5BoQjb4gNCga',
+};
+
 const HEADLINER_MAP = {
   'kerri chandler':'g1','honey dijon':'g1','mochakk':'g1','dennis cruz':'g1',
   'seth troxler':'g1','the martinez brothers':'g1','jamie jones':'g1',
@@ -183,12 +193,11 @@ async function generateSet(token, headliner, slot) {
   const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot1;
   console.log(`[FI] headliner="${headliner}" group=${group}`);
 
-  // Busca IDs dos artistas de referência do banco curado
-  const refNames = CURATED_ARTISTS[group] || [];
-  const refArtists = await resolveArtistIds(token, refNames, ARTIST_IDS[group] || []);
-  console.log(`[FI] ${refArtists.length} artistas para buscar`);
+  // Usa diretamente ARTIST_IDS — IDs verificados, sem busca extra
+  const artistList = ARTIST_IDS[group] || ARTIST_IDS.g6;
+  console.log(`[FI] ${artistList.length} artistas disponíveis para o grupo ${group}`);
 
-  const tracks = await fetchAlbumTracks(token, refArtists, headliner);
+  const tracks = await fetchAlbumTracks(token, artistList, headliner);
   console.log(`[FI] ${tracks.length} tracks do Spotify`);
 
   return {
@@ -209,15 +218,16 @@ async function resolveArtistIds(token, names, fixedList) {
     if (existing) { result.push(existing); return; }
     try {
       const r = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(name + ' electronic')}&type=artist&limit=5&market=US`,
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=3&market=US`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!r.ok) return;
       const d = await r.json();
       const artists = d.artists?.items || [];
-      // Preferir artista com gênero eletrônico
+      // Preferir artista com gênero eletrônico/orgânico
+      const ELEC = ['electronic','house','techno','organic','afro','deep','minimal','ambient','downtempo'];
       const elec = artists.find(a => (a.genres||[]).some(g =>
-        ['electronic','house','techno','deep house','organic','afro'].some(eg => g.toLowerCase().includes(eg))
+        ELEC.some(eg => g.toLowerCase().includes(eg))
       ));
       const a = elec || artists[0];
       if (a) { result.push({ name: a.name, id: a.id }); }
@@ -335,12 +345,26 @@ async function runTest(token, group) {
 
 
 async function searchArtist(token, name) {
-  // Busca com filtro de gênero eletrônico para evitar artistas pop/outros com mesmo nome
+  // Verifica se é artista com nome ambíguo — usa ID direto
+  const directId = AMBIGUOUS_ARTIST_IDS[name.toLowerCase()];
+  if (directId) {
+    try {
+      const r = await fetch(`https://api.spotify.com/v1/artists/${directId}`,
+        { headers: { Authorization:`Bearer ${token}` } });
+      if (r.ok) {
+        const a = await r.json();
+        console.log(`[FI] Direct ID for "${name}": ${a.name}`);
+        return { ...formatArtist(a), group:detectGroup(name) };
+      }
+    } catch(e) {}
+  }
+
+  // Busca com filtro de gênero eletrônico
   const queries = [
     `${name} genre:electronic`,
     `${name} genre:house`,
     `${name} genre:techno`,
-    `${name}`,  // fallback sem filtro
+    `${name}`,
   ];
 
   const ELECTRONIC_GENRES = [
