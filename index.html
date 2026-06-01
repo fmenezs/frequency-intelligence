@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frequency Intelligence</title>
+  <title>Frequency Intelligence — v6</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -204,8 +204,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="chips" id="chips"><span class="chips-empty">Nenhum artista selecionado ainda</span></div>
     <button class="man-toggle" onclick="togMan()">+ Não encontrou? Adicionar manualmente</button>
     <div id="manWrap" style="display:none">
-      <div class="man-row">
-        <input class="man-in" id="mNm" placeholder="Nome do DJ...">
+      <div class="man-row" style="align-items:center">
+        <div id="manAvWrap" style="width:36px;height:36px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--text3);font-family:var(--mono)">?</div>
+        <input class="man-in" id="mNm" placeholder="Nome do DJ..." oninput="onManInput(this.value)">
         <select class="man-sel" id="mGr">
           <option value="">Grupo sonoro...</option>
           <option value="g1">Tech House / House / Deep</option>
@@ -315,12 +316,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 
   <!-- S4 -->
   <div class="screen" id="s4">
-    <div class="step-num">PASSO 5 / 5</div>
+    <div class="step-num">PASSO 6 / 6</div>
     <div class="step-cat">CONFIRMAR E GERAR</div>
     <div class="q-title">Tudo certo.</div>
     <div class="q-sub">12 tracks do frequency intelligence para o seu contexto específico.</div>
     <div class="rev" id="revBox"></div>
-    </div>
     <button class="btn-gen" id="genBtn" onclick="generate()">◆ GERAR 12 TRACKS</button>
     <div class="nav" style="margin-top:12px"><button class="btn-back" onclick="go(5)">← Voltar</button></div>
     <div class="results" id="resBox"></div>
@@ -579,11 +579,12 @@ async function enrichArtist(name){
     const r=await fetch(`/api/spotify?artist=${encodeURIComponent(name)}`);
     if(!r.ok) throw new Error();
     const d=await r.json();
-    // Usa proxy para evitar CORS/hotlink do Spotify
-    const rawUrl=d.photo||'';
-    const proxyUrl=rawUrl?`/api/spotify?img=${encodeURIComponent(rawUrl)}`:'';
-    ST.photoCache[name]=proxyUrl;
-    return proxyUrl;
+    // URL direta funciona em <img> (CORS só bloqueia fetch, não img src)
+    const url=d.photo||'';
+    ST.photoCache[name]=url;
+    // Salva ID e grupo se disponível
+    if(d.id) ST.photoCache[name+'_id']=d.id;
+    return url;
   }catch(e){
     ST.photoCache[name]='';
     return '';
@@ -727,6 +728,30 @@ function togMan(){
   document.getElementById('manWrap').style.display=ST.manOpen?'block':'none';
 }
 
+let manTimer=null;
+function onManInput(val){
+  clearTimeout(manTimer);
+  const av=document.getElementById('manAvWrap');
+  if(!val||val.length<2){ if(av){av.innerHTML='?';av.style.backgroundImage='';} return; }
+  manTimer=setTimeout(async()=>{
+    const url=await enrichArtist(val);
+    const av=document.getElementById('manAvWrap');
+    if(!av) return;
+    if(url){
+      av.innerHTML=`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      const ini=val.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+      av.innerHTML=ini||'?';
+    }
+    // Auto-detectar grupo pelo Spotify se retornar
+    const grp=ST.photoCache[val+'_group'];
+    if(grp){
+      const sel=document.getElementById('mGr');
+      if(sel&&!sel.value) sel.value=grp;
+    }
+  }, 600);
+}
+
 function remDJ(n){
   ST.lineup=ST.lineup.filter(d=>d.n!==n);
   renderChips();
@@ -780,12 +805,7 @@ function buildRev(){
   </div>`;
 }
 
-;
-  if(era==='5-10a') return{from:now-10,to:now-5};
-  if(era==='90s00s') return{from:1990,to:2009};
-  if(era==='80s') return{from:1980,to:1989};
-  return null;
-}
+
 
 // ── GERAR ──────────────────────────────────────────────────────
 async function generate(){
