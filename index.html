@@ -126,9 +126,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
 .btn-reset:hover{border-color:var(--accent);color:var(--accent3)}
 .btn-restart{width:100%;margin-top:6px;background:none;border:none;color:var(--text3);padding:10px;font-family:var(--font);font-size:11px;cursor:pointer;transition:color .15s}
 .btn-restart:hover{color:var(--text2)}
-.period-btn{background:var(--surface);border:1px solid var(--border2);color:var(--text2);padding:7px 14px;font-family:var(--mono);font-size:9px;cursor:pointer;border-radius:2px;transition:all .12s;letter-spacing:.5px}
-.period-btn:hover{border-color:var(--accent2);color:var(--accent3)}
-.period-btn.sel{border-color:var(--accent);color:var(--accent2);background:rgba(109,40,217,.1)}
+
 /* Player de pré-escuta */
 .player-bar{display:none;margin-top:12px;padding:10px 14px;background:var(--surface2);border:1px solid #1db954;border-radius:4px;align-items:center;gap:12px}
 .player-bar.active{display:flex}
@@ -322,18 +320,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:1
     <div class="q-title">Tudo certo.</div>
     <div class="q-sub">12 tracks do frequency intelligence para o seu contexto específico.</div>
     <div class="rev" id="revBox"></div>
-    <div style="margin-bottom:12px">
-      <div style="font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.5px;margin-bottom:8px;text-transform:uppercase">Período do garimpo</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap" id="periodBtns">
-        <button class="period-btn sel" onclick="selPeriod(this,'30d',30)">30 dias</button>
-        <button class="period-btn" onclick="selPeriod(this,'60d',60)">60 dias</button>
-        <button class="period-btn" onclick="selPeriod(this,'6m',180)">6 meses</button>
-        <button class="period-btn" onclick="selPeriod(this,'1a',365)">1 ano</button>
-        <button class="period-btn" onclick="selPeriod(this,'1-4a',730)">1–4 anos</button>
-        <button class="period-btn" onclick="selPeriod(this,'5-10a',2190)">5–10 anos</button>
-        <button class="period-btn" onclick="selPeriod(this,'90s00s',9999)">Anos 90/2000</button>
-        <button class="period-btn" onclick="selPeriod(this,'80s',99999)">Anos 80</button>
-      </div>
     </div>
     <button class="btn-gen" id="genBtn" onclick="generate()">◆ GERAR 12 TRACKS</button>
     <div class="nav" style="margin-top:12px"><button class="btn-back" onclick="go(5)">← Voltar</button></div>
@@ -584,7 +570,7 @@ const TRACKS=[
 ];
 
 let ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null,styles:['vocal','groove','atmospheric']};
-let cur=0,srchTimer=null,curAudio=null,ST_DAYS=30,ST_ERA='30d';
+let cur=0,srchTimer=null,curAudio=null;
 
 // ── FOTO: FIX — usa objeto Image para detectar carga ─────────────
 async function enrichArtist(name){
@@ -607,7 +593,14 @@ async function enrichArtist(name){
 function updateSlotTags(){
   if(!ST.lineup.length) return;
   const groups=ST.lineup.map(d=>d.g);
-  const dominant=groups.sort((a,b)=>groups.filter(v=>v===a).length-groups.filter(v=>v===b).length).pop()||'g2';
+  // Conta votos por grupo
+  const votes={};
+  groups.forEach(g=>{ votes[g]=(votes[g]||0)+1; });
+  // Em caso de empate, o PRIMEIRO artista (headliner principal) decide
+  const maxVotes=Math.max(...Object.values(votes));
+  const topGroups=Object.keys(votes).filter(g=>votes[g]===maxVotes);
+  const firstGroup=groups[0];
+  const dominant=(topGroups.includes(firstGroup)?firstGroup:topGroups[0])||'g2';
   const bpm1=GROUP_BPM[dominant]?.slot1||{min:110,max:120};
   const bpm2=GROUP_BPM[dominant]?.slot2||{min:118,max:122};
   const t1=document.getElementById('slot1tag');
@@ -787,16 +780,7 @@ function buildRev(){
   </div>`;
 }
 
-function selPeriod(el,era,days){
-  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel');
-  ST_DAYS=days; ST_ERA=era;
-}
-
-function eraToYearRange(era){
-  const now=new Date().getFullYear();
-  if(['30d','60d','6m','1a'].includes(era)) return null;
-  if(era==='1-4a') return{from:now-4,to:now-1};
+;
   if(era==='5-10a') return{from:now-10,to:now-5};
   if(era==='90s00s') return{from:1990,to:2009};
   if(era==='80s') return{from:1980,to:1989};
@@ -900,12 +884,15 @@ function renderTrackCard(t, num){
     :'';
   // Extrai track ID do spotifyUrl para embed
   const spotifyId=t.spotifyUrl?t.spotifyUrl.split('/track/')[1]?.split('?')[0]:'';
+  // Para tracks do banco curado sem spotifyUrl, cria link de busca no Spotify
+  const trackName=t.t||t.name||'';
+  const artistName=t.a||t.artist||'';
+  const searchQuery=encodeURIComponent(`${trackName} ${artistName}`);
+  const spotifySearch=`https://open.spotify.com/search/${searchQuery}`;
   const hasEmbed=!!spotifyId;
   const hasPreview=!!t.previewUrl;
-  // Usa preview direto se disponível, senão embed do Spotify
-  const previewBtn=(hasPreview||hasEmbed)
-    ?`<button class="tr-play" data-url="${t.previewUrl||''}" data-spotify-id="${spotifyId}" onclick="playTrack(this)" title="Ouvir no Spotify">▶</button>`
-    :`<button class="tr-play" style="opacity:.2;cursor:default" title="Sem preview" onclick="return false">▶</button>`;
+  // Sempre mostra botão — se tem ID abre track, senão abre busca no Spotify
+  const previewBtn=`<button class="tr-play" data-url="${t.previewUrl||''}" data-spotify-id="${spotifyId}" data-search="${spotifySearch}" onclick="playTrack(this)" title="Ouvir no Spotify" style="${hasPreview||hasEmbed?'':'opacity:.6'}">▶</button>`;
   const imgUrl=t.image||'';
   const albumImg=imgUrl
     ?`<img src="${imgUrl}" style="width:36px;height:36px;border-radius:2px;object-fit:cover;flex-shrink:0;margin-right:2px" alt="" loading="lazy">`
@@ -978,23 +965,20 @@ async function fetchSpotifyTracks(group, ceil, floor, localPool){
   const headliner=ST.lineup[0]?.n;
   if(!headliner) return [];
   try{
-    const yearRange=eraToYearRange(ST_ERA);
-    const stylesParam=ST.styles.join(',');
-    const url=yearRange
-      ?`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&yearFrom=${yearRange.from}&yearTo=${yearRange.to}&styles=${stylesParam}`
-      :`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&days=${ST_DAYS}&styles=${stylesParam}`;
+    const url=`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}`;
     const r=await fetch(url);
     if(!r.ok) return [];
     const d=await r.json();
-    return (d.tracks||[]).map((t,i)=>({
+    console.log('[FI frontend] sources:', d.sources, 'total:', d.total);
+    return (d.tracks||[]).filter(t=>t.source==='spotify_album').map((t,i)=>({
       t:t.name||'', a:t.artist||'', l:t.album||'',
       bpm:t.bpm||0, fam:null, key:t.key||null,
-      source:t.source||'spotify_album',
+      source:'spotify_album',
       image:t.image||'', previewUrl:t.previewUrl||'',
       spotifyUrl:t.spotifyUrl||'', releaseDate:t.releaseDate||'',
       id:'sp_'+i,
     }));
-  }catch(e){ return []; }
+  }catch(e){ console.error('[FI frontend] fetch error:', e); return []; }
 }
 
 
@@ -1072,8 +1056,12 @@ function playTrack(btn){
       curAudio=null;
     };
   } else if(spotifyId){
-    // Sem preview direto — abre embed do Spotify no player
+    // Sem preview direto — abre link do Spotify
     openSpotifyEmbed(spotifyId, title, artist, btn);
+  } else {
+    // Tracks do banco sem ID — busca no Spotify
+    const searchUrl=btn.dataset.search||`https://open.spotify.com/search/${encodeURIComponent(title+' '+artist)}`;
+    window.open(searchUrl, '_blank');
   }
 }
 
@@ -1087,7 +1075,7 @@ function openSpotifyEmbed(spotifyId, title, artist, btn){
         <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
         <div style="font-size:10px;color:var(--text2)">${artist}</div>
       </div>
-      <a href="https://open.spotify.com/track/${spotifyId}" target="_blank" 
+      <a href="https://open.spotify.com/track/${spotifyId}" target="_blank" rel="noopener" 
          style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#1db954;color:#000;font-size:11px;font-weight:700;border-radius:20px;text-decoration:none;white-space:nowrap;flex-shrink:0">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
         Ouvir no Spotify
@@ -1142,7 +1130,7 @@ function togStyle(el,style){
 
 function restart(){
   ST={artist:'',lineup:[],slot:null,venue:null,manOpen:false,photoCache:{},dominantGroup:null,styles:['vocal','groove','atmospheric']};
-  ST_DAYS=30; ST_ERA='30d';
+  
   document.getElementById('artistIn').value='';
   document.getElementById('djIn').value='';
   document.getElementById('drop').style.display='none';
@@ -1151,8 +1139,7 @@ function restart(){
   document.getElementById('resBox').innerHTML='';
   document.querySelectorAll('.opt:not(.disabled)').forEach(o=>o.classList.remove('sel'));
   ['n0','n1','n2','n3'].forEach(id=>document.getElementById(id).disabled=true);
-  document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('sel'));
-  document.querySelector('.period-btn').classList.add('sel');
+
   go(0);
 }
 
