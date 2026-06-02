@@ -961,7 +961,8 @@ async function fetchSpotifyTracks(group, ceil, floor){
   const headliner=ST.lineup[0]?.n;
   if(!headliner) return [];
   try{
-    const url=`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}`;
+    const lineupParam=ST.lineup.map(d=>d.n).join(',');
+    const url=`/api/spotify?headliner=${encodeURIComponent(headliner)}&slot=${ST.slot}&lineup=${encodeURIComponent(lineupParam)}`;
     const r=await fetch(url);
     if(!r.ok) return [];
     const d=await r.json();
