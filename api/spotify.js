@@ -301,7 +301,7 @@ const SLOT_BPM = {
 // IDs diretos para artistas com nome ambíguo
 const AMBIGUOUS_IDS = {
   'sasha':   '2SHyvQHTbMoFVT5s5LkS38',
-  'anna':    '3gqTLkCGKp5mFk7FuJKSSq',
+  'anna':    '0NktBCMRPfOzEqLjw8hSdj',  // DJ ANNA (Anna Bueno) brasileira techno
   'bonobo':  '0cmWgDlu9CwTgxPhf403hb',
   'bicep':   '73A3bLnfnz5BoQjb4gNCga',
   'monolink':'2m4WFg9cExkUcXg0YvAaHp',
@@ -333,7 +333,7 @@ export default async function handler(req, res) {
   if (req.query.img) return proxyImage(decodeURIComponent(req.query.img), res);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.setHeader('X-FI-Version', '8.1');
+  res.setHeader('X-FI-Version', '8.2');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
@@ -346,7 +346,10 @@ export default async function handler(req, res) {
     if (q.id)        return res.status(200).json(await fetchArtistById(token, q.id));
     if (q.search)    return res.status(200).json(await searchFree(token, q.search));
     if (q.test)      return res.status(200).json(await runTest(token, q.test));
-    if (q.headliner) return res.status(200).json(await generateSet(token, q.headliner, q.slot||'slot1'));
+    if (q.headliner) {
+      const lineup = q.lineup ? q.lineup.split(',').map(s => s.trim()) : [q.headliner];
+      return res.status(200).json(await generateSet(token, q.headliner, q.slot||'slot1', lineup));
+    }
     return res.status(200).json({ version:'8.0', status:'online' });
   } catch (err) {
     console.error('[FI] ERRO:', err.message);
@@ -367,36 +370,70 @@ async function getToken() {
   return (await r.json()).access_token;
 }
 
-async function generateSet(token, headliner, slot) {
+async function generateSet(token, headliner, slot, lineup) {
   const hlKey = Object.keys(HEADLINER_MAP).find(k => k === headliner.toLowerCase());
-  const group = hlKey ? HEADLINER_MAP[hlKey] : 'g1';
+  const dominantGroup = hlKey ? HEADLINER_MAP[hlKey] : 'g1';
   const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot1;
 
-  console.log(`[FI] headliner="${headliner}" group=${group}`);
+  console.log(`[FI] headliner="${headliner}" group=${dominantGroup}`);
 
-  // Usa banco estático das playlists curadas do FMENEZS
-  const pool = (FMENEZS_TRACKS[group] || FMENEZS_TRACKS.g1).filter(t =>
+  // Detecta grupos de todos os artistas do line-up
+  const lineupGroups = (lineup || [headliner]).map(name => {
+    const key = Object.keys(HEADLINER_MAP).find(k => k === name.toLowerCase());
+    return key ? HEADLINER_MAP[key] : null;
+  }).filter(Boolean);
+
+  // Conta grupos únicos no line-up
+  const groupCounts = {};
+  lineupGroups.forEach(g => { groupCounts[g] = (groupCounts[g]||0) + 1; });
+  const uniqueGroups = Object.keys(groupCounts);
+
+  console.log(`[FI] Grupos no line-up: ${JSON.stringify(groupCounts)}`);
+
+  let pool;
+  if (uniqueGroups.length === 1 || !lineup || lineup.length <= 1) {
+    // Linha de 1 artista ou todos do mesmo grupo — usa só o grupo dominante
+    pool = (FMENEZS_TRACKS[dominantGroup] || FMENEZS_TRACKS.g1);
+  } else {
+    // Mix de grupos: 80% dominante + 20% dos outros grupos
+    const dominantPool = FMENEZS_TRACKS[dominantGroup] || [];
+    const mainCount = Math.ceil(12 * 0.8); // ~10 tracks do grupo dominante
+    const mixCount = 12 - mainCount;       // ~2 tracks dos outros grupos
+
+    // Coleta tracks dos grupos secundários
+    const secondaryGroups = uniqueGroups.filter(g => g !== dominantGroup);
+    let secondaryPool = [];
+    secondaryGroups.forEach(g => {
+      secondaryPool = secondaryPool.concat(FMENEZS_TRACKS[g] || []);
+    });
+
+    console.log(`[FI] Mix: ${mainCount} de ${dominantGroup} + ${mixCount} de [${secondaryGroups.join(',')}]`);
+
+    const mainTracks = shuffle([...dominantPool]).slice(0, mainCount);
+    const mixTracks = shuffle([...secondaryPool]).slice(0, mixCount);
+    pool = [...mainTracks, ...mixTracks];
+  }
+
+  // Exclui o headliner e embaralha
+  const filtered = pool.filter(t =>
     !t.artist.toLowerCase().includes(headliner.toLowerCase())
   );
-
-  // Embaralha e retorna 12 tracks variadas
-  const shuffled = shuffle([...pool]);
-  const tracks = shuffled.slice(0, 12).map(t => ({
+  const tracks = shuffle(filtered).slice(0, 12).map(t => ({
     name: t.name,
     artist: t.artist,
     album: t.album,
-    bpm: null,
-    key: null,
-    duration: null,
-    releaseDate: null,
-    previewUrl: null,
-    spotifyUrl: null,
-    image: null,
+    bpm: null, key: null, duration: null,
+    releaseDate: null, previewUrl: null, spotifyUrl: null, image: null,
     source: 'fmenezs_playlist',
   }));
 
-  console.log(`[FI] ${tracks.length} tracks do banco curado`);
-  return { headliner, group, slot, bpmRange, tracks, total: pool.length, sources: { playlist: tracks.length } };
+  console.log(`[FI] ${tracks.length} tracks geradas`);
+  return {
+    headliner, group: dominantGroup, slot, bpmRange,
+    tracks, total: filtered.length,
+    sources: { playlist: tracks.length },
+    mix: uniqueGroups.length > 1 ? groupCounts : null,
+  };
 }
 
 
