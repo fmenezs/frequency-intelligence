@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Frequency Intelligence — v6</title>
+  <title>Frequency Intelligence</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -886,7 +886,7 @@ function showLoading(ceil, floor){
 function renderTrackCard(t, num){
   const showFam = t.source==='banco' && t.fam;
   const fs=showFam?(FS[t.fam]||{c:'#94a3b8',b:'rgba(148,163,184,.08)'}):{};
-  const borderColor=t.source==='spotify_album'?'#1db954':'var(--accent)';
+  const borderColor=(t.source==='fmenezs_playlist'||t.source==='spotify_album')?'#1db954':'var(--accent)';
   const name=t.t||t.name||'';
   const artist=t.a||t.artist||'';
   const bpmStr=t.bpm&&t.bpm>0?`${t.bpm} BPM`:'';
@@ -966,7 +966,7 @@ async function fetchSpotifyTracks(group, ceil, floor){
     if(!r.ok) return [];
     const d=await r.json();
     console.log('[FI frontend] sources:', d.sources, 'total:', d.total);
-    return (d.tracks||[]).filter(t=>t.source==='spotify_album').map((t,i)=>({
+    return (d.tracks||[]).filter(t=>t.source==='fmenezs_playlist'||t.source==='spotify_album').map((t,i)=>({
       t:t.name||'', a:t.artist||'', l:t.album||'',
       bpm:t.bpm||0, fam:null, key:t.key||null,
       source:'spotify_album',
