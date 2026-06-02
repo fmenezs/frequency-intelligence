@@ -1,104 +1,15 @@
-// api/spotify.js — Frequency Intelligence v7.0 — FMENEZS
+// api/spotify.js — Frequency Intelligence v8.0 — FMENEZS
+// Fonte primária: playlists curadas do FMENEZS no Spotify
 
-// Banco curado usado como REFERÊNCIA de artistas (não retornado diretamente)
-const CURATED_ARTISTS = {
-  g1: ['Franck Roger','Fouk','Frits Wentink','Jimpster','Dan Shake','Gorge','Pablo Bolivar','16BL','Godblesscomputers','Cem Gemalmaz','DJ Sandwich','Subb-an','Demarkus Lewis'],
-  g2: ['Sam Shure','Hraach','Evren Ulusoy','Alexander Sound','Chris Barag','AudioStorm','Dunadry','Hans Gerd','DAVI'],
-  g3: ['XENIA REAPER','Superpoze','Dusky','Sean Branton','MARINI','Vincenzo','Soudant'],
-  g4: ['Aris Kindt','Joachim Spieth','Amotik','Altinbas','Johannes Volk','Azu Tiwaline','Dino Sabatini','Future Simplicity','DJ Bone','BLZS','Danniel selfmade'],
-  g5: ['Reinier Zonneveld','I Hate Models','SPFDJ'],
-  g6: ['MacZito','CHOMBA','Sparrow & Barbossa','Citizen Deep','Fabian Balino','Djena','Alley SA'],
-  g7: ['Hugo Samba','Sebastian Mullaert','Mauro Masi','Emilio Tornqvist','Mo-Omar','Elavenu','BuVu','BOHEM','AIWAA'],
-};
-
-// IDs verificados no Spotify — backbone da busca
-const ARTIST_IDS = {
-  g1: [
-    { name:'Franck Roger',             id:'2r6vXSmwVQSHMHqRiVOjLK' },
-    { name:'Fouk',                     id:'4JT6E8pevxBqWvjfPj3WlR' },
-    { name:'Frits Wentink',            id:'3JLfYFhKkFiHbqHVDRBYYZ' },
-    { name:'Jimpster',                 id:'2PpCJnlSvLRfTqRVjuJg1s' },
-    { name:'Motor City Drum Ensemble', id:'6vBmZRiCEuaS0WBmTJqRYi' },
-    { name:'Dan Shake',                id:'1ULpDcD5UVP3V66FkWbBc3' },
-    { name:'Kerri Chandler',           id:'51tYDGpHPVBSmVjirw3lFy' },
-    { name:'Honey Dijon',              id:'3yGSRjp9aYZeWuLKJSmGgV' },
-    { name:'Mochakk',                  id:'7dqFBBfQMGQdXaREVHj1i8' },
-    { name:'Pablo Bolivar',            id:'3NSGqcfHREWoJQvTEJSmk5' },
-  ],
-  g2: [
-    { name:'Sam Shure',       id:'51YmUpitluHsvMTXJ2rsiN' },
-    { name:'Hraach',          id:'6rdTxNwQhUJTodUx7voWXO' },
-    { name:'Guy J',           id:'0Dl8j8IPLZ0EGRBizZfDdl' },
-    { name:'Nox Vahn',        id:'2bqGPuC8kDCTLWieGOyWxu' },
-    { name:'Nick Warren',     id:'6FsDOSI9jnvPeWqQBXqAOr' },
-    { name:'Hernan Cattaneo', id:'4k1O3e7MMAm2V6xqQcFGKj' },
-    { name:'Cubicolor',       id:'5bqkAMiapKkGVCbBDMvJJV' },
-    { name:'Sasha',           id:'2SHyvQHTbMoFVT5s5LkS38' },
-    { name:'John Digweed',    id:'2xe8IUDrCEKZJOFqxZUB6J' },
-  ],
-  g3: [
-    { name:'Bicep',            id:'73A3bLnfnz5BoQjb4gNCga' },
-    { name:'WhoMadeWho',       id:'3aRI0QFhFTaCQ1TRBi9zVk' },
-    { name:'Recondite',        id:'2vz6GxfbFjRQI7fqCHBnN6' },
-    { name:'Dusky',            id:'1DsQKUqQFmPbLTqjnf7BKW' },
-    { name:'Ross From Friends',id:'7dJdq0x3vkRfFPeGNcBGe8' },
-    { name:'Tale Of Us',       id:'0F4iAEMFdSGR5qFOGk2Bvg' },
-    { name:'Adriatique',       id:'7aS8K2M1qBMlPEeTmImEYF' },
-    { name:'ARTBAT',           id:'3zy26r3t4BOlwBGbFxmYlG' },
-    { name:'Anyma',            id:'0bjTNsHtWFGVoZ8yvv1y7k' },
-  ],
-  g4: [
-    { name:'Joachim Spieth',     id:'1PKtSAYVgTMH2rEGMPLTOO' },
-    { name:'Oscar Mulero',       id:'4HY5hFGaOSSYfQVn6FXLQG' },
-    { name:'Surgeon',            id:'4CLovOkMdpuDAGjJ7u1iia' },
-    { name:'Blawan',             id:'0LdSRmLf2yDXW0rjOIj5vH' },
-    { name:'Phase Fatale',       id:'3I4VBbmq1gBNWLeBkbRqeP' },
-    { name:'Charlotte de Witte', id:'5O30s0HaU7PMmlFAeWtLrM' },
-    { name:'Amelie Lens',        id:'5UYjFjdCGnIjFPAMPXdFsj' },
-    { name:'Adam Beyer',         id:'7wX4BaEhFMRJ5sXdCMKF8g' },
-    { name:'Ancient Methods',    id:'1GmsPCcCHmFzBp0o5wH9WS' },
-  ],
-  g5: [
-    { name:'Reinier Zonneveld', id:'21A7bhIL1m6CNZn8y57PIZ' },
-    { name:'I Hate Models',     id:'6DX1IPGLEiFNsVkBniLAAj' },
-    { name:'SPFDJ',             id:'7FcMHrDMaXiAHAy1H1WPIL' },
-    { name:'Sara Landry',       id:'4NpFsd2PNkFgHNkLFqzBFP' },
-  ],
-  g6: [
-    { name:'Black Coffee',    id:'6wMr4zKPrrR0UVz08WtUWc' },
-    { name:'Adam Port',       id:'2loEsOijJ6XiGzWYFXMIRk' },
-    { name:'Bedouin',         id:'5bKdC6382t97Qnpvs81Rqx' },
-    { name:'Damian Lazarus',  id:'7rPVEECPRcpxP4XS1fkHgP' },
-    { name:'Ahmed Spins',     id:'4jercY4pUhY6jB8eQjpVJV' },
-    { name:'Themba',          id:'0tOCJpAHFXBxSQzMBfhpIq' },
-    { name:'Enoo Napa',       id:'5QrMrTGcX0jyXMxRZGzgbt' },
-    { name:'Rampa',           id:'3R37lMSoiWxOZZCKRNt5dN' },
-    { name:'Da Capo',         id:'1N0Uqpov1NHvJDkYb9NlNK' },
-    { name:'Sun-El Musician', id:'4lEoyJBmHHBrFAfmvHRhfZ' },
-  ],
-  g7: [
-    { name:'Satori',          id:'5nri3hyKmKBGAfvjBi0mK0' },
-    { name:'WhoMadeWho',      id:'3aRI0QFhFTaCQ1TRBi9zVk' },
-    { name:'Sebastian Mullaert', id:'2TDnTIaLLK2B13OoXSFkSH' },
-    { name:'Mauro Masi',      id:'4DB7roKjBDAuccMLQrzXX9' },
-    { name:'Hraach',          id:'6rdTxNwQhUJTodUx7voWXO' },
-    { name:'Bonobo',          id:'0cmWgDlu9CwTgxPhf403hb' },
-    { name:'Monolink',        id:'2m4WFg9cExkUcXg0YvAaHp' },
-    { name:'Worakls',         id:'3nwbMWRXDZ0fMBzMDQpIKW' },
-    { name:'Nicola Cruz',     id:'4NTK7g2MLcT2jTpHKaHAbG' },
-    { name:'Acid Pauli',      id:'0YSINODhS5oDJGxGsOqo7i' },
-    { name:'Bedouin',         id:'5bKdC6382t97Qnpvs81Rqx' },
-  ],
-};
-
-// IDs diretos para artistas com nome ambíguo (evita buscar cantora pop)
-const AMBIGUOUS_ARTIST_IDS = {
-  'sasha': '2SHyvQHTbMoFVT5s5LkS38',  // DJ Sasha, não Sasha Meneghel
-  'anna': '3gqTLkCGKp5mFk7FuJKSSq',   // ANNA techno
-  'bedouin': '5bKdC6382t97Qnpvs81Rqx',
-  'monolink': '2m4WFg9cExkUcXg0YvAaHp',
-  'bonobo': '0cmWgDlu9CwTgxPhf403hb',
-  'bicep': '73A3bLnfnz5BoQjb4gNCga',
+// IDs das playlists curadas do FMENEZS — fonte de verdade
+const FMENEZS_PLAYLISTS = {
+  g1: '6EalORs0wKhi2BEbiusNJn',  // House / Deep House
+  g2: '2g5HLDoA0N55XFit6Urpve',  // Progressive House
+  g3: '1hbNvpSB0b3IrTUHv8ofKZ',  // Indie Dance / Melodic Techno
+  g4: '44jU7ySnUIO9ScBh6lXnYO',  // Techno
+  g5: '4zWlcatIUzQnfh4LrBU8dE',  // Hard Techno
+  g6: '2rAU9wn0P5mE1Xuu50bnS7',  // Afro House / Melodic House
+  g7: '17xTx53j0NsZIcdvS2mbr3',  // Organic House
 };
 
 const HEADLINER_MAP = {
@@ -126,11 +37,21 @@ const SLOT_BPM = {
   slot2: { min: 114, max: 127 },
 };
 
+// IDs diretos para artistas com nome ambíguo
+const AMBIGUOUS_IDS = {
+  'sasha':   '2SHyvQHTbMoFVT5s5LkS38',
+  'anna':    '3gqTLkCGKp5mFk7FuJKSSq',
+  'bonobo':  '0cmWgDlu9CwTgxPhf403hb',
+  'bicep':   '73A3bLnfnz5BoQjb4gNCga',
+  'monolink':'2m4WFg9cExkUcXg0YvAaHp',
+  'bedouin': '5bKdC6382t97Qnpvs81Rqx',
+};
+
 async function proxyImage(url, res) {
   try {
     const r = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
         'Referer': 'https://open.spotify.com/',
       }
     });
@@ -151,14 +72,12 @@ export default async function handler(req, res) {
   if (req.query.img) return proxyImage(decodeURIComponent(req.query.img), res);
 
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  res.setHeader('X-FI-Version', '7.2');
+  res.setHeader('X-FI-Version', '8.0');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const q = req.query;
-  console.log('[FI v7.0] params:', JSON.stringify(q));
+  console.log('[FI v8.0]', JSON.stringify(q));
 
   try {
     const token = await getToken();
@@ -167,7 +86,7 @@ export default async function handler(req, res) {
     if (q.search)    return res.status(200).json(await searchFree(token, q.search));
     if (q.test)      return res.status(200).json(await runTest(token, q.test));
     if (q.headliner) return res.status(200).json(await generateSet(token, q.headliner, q.slot||'slot1'));
-    return res.status(200).json({ service:'Frequency Intelligence', version:'7.2', status:'online' });
+    return res.status(200).json({ version:'8.0', status:'online' });
   } catch (err) {
     console.error('[FI] ERRO:', err.message);
     return res.status(500).json({ error: err.message, tracks: [], total: 0 });
@@ -176,7 +95,7 @@ export default async function handler(req, res) {
 
 async function getToken() {
   const { SPOTIFY_CLIENT_ID: cid, SPOTIFY_CLIENT_SECRET: csec } = process.env;
-  if (!cid || !csec) throw new Error('Missing Spotify credentials');
+  if (!cid || !csec) throw new Error('Missing credentials');
   const b64 = Buffer.from(`${cid}:${csec}`).toString('base64');
   const r = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -191,188 +110,131 @@ async function generateSet(token, headliner, slot) {
   const hlKey = Object.keys(HEADLINER_MAP).find(k => k === headliner.toLowerCase());
   const group = hlKey ? HEADLINER_MAP[hlKey] : 'g1';
   const bpmRange = SLOT_BPM[slot] || SLOT_BPM.slot1;
-  console.log(`[FI] headliner="${headliner}" group=${group}`);
+  const playlistId = FMENEZS_PLAYLISTS[group];
 
-  // Usa diretamente ARTIST_IDS — IDs verificados, sem busca extra
-  const artistList = ARTIST_IDS[group] || ARTIST_IDS.g6;
-  console.log(`[FI] ${artistList.length} artistas disponíveis para o grupo ${group}`);
+  console.log(`[FI] headliner="${headliner}" group=${group} playlist=${playlistId}`);
 
-  const tracks = await fetchAlbumTracks(token, artistList, headliner);
-  console.log(`[FI] ${tracks.length} tracks do Spotify`);
+  // Busca tracks da playlist curada do FMENEZS
+  const tracks = await getPlaylistTracks(token, playlistId, headliner);
+  console.log(`[FI] ${tracks.length} tracks da playlist`);
 
   return {
     headliner, group, slot, bpmRange,
     tracks: tracks.slice(0, 12),
     total: tracks.length,
-    sources: { spotify: tracks.length, curated: 0 },
+    sources: { playlist: tracks.length },
   };
 }
 
-// Resolve nomes para IDs — usa lista fixa como cache, busca o resto
-async function resolveArtistIds(token, names, fixedList) {
-  const fixed = new Map(fixedList.map(a => [a.name.toLowerCase(), a]));
-  const result = [];
-
-  await Promise.all(names.map(async (name) => {
-    const existing = fixed.get(name.toLowerCase());
-    if (existing) { result.push(existing); return; }
-    try {
-      const r = await fetch(
-        `https://api.spotify.com/v1/search?q=${encodeURIComponent(name)}&type=artist&limit=3&market=US`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!r.ok) return;
-      const d = await r.json();
-      const artists = d.artists?.items || [];
-      // Preferir artista com gênero eletrônico/orgânico
-      const ELEC = ['electronic','house','techno','organic','afro','deep','minimal','ambient','downtempo'];
-      const elec = artists.find(a => (a.genres||[]).some(g =>
-        ELEC.some(eg => g.toLowerCase().includes(eg))
-      ));
-      const a = elec || artists[0];
-      if (a) { result.push({ name: a.name, id: a.id }); }
-    } catch(e) {}
-  }));
-
-  // Adiciona artistas da lista fixa que não estão ainda
-  for (const a of fixedList) {
-    if (!result.find(r => r.id === a.id)) result.push(a);
-  }
-
-  return shuffle(result).slice(0, 10);
-}
-
-// Busca tracks dos álbuns — SEM filtro de tempo, máx 2 por artista
-async function fetchAlbumTracks(token, artists, excludeName) {
+async function getPlaylistTracks(token, playlistId, excludeArtist) {
   const allTracks = [];
   const seen = new Set();
-  const artistCount = {};
 
-  const results = await Promise.all(artists.map(async (artist) => {
-    if (artist.name.toLowerCase() === excludeName.toLowerCase()) return [];
-    try {
-      const r = await fetch(
-        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=20&market=US`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      if (!r.ok) { console.log(`[FI] Albums ${r.status} for ${artist.name}`); return []; }
-      const d = await r.json();
-      const albums = (d.items || []).slice(0, 5);
-      console.log(`[FI] ${artist.name}: ${albums.length} álbuns`);
+  // Busca até 100 tracks da playlist (offset aleatório para variedade)
+  // Primeiro pega o total
+  const first = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=1&market=US`,
+    { headers: { Authorization:`Bearer ${token}` } }
+  );
+  if (!first.ok) {
+    console.log(`[FI] Playlist ${playlistId} error: ${first.status}`);
+    return [];
+  }
+  const firstData = await first.json();
+  const total = firstData.total || 0;
+  console.log(`[FI] Playlist tem ${total} tracks`);
 
-      const trackResults = await Promise.all(albums.map(async (album) => {
-        try {
-          const tr = await fetch(
-            `https://api.spotify.com/v1/albums/${album.id}/tracks?limit=10&market=US`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          if (!tr.ok) return [];
-          const td = await tr.json();
-          const pick = shuffle(td.items || [])[0];
-          if (!pick?.id) return [];
-          return [{
-            id: pick.id,
-            name: pick.name,
-            artist: (pick.artists||[]).map(a=>a.name).join(', '),
-            album: album.name,
-            bpm: null, key: null,
-            duration: formatDuration(pick.duration_ms),
-            releaseDate: album.release_date||'',
-            previewUrl: pick.preview_url||'',
-            spotifyUrl: pick.external_urls?.spotify||'',
-            image: album.images?.[1]?.url||album.images?.[0]?.url||'',
-            source: 'spotify_album',
-            _artistName: artist.name,
-          }];
-        } catch(e) { return []; }
-      }));
-      return trackResults.flat();
-    } catch(e) { console.log(`[FI] Err ${artist.name}:`, e.message); return []; }
-  }));
+  // Escolhe offset aleatório para variedade a cada geração
+  const maxOffset = Math.max(0, total - 50);
+  const offset = Math.floor(Math.random() * maxOffset);
 
-  // Merge com dedup e máx 2 por artista
-  for (const artistTracks of results) {
-    for (const t of artistTracks) {
-      if (!t?.id) continue;
-      const key = `${t.name}|||${t.artist}`.toLowerCase();
-      if (seen.has(key)) continue;
-      const aKey = t._artistName;
-      if ((artistCount[aKey]||0) >= 2) continue;
-      seen.add(key);
-      artistCount[aKey] = (artistCount[aKey]||0) + 1;
-      allTracks.push(t);
-    }
+  const r = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50&offset=${offset}&market=US`,
+    { headers: { Authorization:`Bearer ${token}` } }
+  );
+  if (!r.ok) {
+    console.log(`[FI] Playlist tracks error: ${r.status}`);
+    return [];
+  }
+  const d = await r.json();
+  const items = d.items || [];
+  console.log(`[FI] Fetched ${items.length} tracks (offset ${offset})`);
+
+  for (const item of items) {
+    const t = item?.track;
+    if (!t?.id || t.is_local) continue;
+
+    // Exclui o próprio headliner
+    const artists = (t.artists||[]).map(a => a.name.toLowerCase());
+    if (artists.some(a => a.includes(excludeArtist.toLowerCase()))) continue;
+
+    const key = `${t.name}|||${artists[0]}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+
+    allTracks.push({
+      id: t.id,
+      name: t.name,
+      artist: (t.artists||[]).map(a => a.name).join(', '),
+      album: t.album?.name || '',
+      bpm: null,
+      key: null,
+      duration: formatDuration(t.duration_ms),
+      releaseDate: t.album?.release_date || '',
+      previewUrl: t.preview_url || '',
+      spotifyUrl: t.external_urls?.spotify || '',
+      image: t.album?.images?.[1]?.url || t.album?.images?.[0]?.url || '',
+      source: 'fmenezs_playlist',
+    });
   }
 
-  console.log(`[FI] fetchAlbumTracks total: ${allTracks.length}`);
-  return allTracks;
+  // Embaralha para não retornar sempre as mesmas
+  return shuffle(allTracks);
 }
 
 async function runTest(token, group) {
-  const grp = ARTIST_IDS[group] ? group : 'g6';
-  const result = { version:'7.2', group:grp, artistTests:[] };
+  const grp = FMENEZS_PLAYLISTS[group] ? group : 'g6';
+  const playlistId = FMENEZS_PLAYLISTS[grp];
+  const result = { version:'8.0', group:grp, playlistId };
 
-  for (const artist of (ARTIST_IDS[grp]||[]).slice(0,3)) {
-    const test = { name:artist.name, id:artist.id };
-    try {
-      const r = await fetch(
-        `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=single,album&limit=3&market=US`,
-        { headers: { Authorization:`Bearer ${token}` } }
-      );
-      test.albumsStatus = r.status;
-      if (r.ok) {
-        const d = await r.json();
-        test.albumsFound = d.items?.length||0;
-        test.firstAlbum = d.items?.[0]?.name||null;
-        if (d.items?.[0]) {
-          const tr = await fetch(
-            `https://api.spotify.com/v1/albums/${d.items[0].id}/tracks?limit=2&market=US`,
-            { headers: { Authorization:`Bearer ${token}` } }
-          );
-          test.tracksStatus = tr.status;
-          if (tr.ok) {
-            const td = await tr.json();
-            test.tracks = (td.items||[]).map(t=>({ name:t.name, hasPreview:!!t.preview_url }));
-          }
-        }
-      } else { test.error = await r.text(); }
-    } catch(e) { test.error = e.message; }
-    result.artistTests.push(test);
-  }
-  result.status = 'OK';
+  try {
+    const r = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=5&market=US`,
+      { headers: { Authorization:`Bearer ${token}` } }
+    );
+    result.status = r.status;
+    if (r.ok) {
+      const d = await r.json();
+      result.total = d.total;
+      result.sampleTracks = (d.items||[]).slice(0,3).map(i => ({
+        name: i.track?.name,
+        artist: i.track?.artists?.[0]?.name,
+        hasPreview: !!i.track?.preview_url,
+        spotifyUrl: !!i.track?.external_urls?.spotify,
+      }));
+    } else {
+      result.error = await r.text();
+    }
+  } catch(e) { result.error = e.message; }
+
   return result;
 }
 
-
 async function searchArtist(token, name) {
-  // Verifica se é artista com nome ambíguo — usa ID direto
-  const directId = AMBIGUOUS_ARTIST_IDS[name.toLowerCase()];
+  const directId = AMBIGUOUS_IDS[name.toLowerCase()];
   if (directId) {
     try {
       const r = await fetch(`https://api.spotify.com/v1/artists/${directId}`,
         { headers: { Authorization:`Bearer ${token}` } });
       if (r.ok) {
         const a = await r.json();
-        console.log(`[FI] Direct ID for "${name}": ${a.name}`);
-        return { ...formatArtist(a), group:detectGroup(name) };
+        return { ...formatArtist(a), group: detectGroup(name) };
       }
     } catch(e) {}
   }
 
-  // Busca com filtro de gênero eletrônico
-  const queries = [
-    `${name} genre:electronic`,
-    `${name} genre:house`,
-    `${name} genre:techno`,
-    `${name}`,
-  ];
-
-  const ELECTRONIC_GENRES = [
-    'electronic','house','techno','deep house','tech house','progressive house',
-    'minimal techno','melodic techno','afro house','organic house','trance',
-    'drum and bass','electro','ambient','industrial','acid house','hard techno',
-    'dance','edm','electronica','idm','downtempo','chillout',
-  ];
+  const ELEC = ['electronic','house','techno','organic','afro','deep','minimal','ambient','progressive'];
+  const queries = [`${name} genre:electronic`, `${name} genre:house`, `${name} genre:techno`, name];
 
   for (const q of queries) {
     try {
@@ -383,23 +245,12 @@ async function searchArtist(token, name) {
       if (!r.ok) continue;
       const d = await r.json();
       const artists = d.artists?.items || [];
-      if (!artists.length) continue;
-
-      // Preferir artista com gênero eletrônico
-      const electronic = artists.find(a =>
-        (a.genres||[]).some(g => ELECTRONIC_GENRES.some(eg => g.toLowerCase().includes(eg)))
-      );
-
-      // Se encontrou com gênero eletrônico, usa. Senão na última tentativa usa o primeiro.
-      const pick = electronic || (q === name ? artists[0] : null);
-      if (pick) {
-        console.log(`[FI] searchArtist "${name}" → ${pick.name} genres: ${pick.genres?.slice(0,3).join(', ')}`);
-        return { ...formatArtist(pick), group:detectGroup(name) };
-      }
+      const elec = artists.find(a => (a.genres||[]).some(g => ELEC.some(eg => g.toLowerCase().includes(eg))));
+      const pick = elec || (q === name ? artists[0] : null);
+      if (pick) return { ...formatArtist(pick), group: detectGroup(name) };
     } catch(e) {}
   }
-
-  return { name, photo:'', group:detectGroup(name) };
+  return { name, photo: '', group: detectGroup(name) };
 }
 
 async function fetchArtistById(token, id) {
@@ -407,22 +258,29 @@ async function fetchArtistById(token, id) {
     { headers: { Authorization:`Bearer ${token}` } });
   if (!r.ok) throw new Error(`Artist fetch failed: ${r.status}`);
   const a = await r.json();
-  return { ...formatArtist(a), group:detectGroup(a.name) };
+  return { ...formatArtist(a), group: detectGroup(a.name) };
 }
 
 async function searchFree(token, query) {
-  const r = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=8`,
-    { headers: { Authorization:`Bearer ${token}` } });
-  if (!r.ok) throw new Error(`Free search failed: ${r.status}`);
+  const r = await fetch(
+    `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=8`,
+    { headers: { Authorization:`Bearer ${token}` } }
+  );
+  if (!r.ok) throw new Error(`Search failed: ${r.status}`);
   const d = await r.json();
-  return { results:(d.artists?.items||[]).map(a=>({...formatArtist(a),group:detectGroup(a.name)})) };
+  return { results: (d.artists?.items||[]).map(a => ({ ...formatArtist(a), group: detectGroup(a.name) })) };
 }
 
 function formatArtist(a) {
-  return { id:a.id, name:a.name, photo:a.images?.[0]?.url||'',
-    photoSmall:a.images?.[2]?.url||a.images?.[0]?.url||'',
-    genres:a.genres||[], followers:a.followers?.total||0,
-    popularity:a.popularity||0, spotifyUrl:a.external_urls?.spotify||'' };
+  return {
+    id: a.id, name: a.name,
+    photo: a.images?.[0]?.url || '',
+    photoSmall: a.images?.[2]?.url || a.images?.[0]?.url || '',
+    genres: a.genres || [],
+    followers: a.followers?.total || 0,
+    popularity: a.popularity || 0,
+    spotifyUrl: a.external_urls?.spotify || '',
+  };
 }
 
 function detectGroup(name) {
@@ -434,16 +292,16 @@ function detectGroup(name) {
 
 function formatDuration(ms) {
   if (!ms) return '';
-  const m = Math.floor(ms/60000);
-  const s = Math.floor((ms%60000)/1000);
-  return `${m}:${s.toString().padStart(2,'0')}`;
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 function shuffle(arr) {
   const a = [...arr];
-  for (let i = a.length-1; i > 0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
 }
